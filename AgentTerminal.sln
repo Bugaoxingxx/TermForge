@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{61CA30E8-9D49-48B4-B4C3-34D721788A04}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentTerminal.Core", "src\AgentTerminal.Core\AgentTerminal.Core.csproj", "{9D337A1A-7A37-4127-B2B1-CECC895725C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentTerminal.Terminal", "src\AgentTerminal.Terminal\AgentTerminal.Terminal.csproj", "{87053BBD-C95A-449D-9589-D35CD101C940}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentTerminal.Docking", "src\AgentTerminal.Docking\AgentTerminal.Docking.csproj", "{F142A993-BD72-40BB-8709-7FE62D99FBDC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentTerminal.Infrastructure", "src\AgentTerminal.Infrastructure\AgentTerminal.Infrastructure.csproj", "{C689B08A-AD76-4384-9191-5F962FF2284D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentTerminal.App", "src\AgentTerminal.App\AgentTerminal.App.csproj", "{D761F2DB-7B7F-4740-AE78-974146854486}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E35F2B76-577A-4C72-A668-D041540F5A23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentTerminal.Tests", "tests\AgentTerminal.Tests\AgentTerminal.Tests.csproj", "{829A4A63-C793-4468-9605-CA264692E32D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9D337A1A-7A37-4127-B2B1-CECC895725C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D337A1A-7A37-4127-B2B1-CECC895725C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D337A1A-7A37-4127-B2B1-CECC895725C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D337A1A-7A37-4127-B2B1-CECC895725C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87053BBD-C95A-449D-9589-D35CD101C940}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87053BBD-C95A-449D-9589-D35CD101C940}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87053BBD-C95A-449D-9589-D35CD101C940}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87053BBD-C95A-449D-9589-D35CD101C940}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F142A993-BD72-40BB-8709-7FE62D99FBDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F142A993-BD72-40BB-8709-7FE62D99FBDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F142A993-BD72-40BB-8709-7FE62D99FBDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F142A993-BD72-40BB-8709-7FE62D99FBDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C689B08A-AD76-4384-9191-5F962FF2284D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C689B08A-AD76-4384-9191-5F962FF2284D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C689B08A-AD76-4384-9191-5F962FF2284D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C689B08A-AD76-4384-9191-5F962FF2284D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D761F2DB-7B7F-4740-AE78-974146854486}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D761F2DB-7B7F-4740-AE78-974146854486}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D761F2DB-7B7F-4740-AE78-974146854486}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D761F2DB-7B7F-4740-AE78-974146854486}.Release|Any CPU.Build.0 = Release|Any CPU
+		{829A4A63-C793-4468-9605-CA264692E32D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{829A4A63-C793-4468-9605-CA264692E32D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{829A4A63-C793-4468-9605-CA264692E32D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{829A4A63-C793-4468-9605-CA264692E32D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9D337A1A-7A37-4127-B2B1-CECC895725C4} = {61CA30E8-9D49-48B4-B4C3-34D721788A04}
+		{87053BBD-C95A-449D-9589-D35CD101C940} = {61CA30E8-9D49-48B4-B4C3-34D721788A04}
+		{F142A993-BD72-40BB-8709-7FE62D99FBDC} = {61CA30E8-9D49-48B4-B4C3-34D721788A04}
+		{C689B08A-AD76-4384-9191-5F962FF2284D} = {61CA30E8-9D49-48B4-B4C3-34D721788A04}
+		{D761F2DB-7B7F-4740-AE78-974146854486} = {61CA30E8-9D49-48B4-B4C3-34D721788A04}
+		{829A4A63-C793-4468-9605-CA264692E32D} = {E35F2B76-577A-4C72-A668-D041540F5A23}
+	EndGlobalSection
+EndGlobal

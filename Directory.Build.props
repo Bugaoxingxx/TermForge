@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
+    <Deterministic>true</Deterministic>
+
+    <!-- Assembly Metadata -->
+    <Company>TermForge</Company>
+    <Product>AgentTerminal</Product>
+    <Authors>TermForge Team</Authors>
+    <Copyright>Copyright © 2026 TermForge</Copyright>
+  </PropertyGroup>
+</Project>
