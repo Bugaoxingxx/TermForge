@@ -133,20 +133,43 @@ public class MdiWorkbenchTests
     }
 
     [Fact]
-    public void RestoreAll_ShouldResetMinimizedAndMaximizedWindowsToNormal()
+    public void RestoreAll_ShouldResetMinimizedAndMaximizedWindowsToNormalAndRecoverBounds()
     {
         // Arrange
-        var docs = new List<TerminalDocumentViewModel>
+        var doc1 = new TerminalDocumentViewModel(title: "Doc 1")
         {
-            new(title: "Doc 1") { WindowState = MdiWindowState.Minimized },
-            new(title: "Doc 2") { WindowState = MdiWindowState.Maximized },
-            new(title: "Doc 3") { WindowState = MdiWindowState.Normal }
+            Left = 50, Top = 60, Width = 400, Height = 300, WindowState = MdiWindowState.Normal
         };
+        doc1.Minimize();
+
+        var doc2 = new TerminalDocumentViewModel(title: "Doc 2")
+        {
+            Left = 150, Top = 160, Width = 500, Height = 350, WindowState = MdiWindowState.Normal
+        };
+        doc2.Maximize();
+
+        var doc3 = new TerminalDocumentViewModel(title: "Doc 3")
+        {
+            Left = 200, Top = 200, Width = 600, Height = 400, WindowState = MdiWindowState.Normal
+        };
+
+        var docs = new List<TerminalDocumentViewModel> { doc1, doc2, doc3 };
 
         // Act
         MdiLayoutManager.RestoreAll(docs);
 
         // Assert
         Assert.All(docs, d => Assert.Equal(MdiWindowState.Normal, d.WindowState));
+
+        // 验证各窗口恢复到最大化/最小化前的尺寸位置
+        Assert.Equal(50, doc1.Left);
+        Assert.Equal(60, doc1.Top);
+        Assert.Equal(400, doc1.Width);
+        Assert.Equal(300, doc1.Height);
+
+        Assert.Equal(150, doc2.Left);
+        Assert.Equal(160, doc2.Top);
+        Assert.Equal(500, doc2.Width);
+        Assert.Equal(350, doc2.Height);
     }
 }

@@ -101,7 +101,7 @@ public static class MdiLayoutManager
     }
 
     /// <summary>
-    /// 全部还原（Restore All）：将所有最小化或最大化的文档还原为正常浮动状态
+    /// 全部还原（Restore All）：将所有最小化或最大化的文档还原为正常浮动状态及原有位置尺寸
     /// </summary>
     public static void RestoreAll(IEnumerable<IMdiDocument> documents)
     {
@@ -109,7 +109,7 @@ public static class MdiLayoutManager
 
         foreach (var doc in documents)
         {
-            doc.WindowState = MdiWindowState.Normal;
+            doc.Restore();
         }
     }
 }

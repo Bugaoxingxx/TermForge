@@ -11,14 +11,17 @@ namespace AgentTerminal.Docking.ViewModels;
 /// 终端文档视图模型，实现 IMdiDocument 与完整 MDI 状态管理。
 /// 包含单会话调试交互、有界输出缓冲区、生命周期命令与 UI 节流刷新。
 /// </summary>
-public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument
+public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument, IAsyncDisposable
 {
-    public const int MaxOutputBufferSize = 1024 * 1024; // 1 MiB 字符上限
+    public const int MaxOutputBufferSize = 1024 * 1024; // 1 MiB 显示缓冲字符上限
+    public const int MaxPendingBufferSize = 1024 * 1024; // 1 MiB 待刷新队列字符上限
     private const string TruncationNoticeHeader = "[输出已截断：已达 1 MiB 显示缓冲上限...]\n";
 
     private readonly Func<ShellProfile, ITerminalSession>? _sessionFactory;
     private readonly StringBuilder _outputBuffer = new();
+    private readonly StringBuilder _pendingBuffer = new();
     private readonly object _bufferLock = new();
+    private readonly System.Windows.Threading.DispatcherTimer? _flushTimer;
 
     private double _restoreLeft = 40.0;
     private double _restoreTop = 40.0;
@@ -104,6 +107,18 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument
         Title = title ?? Profile.Name;
         _sessionFactory = sessionFactory;
 
+        if (Application.Current?.Dispatcher != null)
+        {
+            _flushTimer = new System.Windows.Threading.DispatcherTimer(
+                TimeSpan.FromMilliseconds(16),
+                System.Windows.Threading.DispatcherPriority.Background,
+                OnFlushTimerTick,
+                Application.Current.Dispatcher)
+            {
+                IsEnabled = false
+            };
+        }
+
         if (session != null)
         {
             AttachSession(session);
@@ -112,7 +127,7 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument
 
     public void AttachSession(ITerminalSession session)
     {
-        if (Session != null)
+        if (Session != null && Session != session)
         {
             DetachSession(Session);
         }
@@ -122,6 +137,10 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument
         Rows = session.Dimensions.Rows;
         State = session.State;
         ExitCode = session.ExitCode;
+        if (session.ProcessId != null)
+        {
+            ProcessId = session.ProcessId;
+        }
 
         session.OutputReceived += OnSessionOutputReceived;
         session.StateChanged += OnSessionStateChanged;
@@ -142,8 +161,26 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument
     {
         if (!CanStart) return;
 
-        // 若当前会话已退出或失败，重新创建会话实例
-        if (Session == null || Session.State == TerminalState.Exited || Session.State == TerminalState.Failed)
+        // 若当前已有会话且已退出或失败，彻底释放旧会话实例
+        if (Session != null && (Session.State == TerminalState.Exited || Session.State == TerminalState.Failed))
+        {
+            var oldSession = Session;
+            DetachSession(oldSession);
+            Session = null;
+
+            try
+            {
+                await oldSession.StopAsync();
+                await oldSession.DisposeAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.TraceWarning($"Error disposing old terminal session: {ex.Message}");
+            }
+        }
+
+        // 若会话未初始化，使用工厂重新创建
+        if (Session == null)
         {
             if (_sessionFactory != null)
             {
@@ -167,6 +204,10 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument
 
             StatusMessage = "正在启动会话...";
             await Session.StartAsync();
+            if (Session.ProcessId != null)
+            {
+                ProcessId = Session.ProcessId;
+            }
             StatusMessage = $"运行中 (PID: {ProcessId?.ToString() ?? "N/A"})";
         }
         catch (Exception ex)
@@ -239,6 +280,7 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument
         {
             StatusMessage = "正在停止会话...";
             await Session.StopAsync();
+            FlushOutput();
             StatusMessage = "会话已停止";
         }
         catch (Exception ex)
@@ -256,6 +298,8 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument
     {
         lock (_bufferLock)
         {
+            _flushTimer?.Stop();
+            _pendingBuffer.Clear();
             _outputBuffer.Clear();
             IsTruncated = false;
             OutputText = string.Empty;
@@ -318,32 +362,117 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument
 
         lock (_bufferLock)
         {
-            _outputBuffer.Append(text);
+            _pendingBuffer.Append(text);
 
-            // 有界缓冲区限制（1 MiB）
-            if (_outputBuffer.Length > MaxOutputBufferSize)
+            // 待刷新队列有界限制（1 MiB）
+            if (_pendingBuffer.Length > MaxPendingBufferSize)
             {
                 IsTruncated = true;
-                int excess = _outputBuffer.Length - MaxOutputBufferSize;
-                _outputBuffer.Remove(0, excess);
+                int excess = _pendingBuffer.Length - MaxPendingBufferSize;
+                _pendingBuffer.Remove(0, excess);
             }
 
-            string fullText = IsTruncated
-                ? TruncationNoticeHeader + _outputBuffer.ToString()
-                : _outputBuffer.ToString();
-
-            // 若在 UI 线程之外，使用 Dispatcher 更新或直接赋值
-            if (Application.Current != null && Application.Current.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
+            if (_flushTimer == null)
             {
-                Application.Current.Dispatcher.BeginInvoke(() =>
-                {
-                    OutputText = fullText;
-                });
+                // 无 UI 调度器环境（如单元测试），同步刷新
+                FlushPendingBufferLocked();
             }
             else
             {
-                OutputText = fullText;
+                // UI 环境：启动 16ms 批量合流定时器
+                if (!_flushTimer.IsEnabled)
+                {
+                    if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
+                    {
+                        Application.Current.Dispatcher.BeginInvoke(() =>
+                        {
+                            lock (_bufferLock)
+                            {
+                                if (_pendingBuffer.Length > 0 && !_flushTimer.IsEnabled)
+                                {
+                                    _flushTimer.Start();
+                                }
+                            }
+                        });
+                    }
+                    else
+                    {
+                        _flushTimer.Start();
+                    }
+                }
             }
+        }
+    }
+
+    private void OnFlushTimerTick(object? sender, EventArgs e)
+    {
+        lock (_bufferLock)
+        {
+            if (_pendingBuffer.Length == 0)
+            {
+                _flushTimer?.Stop();
+                return;
+            }
+
+            FlushPendingBufferLocked();
+        }
+    }
+
+    public void FlushOutput()
+    {
+        lock (_bufferLock)
+        {
+            _flushTimer?.Stop();
+            FlushPendingBufferLocked();
+        }
+    }
+
+    private void FlushPendingBufferLocked()
+    {
+        if (_pendingBuffer.Length == 0) return;
+
+        _outputBuffer.Append(_pendingBuffer.ToString());
+        _pendingBuffer.Clear();
+
+        // 显示缓冲有界限制（1 MiB）
+        if (_outputBuffer.Length > MaxOutputBufferSize)
+        {
+            IsTruncated = true;
+            int excess = _outputBuffer.Length - MaxOutputBufferSize;
+            _outputBuffer.Remove(0, excess);
+        }
+
+        string fullText = IsTruncated
+            ? TruncationNoticeHeader + _outputBuffer.ToString()
+            : _outputBuffer.ToString();
+
+        if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
+        {
+            Application.Current.Dispatcher.BeginInvoke(() =>
+            {
+                OutputText = fullText;
+            });
+        }
+        else
+        {
+            OutputText = fullText;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _flushTimer?.Stop();
+        if (Session != null)
+        {
+            var session = Session;
+            DetachSession(session);
+            Session = null;
+            try
+            {
+                await session.StopAsync();
+                await session.DisposeAsync();
+            }
+            catch { }
         }
     }
 
@@ -355,6 +484,10 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument
     private void OnSessionStateChanged(object? sender, TerminalState newState)
     {
         State = newState;
+        if (Session?.ProcessId != null)
+        {
+            ProcessId = Session.ProcessId;
+        }
         UpdateCommandStates();
 
         StatusMessage = newState switch
@@ -363,7 +496,7 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument
             TerminalState.Starting => "启动中 (Starting)...",
             TerminalState.Running => $"运行中 (PID: {ProcessId?.ToString() ?? "N/A"})",
             TerminalState.Stopping => "停止中 (Stopping)...",
-            TerminalState.Exited => $"已退出 (ExitCode: {ExitCode?.ToString() ?? "0"})",
+            TerminalState.Exited => $"已退出 (PID: {ProcessId?.ToString() ?? "N/A"}, ExitCode: {ExitCode?.ToString() ?? "0"})",
             TerminalState.Failed => "运行失败 (Failed)",
             _ => newState.ToString()
         };
@@ -372,9 +505,14 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument
     private void OnSessionProcessExited(object? sender, int code)
     {
         ExitCode = code;
+        if (Session?.ProcessId != null)
+        {
+            ProcessId = Session.ProcessId;
+        }
         UpdateCommandStates();
-        StatusMessage = $"进程已退出，代码: {code}";
+        StatusMessage = $"进程已退出 (PID: {ProcessId?.ToString() ?? "N/A"}, 代码: {code})";
         AppendOutput($"\n[进程已退出，代码: {code}]\n");
+        FlushOutput();
     }
 
     private void UpdateCommandStates()

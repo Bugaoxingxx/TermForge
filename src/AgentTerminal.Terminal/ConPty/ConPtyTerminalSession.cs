@@ -92,10 +92,20 @@ public sealed class ConPtyTerminalSession : ITerminalSession
             SetState(TerminalState.Starting);
         }
 
-        _cts = new CancellationTokenSource();
+        _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var token = _cts.Token;
+
+        IntPtr hInputRead = IntPtr.Zero;
+        IntPtr hInputWrite = IntPtr.Zero;
+        IntPtr hOutputRead = IntPtr.Zero;
+        IntPtr hOutputWrite = IntPtr.Zero;
+        IntPtr pStartupInfo = IntPtr.Zero;
+        IntPtr envBlock = IntPtr.Zero;
 
         try
         {
+            token.ThrowIfCancellationRequested();
+
             // 校验工作目录
             string? workingDir = _profile.WorkingDirectory;
             if (!string.IsNullOrWhiteSpace(workingDir))
@@ -110,6 +120,8 @@ public sealed class ConPtyTerminalSession : ITerminalSession
                 workingDir = Environment.CurrentDirectory;
             }
 
+            token.ThrowIfCancellationRequested();
+
             // 构造安全属性
             var sa = new PseudoConsoleApi.SECURITY_ATTRIBUTES
             {
@@ -120,18 +132,18 @@ public sealed class ConPtyTerminalSession : ITerminalSession
 
             // 创建用于与 ConPTY 通信的管道
             // ConPTY 读取 inputRead，我们向 inputWrite 写入
-            if (!PseudoConsoleApi.CreatePipe(out var hInputRead, out var hInputWrite, ref sa, 0))
+            if (!PseudoConsoleApi.CreatePipe(out hInputRead, out hInputWrite, ref sa, 0))
             {
                 throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to create input pipe.");
             }
 
             // ConPTY 向 outputWrite 写入，我们从 outputRead 读取
-            if (!PseudoConsoleApi.CreatePipe(out var hOutputRead, out var hOutputWrite, ref sa, 0))
+            if (!PseudoConsoleApi.CreatePipe(out hOutputRead, out hOutputWrite, ref sa, 0))
             {
-                PseudoConsoleApi.CloseHandle(hInputRead);
-                PseudoConsoleApi.CloseHandle(hInputWrite);
                 throw new Win32Exception(Marshal.GetLastWin32Error(), "Failed to create output pipe.");
             }
+
+            token.ThrowIfCancellationRequested();
 
             // 创建 PseudoConsole
             var coord = new PseudoConsoleApi.COORD((short)Dimensions.Columns, (short)Dimensions.Rows);
@@ -139,17 +151,19 @@ public sealed class ConPtyTerminalSession : ITerminalSession
 
             if (hr != 0)
             {
-                PseudoConsoleApi.CloseHandle(hInputRead);
-                PseudoConsoleApi.CloseHandle(hOutputWrite);
-                PseudoConsoleApi.CloseHandle(hInputWrite);
-                PseudoConsoleApi.CloseHandle(hOutputRead);
                 throw new Win32Exception(hr, $"CreatePseudoConsole failed with HRESULT 0x{hr:X8}.");
             }
 
             _inputWriteHandle = new SafeFileHandle(hInputWrite, ownsHandle: true);
+            hInputWrite = IntPtr.Zero; // 所有权移交至 SafeFileHandle
+
             _outputReadHandle = new SafeFileHandle(hOutputRead, ownsHandle: true);
+            hOutputRead = IntPtr.Zero; // 所有权移交至 SafeFileHandle
+
             _inputStream = new FileStream(_inputWriteHandle, FileAccess.Write, 4096, isAsync: false);
             _outputStream = new FileStream(_outputReadHandle, FileAccess.Read, 4096, isAsync: false);
+
+            token.ThrowIfCancellationRequested();
 
             // 初始化进程属性列表并绑定 ConPTY
             IntPtr lpSize = IntPtr.Zero;
@@ -172,6 +186,8 @@ public sealed class ConPtyTerminalSession : ITerminalSession
                 throw new Win32Exception(Marshal.GetLastWin32Error(), "UpdateProcThreadAttribute failed.");
             }
 
+            token.ThrowIfCancellationRequested();
+
             // 组装 StartupInfoEx
             var startupInfo = new PseudoConsoleApi.STARTUPINFOEX();
             startupInfo.StartupInfo.cb = Marshal.SizeOf<PseudoConsoleApi.STARTUPINFOEX>();
@@ -184,7 +200,7 @@ public sealed class ConPtyTerminalSession : ITerminalSession
             startupInfo.StartupInfo.hStdError = IntPtr.Zero;
             startupInfo.lpAttributeList = _lpAttributeList;
 
-            IntPtr pStartupInfo = Marshal.AllocHGlobal(startupInfo.StartupInfo.cb);
+            pStartupInfo = Marshal.AllocHGlobal(startupInfo.StartupInfo.cb);
             Marshal.StructureToPtr(startupInfo, pStartupInfo, false);
 
             // 构造命令行（处理空格路径）
@@ -194,56 +210,46 @@ public sealed class ConPtyTerminalSession : ITerminalSession
                 : (executable.Contains(' ') ? $"\"{executable}\" {_profile.Arguments}" : $"{executable} {_profile.Arguments}");
 
             // 构造环境变量块（合并并覆盖，不污染宿主）
-            IntPtr envBlock = CreateEnvironmentBlock(_profile.EnvironmentVariables);
+            envBlock = CreateEnvironmentBlock(_profile.EnvironmentVariables);
 
             uint creationFlags = PseudoConsoleApi.EXTENDED_STARTUPINFO_PRESENT | PseudoConsoleApi.CREATE_UNICODE_ENVIRONMENT;
 
-            bool processCreated = false;
-            try
+            token.ThrowIfCancellationRequested();
+
+            bool processCreated = PseudoConsoleApi.CreateProcessW(
+                lpApplicationName: null,
+                lpCommandLine: commandLine,
+                lpProcessAttributes: IntPtr.Zero,
+                lpThreadAttributes: IntPtr.Zero,
+                bInheritHandles: false,
+                dwCreationFlags: creationFlags,
+                lpEnvironment: envBlock,
+                lpCurrentDirectory: workingDir,
+                lpStartupInfo: pStartupInfo,
+                lpProcessInformation: out var processInfo);
+
+            if (!processCreated)
             {
-                processCreated = PseudoConsoleApi.CreateProcessW(
-                    lpApplicationName: null,
-                    lpCommandLine: commandLine,
-                    lpProcessAttributes: IntPtr.Zero,
-                    lpThreadAttributes: IntPtr.Zero,
-                    bInheritHandles: false,
-                    dwCreationFlags: creationFlags,
-                    lpEnvironment: envBlock,
-                    lpCurrentDirectory: workingDir,
-                    lpStartupInfo: pStartupInfo,
-                    lpProcessInformation: out var processInfo);
-
-                if (!processCreated)
-                {
-                    int win32Error = Marshal.GetLastWin32Error();
-                    throw new Win32Exception(win32Error, $"Failed to create terminal process '{commandLine}'. Win32 Error: {win32Error}");
-                }
-
-                _hProcess = processInfo.hProcess;
-                _hThread = processInfo.hThread;
-                ProcessId = processInfo.dwProcessId;
-
-                // 立即将进程加入 Job Object 实施受控保护
-                if (!_jobObject.AssignProcess(_hProcess))
-                {
-                    throw new InvalidOperationException("Failed to assign terminal process to Job Object.");
-                }
+                int win32Error = Marshal.GetLastWin32Error();
+                throw new Win32Exception(win32Error, $"Failed to create terminal process '{commandLine}'. Win32 Error: {win32Error}");
             }
-            finally
+
+            _hProcess = processInfo.hProcess;
+            _hThread = processInfo.hThread;
+            ProcessId = processInfo.dwProcessId;
+
+            if (token.IsCancellationRequested)
             {
-                if (pStartupInfo != IntPtr.Zero)
-                {
-                    Marshal.FreeHGlobal(pStartupInfo);
-                }
+                PseudoConsoleApi.TerminateProcess(_hProcess, 1);
+                token.ThrowIfCancellationRequested();
+            }
 
-                // ConPTY 建立与进程启动完成后，释放主进程持有的管道对端句柄
-                if (hInputRead != IntPtr.Zero) PseudoConsoleApi.CloseHandle(hInputRead);
-                if (hOutputWrite != IntPtr.Zero) PseudoConsoleApi.CloseHandle(hOutputWrite);
-
-                if (envBlock != IntPtr.Zero)
-                {
-                    Marshal.FreeHGlobal(envBlock);
-                }
+            // 立即将进程加入 Job Object 实施受控保护
+            if (!_jobObject.AssignProcess(_hProcess))
+            {
+                // 绑定失败立即终止进程，杜绝未受管孤儿进程遗留
+                PseudoConsoleApi.TerminateProcess(_hProcess, 1);
+                throw new InvalidOperationException("Failed to assign terminal process to Job Object.");
             }
 
             // 成功启动，转入 Running 状态
@@ -256,14 +262,49 @@ public sealed class ConPtyTerminalSession : ITerminalSession
             _readTask = Task.Run(ReadOutputLoopAsync);
             _waitExitTask = Task.Run(WaitForProcessExitAsync);
         }
+        catch (OperationCanceledException)
+        {
+            if (_hProcess != IntPtr.Zero)
+            {
+                try { PseudoConsoleApi.TerminateProcess(_hProcess, 1); } catch { }
+            }
+            lock (_stateLock)
+            {
+                SetState(TerminalState.Exited);
+            }
+            await CleanupResourcesAsync();
+            throw;
+        }
         catch (Exception)
         {
+            if (_hProcess != IntPtr.Zero)
+            {
+                try { PseudoConsoleApi.TerminateProcess(_hProcess, 1); } catch { }
+            }
             lock (_stateLock)
             {
                 SetState(TerminalState.Failed);
             }
             await CleanupResourcesAsync();
             throw;
+        }
+        finally
+        {
+            if (pStartupInfo != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(pStartupInfo);
+            }
+
+            if (envBlock != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(envBlock);
+            }
+
+            // 释放主进程持有的管道对端句柄（未被 SafeFileHandle 接管的）
+            if (hInputRead != IntPtr.Zero) PseudoConsoleApi.CloseHandle(hInputRead);
+            if (hOutputWrite != IntPtr.Zero) PseudoConsoleApi.CloseHandle(hOutputWrite);
+            if (hInputWrite != IntPtr.Zero) PseudoConsoleApi.CloseHandle(hInputWrite);
+            if (hOutputRead != IntPtr.Zero) PseudoConsoleApi.CloseHandle(hOutputRead);
         }
     }
 
@@ -343,18 +384,44 @@ public sealed class ConPtyTerminalSession : ITerminalSession
 
         _cts?.Cancel();
 
-        // 关闭 ConPTY 会向 Shell 发送 SIGHUP 并断开管道，使读取任务正常终结
+        // 1. 关闭 ConPTY 会向 Shell 发送 SIGHUP 并断开管道，使读取任务正常终结
         if (_hPC != IntPtr.Zero)
         {
             PseudoConsoleApi.ClosePseudoConsole(_hPC);
             _hPC = IntPtr.Zero;
         }
 
+        // 2. 协调等待进程退出任务（带超时 2 秒，超时强杀以防挂起）
+        if (_waitExitTask != null)
+        {
+            try
+            {
+                var completed = await Task.WhenAny(_waitExitTask, Task.Delay(2000, cancellationToken));
+                if (completed != _waitExitTask && _hProcess != IntPtr.Zero)
+                {
+                    PseudoConsoleApi.TerminateProcess(_hProcess, 1);
+                    await Task.WhenAny(_waitExitTask, Task.Delay(1000));
+                }
+            }
+            catch { }
+        }
+
+        // 3. 等待管道读取任务排空（带超时 1 秒）
+        if (_readTask != null)
+        {
+            try
+            {
+                await Task.WhenAny(_readTask, Task.Delay(1000, cancellationToken));
+            }
+            catch { }
+        }
+
+        // 4. 清理底层管道、属性列表、进程与线程句柄
         await CleanupResourcesAsync();
 
         lock (_stateLock)
         {
-            if (State != TerminalState.Exited)
+            if (State != TerminalState.Exited && State != TerminalState.Failed)
             {
                 SetState(TerminalState.Exited);
             }
@@ -429,18 +496,31 @@ public sealed class ConPtyTerminalSession : ITerminalSession
 
         ExitCode = exitCode;
 
+        bool fireProcessExited = false;
         lock (_stateLock)
         {
             if (!_processExitedFired)
             {
                 _processExitedFired = true;
-                ProcessExited?.Invoke(this, exitCode);
+                fireProcessExited = true;
             }
 
             if (State == TerminalState.Running || State == TerminalState.Stopping)
             {
                 SetState(TerminalState.Exited);
             }
+        }
+
+        if (fireProcessExited)
+        {
+            ProcessExited?.Invoke(this, exitCode);
+        }
+
+        // 进程自然退出时，关闭 ConPTY 使流读取自然到达 EOF (排空)
+        if (_hPC != IntPtr.Zero)
+        {
+            PseudoConsoleApi.ClosePseudoConsole(_hPC);
+            _hPC = IntPtr.Zero;
         }
     }
 
@@ -465,6 +545,12 @@ public sealed class ConPtyTerminalSession : ITerminalSession
 
             _outputReadHandle?.Dispose();
             _outputReadHandle = null;
+
+            if (_hPC != IntPtr.Zero)
+            {
+                PseudoConsoleApi.ClosePseudoConsole(_hPC);
+                _hPC = IntPtr.Zero;
+            }
 
             if (_lpAttributeList != IntPtr.Zero)
             {

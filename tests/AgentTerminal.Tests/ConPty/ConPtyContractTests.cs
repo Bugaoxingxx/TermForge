@@ -1,4 +1,5 @@
 using System.Text;
+using AgentTerminal.Core.Abstractions;
 using AgentTerminal.Core.Models;
 using AgentTerminal.Docking.ViewModels;
 using AgentTerminal.Terminal.ConPty;
@@ -146,5 +147,115 @@ public class ConPtyContractTests
         vm.ClearOutput();
         Assert.False(vm.IsTruncated);
         Assert.Empty(vm.OutputText);
+    }
+
+    [Fact]
+    public async Task StartAsync_WhenCancelledEarly_ShouldCleanUpAndTransitionToExited()
+    {
+        var profile = ShellProfile.CreatePowerShellCore();
+        var session = new ConPtyTerminalSession(profile);
+
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => session.StartAsync(cts.Token));
+        Assert.Equal(TerminalState.Exited, session.State);
+    }
+
+    [Fact]
+    public async Task TerminalDocumentViewModel_Restart_ShouldDisposeOldSessionInstance()
+    {
+        var fakeSession1 = new FakeTerminalSession { State = TerminalState.Exited, ProcessId = 1001 };
+        var fakeSession2 = new FakeTerminalSession { ProcessId = 1002 };
+
+        var vm = new TerminalDocumentViewModel(
+            profile: ShellProfile.CreatePowerShellCore(),
+            session: fakeSession1,
+            sessionFactory: _ => fakeSession2);
+
+        Assert.Equal(1001, vm.ProcessId);
+
+        // Act: 重启
+        await vm.StartAsync();
+
+        // Assert: 旧会话被 Detach 且调用了 StopAsync 与 DisposeAsync
+        Assert.True(fakeSession1.StopCalled);
+        Assert.True(fakeSession1.DisposeCalled);
+        Assert.Same(fakeSession2, vm.Session);
+        Assert.Equal(1002, vm.ProcessId);
+        Assert.Equal(TerminalState.Running, vm.State);
+    }
+
+    [Fact]
+    public void TerminalDocumentViewModel_AttachSession_ShouldSynchronizeAndRetainProcessId()
+    {
+        var fakeSession = new FakeTerminalSession { ProcessId = 54321 };
+        var vm = new TerminalDocumentViewModel(profile: ShellProfile.CreatePowerShellCore());
+
+        Assert.Null(vm.ProcessId);
+
+        vm.AttachSession(fakeSession);
+        Assert.Equal(54321, vm.ProcessId);
+
+        // 模拟进程退出
+        fakeSession.TriggerProcessExited(0);
+
+        // 退出后依然保留原 ProcessId，不重置为 null
+        Assert.Equal(54321, vm.ProcessId);
+        Assert.Equal(0, vm.ExitCode);
+        Assert.Contains("54321", vm.StatusMessage);
+    }
+
+    private sealed class FakeTerminalSession : ITerminalSession
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString("N");
+        public string Title { get; set; } = "Fake Session";
+        public TerminalState State { get; set; } = TerminalState.Created;
+        public TerminalDimensions Dimensions { get; set; } = TerminalDimensions.Default;
+        public int? ExitCode { get; set; }
+        public int? ProcessId { get; set; }
+
+        public bool StopCalled { get; private set; }
+        public bool DisposeCalled { get; private set; }
+
+#pragma warning disable CS0067
+        public event EventHandler<string>? OutputReceived;
+        public event EventHandler<byte[]>? BinaryOutputReceived;
+#pragma warning restore CS0067
+        public event EventHandler<int>? ProcessExited;
+        public event EventHandler<TerminalState>? StateChanged;
+
+        public Task StartAsync(CancellationToken cancellationToken = default)
+        {
+            State = TerminalState.Running;
+            StateChanged?.Invoke(this, State);
+            return Task.CompletedTask;
+        }
+
+        public Task WriteAsync(string data, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public Task ResizeAsync(int columns, int rows, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+        public Task StopAsync(CancellationToken cancellationToken = default)
+        {
+            StopCalled = true;
+            State = TerminalState.Exited;
+            StateChanged?.Invoke(this, State);
+            return Task.CompletedTask;
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            DisposeCalled = true;
+            return ValueTask.CompletedTask;
+        }
+
+        public void TriggerProcessExited(int exitCode)
+        {
+            ExitCode = exitCode;
+            State = TerminalState.Exited;
+            ProcessExited?.Invoke(this, exitCode);
+            StateChanged?.Invoke(this, State);
+        }
     }
 }

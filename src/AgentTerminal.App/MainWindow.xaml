@@ -1,0 +1,308 @@
+<Window x:Class="AgentTerminal.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:AgentTerminal.App.ViewModels"
+        xmlns:dockingControls="clr-namespace:AgentTerminal.Docking.Controls;assembly=AgentTerminal.Docking"
+        xmlns:dockingVm="clr-namespace:AgentTerminal.Docking.ViewModels;assembly=AgentTerminal.Docking"
+        xmlns:views="clr-namespace:AgentTerminal.App.Views"
+        mc:Ignorable="d"
+        Title="{Binding Title}" Height="750" Width="1200"
+        WindowStartupLocation="CenterScreen"
+        Background="#2D2D30"
+        PreviewKeyDown="OnWindowPreviewKeyDown"
+        Closing="OnWindowClosing">
+
+    <Window.DataContext>
+        <vm:MainWindowViewModel />
+    </Window.DataContext>
+
+    <Window.Resources>
+        <!-- 将 TerminalDocumentViewModel 映射为 TerminalDebugView 单文档调试呈现 -->
+        <DataTemplate DataType="{x:Type dockingVm:TerminalDocumentViewModel}">
+            <views:TerminalDebugView />
+        </DataTemplate>
+
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" /> <!-- 顶部菜单栏 -->
+            <RowDefinition Height="Auto" /> <!-- 顶部工具栏 -->
+            <RowDefinition Height="*" />    <!-- MMC 主工作区布局 -->
+            <RowDefinition Height="Auto" /> <!-- 底部状态栏 -->
+        </Grid.RowDefinitions>
+
+        <!-- 1. 顶部菜单栏 (MMC 经典规范：文件、视图、窗口、帮助) -->
+        <Menu Grid.Row="0" Background="#1B1B1C" Foreground="#CCCCCC" Padding="4,2"
+              AutomationProperties.AutomationId="MainMenu">
+            <!-- 文件菜单 -->
+            <MenuItem Header="文件(_F)" AutomationProperties.AutomationId="Menu.File">
+                <MenuItem Header="新建终端(_N)" InputGestureText="Ctrl+N" Command="{Binding NewTerminalCommand}"
+                          AutomationProperties.AutomationId="Menu.File.NewTerminal" />
+                <MenuItem Header="新建指定 Shell" ItemsSource="{Binding AvailableProfiles}"
+                          AutomationProperties.AutomationId="Menu.File.NewProfileTerminal">
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="MenuItem">
+                            <Setter Property="Header" Value="{Binding Name}" />
+                            <Setter Property="Command" Value="{Binding DataContext.NewTerminalCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                            <Setter Property="CommandParameter" Value="{Binding}" />
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="关闭当前文档(_C)" InputGestureText="Ctrl+F4" Command="{Binding CloseTerminalCommand}"
+                          AutomationProperties.AutomationId="Menu.File.CloseTerminal" />
+                <Separator />
+                <MenuItem Header="退出(_X)" Click="OnMenuExitClick" InputGestureText="Alt+F4"
+                          AutomationProperties.AutomationId="Menu.File.Exit" />
+            </MenuItem>
+
+            <!-- 视图菜单 -->
+            <MenuItem Header="视图(_V)" AutomationProperties.AutomationId="Menu.View">
+                <MenuItem Header="左侧导航树" IsCheckable="True" IsChecked="{Binding IsNavigationPaneVisible}"
+                          AutomationProperties.AutomationId="Menu.View.ToggleNav" />
+                <MenuItem Header="右侧属性面板" IsCheckable="True" IsChecked="{Binding IsPropertiesPaneVisible}"
+                          AutomationProperties.AutomationId="Menu.View.ToggleProps" />
+                <MenuItem Header="底部诊断日志" IsCheckable="True" IsChecked="{Binding IsLogPaneVisible}"
+                          AutomationProperties.AutomationId="Menu.View.ToggleLogs" />
+            </MenuItem>
+
+            <!-- 窗口菜单 (Win32 MDI 核心：层叠、平铺、还原与动态文档列表) -->
+            <MenuItem Header="窗口(_W)" SubmenuOpened="OnWindowMenuOpened" AutomationProperties.AutomationId="Menu.Window">
+                <MenuItem Header="层叠(_C)" Command="{Binding CascadeCommand}" AutomationProperties.AutomationId="Menu.Window.Cascade" />
+                <MenuItem Header="水平平铺 (上下)(_H)" Command="{Binding TileHorizontalCommand}" AutomationProperties.AutomationId="Menu.Window.TileHorizontal" />
+                <MenuItem Header="垂直平铺 (左右)(_V)" Command="{Binding TileVerticalCommand}" AutomationProperties.AutomationId="Menu.Window.TileVertical" />
+                <MenuItem Header="全部还原(_R)" Command="{Binding RestoreAllCommand}" AutomationProperties.AutomationId="Menu.Window.RestoreAll" />
+                <Separator />
+                <MenuItem Header="打开的文档列表" x:Name="WindowsListMenuItem" AutomationProperties.AutomationId="Menu.Window.WindowsList" />
+            </MenuItem>
+
+            <!-- 帮助菜单 -->
+            <MenuItem Header="帮助(_H)" AutomationProperties.AutomationId="Menu.Help">
+                <MenuItem Header="关于 TermForge" Click="OnMenuAboutClick" AutomationProperties.AutomationId="Menu.Help.About" />
+            </MenuItem>
+        </Menu>
+
+        <!-- 2. 工具栏 (快捷操作) -->
+        <ToolBarTray Grid.Row="1" Background="#2D2D30">
+            <ToolBar Background="#2D2D30" ToolBarTray.IsLocked="True" Padding="4,2"
+                     AutomationProperties.AutomationId="MainToolBar">
+                <Button Command="{Binding NewTerminalCommand}" ToolTip="新建 PowerShell 终端 (Ctrl+N)"
+                        AutomationProperties.AutomationId="Toolbar.BtnNewTerminal">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="➕" Margin="0,0,4,0" />
+                        <TextBlock Text="新建终端" Foreground="#E0E0E0" />
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding ActiveDocument.StopCommand}" ToolTip="停止当前活动会话"
+                        AutomationProperties.AutomationId="Toolbar.BtnStopSession">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="⏹" Margin="0,0,4,0" Foreground="#F44336" />
+                        <TextBlock Text="停止会话" Foreground="#E0E0E0" />
+                    </StackPanel>
+                </Button>
+                <Separator Margin="4,0" />
+                <Button Command="{Binding CascadeCommand}" ToolTip="层叠排布子窗口"
+                        AutomationProperties.AutomationId="Toolbar.BtnCascade">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="⧉" Margin="0,0,4,0" />
+                        <TextBlock Text="层叠" Foreground="#E0E0E0" />
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding TileHorizontalCommand}" ToolTip="水平平铺 (上下堆叠)"
+                        AutomationProperties.AutomationId="Toolbar.BtnTileHorizontal">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="☰" Margin="0,0,4,0" />
+                        <TextBlock Text="水平平铺" Foreground="#E0E0E0" />
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding TileVerticalCommand}" ToolTip="垂直平铺 (左右排列)"
+                        AutomationProperties.AutomationId="Toolbar.BtnTileVertical">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="☱" Margin="0,0,4,0" />
+                        <TextBlock Text="垂直平铺" Foreground="#E0E0E0" />
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding RestoreAllCommand}" ToolTip="全部还原"
+                        AutomationProperties.AutomationId="Toolbar.BtnRestoreAll">
+                    <TextBlock Text="还原" Foreground="#E0E0E0" />
+                </Button>
+                <Separator Margin="4,0" />
+                <Button Command="{Binding ActiveDocument.ClearOutputCommand}" ToolTip="清空当前调试窗口文本"
+                        AutomationProperties.AutomationId="Toolbar.BtnClearOutput">
+                    <TextBlock Text="清空输出" Foreground="#E0E0E0" />
+                </Button>
+            </ToolBar>
+        </ToolBarTray>
+
+        <!-- 3. MMC 主工作区三栏布局 -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220" MinWidth="140" MaxWidth="400" /> <!-- 左侧导航树 -->
+                <ColumnDefinition Width="Auto" />                               <!-- 分割条 -->
+                <ColumnDefinition Width="*" MinWidth="300" />                   <!-- 中央 MDI 工作区 -->
+                <ColumnDefinition Width="Auto" />                               <!-- 分割条 -->
+                <ColumnDefinition Width="260" MinWidth="160" MaxWidth="450" /> <!-- 右侧属性区 -->
+            </Grid.ColumnDefinitions>
+
+            <!-- 3.1 左侧 MMC 导航树 -->
+            <Border Grid.Column="0" Background="#252526" BorderBrush="#3F3F46" BorderThickness="0,0,1,0"
+                    AutomationProperties.AutomationId="Pane.Navigation"
+                    Visibility="{Binding IsNavigationPaneVisible, Converter={StaticResource BoolToVis}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="#2D2D30" Padding="8,6" BorderBrush="#3F3F46" BorderThickness="0,0,0,1">
+                        <TextBlock Text="控制台根节点 (MMC)" FontWeight="Bold" Foreground="#CCCCCC" FontSize="11" />
+                    </Border>
+
+                    <TreeView Grid.Row="1" Background="Transparent" BorderThickness="0" Foreground="#E0E0E0" Margin="4">
+                        <!-- 活动会话树 -->
+                        <TreeViewItem Header="活动终端会话 (Sessions)" IsExpanded="True" FontWeight="SemiBold">
+                            <TreeViewItem.ItemsSource>
+                                <Binding Path="Documents" />
+                            </TreeViewItem.ItemsSource>
+                            <TreeViewItem.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Title}" Margin="2" Cursor="Hand" MouseLeftButtonDown="OnNavigationItemClicked" />
+                                </DataTemplate>
+                            </TreeViewItem.ItemTemplate>
+                        </TreeViewItem>
+
+                        <!-- Shell 配置入口 -->
+                        <TreeViewItem Header="新建会话配置" IsExpanded="True" FontWeight="SemiBold" Margin="0,6,0,0">
+                            <TreeViewItem.ItemsSource>
+                                <Binding Path="AvailableProfiles" />
+                            </TreeViewItem.ItemsSource>
+                            <TreeViewItem.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}" Margin="2" Cursor="Hand" MouseLeftButtonDown="OnProfileNavigationItemClicked" />
+                                </DataTemplate>
+                            </TreeViewItem.ItemTemplate>
+                        </TreeViewItem>
+                    </TreeView>
+                </Grid>
+            </Border>
+
+            <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="#333333"
+                          Visibility="{Binding IsNavigationPaneVisible, Converter={StaticResource BoolToVis}}" />
+
+            <!-- 3.2 中央 MDI 工作区与底部日志区 -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" MinHeight="200" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="140" MinHeight="60" MaxHeight="350" />
+                </Grid.RowDefinitions>
+
+                <!-- 中央 MDI 画布容器 -->
+                <dockingControls:MdiContainer Grid.Row="0" x:Name="MainMdiContainer"
+                                             ItemsSource="{Binding Documents}"
+                                             AutomationProperties.AutomationId="Workbench.MdiContainer"
+                                             SizeChanged="OnMdiContainerSizeChanged" />
+
+                <GridSplitter Grid.Row="1" Height="4" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="#333333"
+                              Visibility="{Binding IsLogPaneVisible, Converter={StaticResource BoolToVis}}" />
+
+                <!-- 底部诊断日志区 -->
+                <Border Grid.Row="2" Background="#1E1E1E" BorderBrush="#3F3F46" BorderThickness="0,1,0,0"
+                        AutomationProperties.AutomationId="Pane.Diagnostics"
+                        Visibility="{Binding IsLogPaneVisible, Converter={StaticResource BoolToVis}}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Background="#252526" Padding="6,4" BorderBrush="#3F3F46" BorderThickness="0,0,0,1">
+                            <TextBlock Text="诊断事件与控制台日志 (Diagnostics)" FontWeight="Bold" Foreground="#858585" FontSize="11" />
+                        </Border>
+
+                        <TextBox Grid.Row="1" IsReadOnly="True" Background="Transparent" Foreground="#A0A0A0" BorderThickness="0"
+                                 FontFamily="Consolas" FontSize="11" Padding="6" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                                 Text="[系统就绪] TermForge MMC MDI 终端工作台已初始化完成。支持自由拖拽、层叠、平铺与 PowerShell 7 会话闭环。" />
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <GridSplitter Grid.Column="3" Width="4" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="#333333"
+                          Visibility="{Binding IsPropertiesPaneVisible, Converter={StaticResource BoolToVis}}" />
+
+            <!-- 3.3 右侧 MMC 属性面板 -->
+            <Border Grid.Column="4" Background="#252526" BorderBrush="#3F3F46" BorderThickness="1,0,0,0"
+                    AutomationProperties.AutomationId="Pane.Properties"
+                    Visibility="{Binding IsPropertiesPaneVisible, Converter={StaticResource BoolToVis}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="#2D2D30" Padding="8,6" BorderBrush="#3F3F46" BorderThickness="0,0,0,1">
+                        <TextBlock Text="当前文档属性 (Properties)" FontWeight="Bold" Foreground="#CCCCCC" FontSize="11" />
+                    </Border>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="10">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="文档名称:" Foreground="#858585" FontSize="11" />
+                            <TextBlock Text="{Binding ActiveDocument.Title, TargetNullValue='(未选中文档)'}" Foreground="#FFFFFF" FontWeight="SemiBold" Margin="0,2,0,10" />
+
+                            <TextBlock Text="会话 ID:" Foreground="#858585" FontSize="11" />
+                            <TextBox Text="{Binding ActiveDocument.Id, Mode=OneWay, TargetNullValue='N/A'}" IsReadOnly="True" Background="#1E1E1E" Foreground="#CCCCCC" BorderBrush="#3F3F46" FontSize="11" Margin="0,2,0,10" />
+
+                            <TextBlock Text="生命周期状态:" Foreground="#858585" FontSize="11" />
+                            <TextBlock Text="{Binding ActiveDocument.State, TargetNullValue='N/A'}" Foreground="#4EC9B0" FontWeight="Bold" Margin="0,2,0,10" />
+
+                            <TextBlock Text="进程 PID:" Foreground="#858585" FontSize="11" />
+                            <TextBlock Text="{Binding ActiveDocument.ProcessId, TargetNullValue='N/A'}" Foreground="#FFFFFF" Margin="0,2,0,10" />
+
+                            <TextBlock Text="退出码:" Foreground="#858585" FontSize="11" />
+                            <TextBlock Text="{Binding ActiveDocument.ExitCode, TargetNullValue='N/A'}" Foreground="#FFFFFF" Margin="0,2,0,10" />
+
+                            <TextBlock Text="视口规格:" Foreground="#858585" FontSize="11" />
+                            <StackPanel Orientation="Horizontal" Margin="0,2,0,10">
+                                <TextBlock Text="{Binding ActiveDocument.Columns, TargetNullValue='120'}" Foreground="#FFFFFF" />
+                                <TextBlock Text=" 列 x " Foreground="#858585" />
+                                <TextBlock Text="{Binding ActiveDocument.Rows, TargetNullValue='30'}" Foreground="#FFFFFF" />
+                                <TextBlock Text=" 行" Foreground="#858585" />
+                            </StackPanel>
+
+                            <TextBlock Text="工作目录:" Foreground="#858585" FontSize="11" />
+                            <TextBox Text="{Binding ActiveDocument.Profile.WorkingDirectory, Mode=OneWay, TargetNullValue='(当前工作目录)'}" IsReadOnly="True" Background="#1E1E1E" Foreground="#CCCCCC" BorderBrush="#3F3F46" FontSize="11" Margin="0,2,0,10" TextWrapping="Wrap" />
+
+                            <TextBlock Text="可执行程序:" Foreground="#858585" FontSize="11" />
+                            <TextBox Text="{Binding ActiveDocument.Profile.ExecutablePath, Mode=OneWay, TargetNullValue='N/A'}" IsReadOnly="True" Background="#1E1E1E" Foreground="#CCCCCC" BorderBrush="#3F3F46" FontSize="11" Margin="0,2,0,10" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- 4. 底部状态栏 -->
+        <StatusBar Grid.Row="3" Background="#007ACC" Foreground="White" Padding="6,2"
+                   AutomationProperties.AutomationId="Workbench.StatusBar">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusMessage}" FontSize="11"
+                           AutomationProperties.AutomationId="Workbench.StatusBar.StatusMessage" />
+            </StatusBarItem>
+            <Separator Background="#3385D6" />
+            <StatusBarItem>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="活动文档: " FontSize="11" Opacity="0.8" />
+                    <TextBlock Text="{Binding ActiveDocument.Title, TargetNullValue='无'}" FontSize="11" FontWeight="SemiBold"
+                               AutomationProperties.AutomationId="Workbench.StatusBar.ActiveDocTitle" />
+                </StackPanel>
+            </StatusBarItem>
+            <Separator Background="#3385D6" />
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock Text="TermForge MDI Workbench" FontSize="11" Opacity="0.8" />
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>

@@ -36,4 +36,7 @@ public interface IMdiDocument
 
     /// <summary>绑定的终端底层会话</summary>
     ITerminalSession? Session { get; }
+
+    /// <summary>还原窗口到正常状态及原有尺寸位置</summary>
+    void Restore();
 }

@@ -22,6 +22,9 @@ public interface ITerminalSession : IAsyncDisposable
     /// <summary>终端进程退出代码（若已退出）</summary>
     int? ExitCode { get; }
 
+    /// <summary>终端底层宿主进程 ID（若已创建）</summary>
+    int? ProcessId { get; }
+
     /// <summary>接收到终端输出数据事件（包含 ANSI/VT 原始数据流）</summary>
     event EventHandler<string>? OutputReceived;
 
