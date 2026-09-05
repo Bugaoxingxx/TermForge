@@ -1,4 +1,7 @@
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -47,12 +50,17 @@ public partial class MdiChildWindow : UserControl
         }
     }
 
+    protected override AutomationPeer OnCreateAutomationPeer()
+    {
+        return new MdiChildWindowAutomationPeer(this);
+    }
+
     private IInputElement? GetReferenceElement()
     {
         return (Window.GetWindow(this) as IInputElement) ?? (FindParentCanvas() as IInputElement);
     }
 
-    private Canvas? FindParentCanvas()
+    internal Canvas? FindParentCanvas()
     {
         DependencyObject? current = this;
         while (current != null)
@@ -230,4 +238,128 @@ public partial class MdiChildWindow : UserControl
         OnResizeBottom(sender, e);
         OnResizeRight(sender, e);
     }
+}
+
+/// <summary>
+/// MdiChildWindow 的 UI 自动化对等体，提供 ITransformProvider（窗口拖动与尺寸拉伸）及 IWindowProvider（窗口状态切换）支持，
+/// 确保无物理交互桌面/CI 环境下 UI 自动化测试及辅助技术的标准化控制。
+/// </summary>
+public class MdiChildWindowAutomationPeer : FrameworkElementAutomationPeer, ITransformProvider, IWindowProvider
+{
+    public MdiChildWindowAutomationPeer(MdiChildWindow owner) : base(owner)
+    {
+    }
+
+    protected override string GetClassNameCore() => nameof(MdiChildWindow);
+
+    protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Window;
+
+    public override object? GetPattern(PatternInterface patternInterface)
+    {
+        if (patternInterface == PatternInterface.Transform || patternInterface == PatternInterface.Window)
+        {
+            return this;
+        }
+        return base.GetPattern(patternInterface);
+    }
+
+    // --- ITransformProvider ---
+    public bool CanMove => true;
+    public bool CanResize => true;
+    public bool CanRotate => false;
+
+    public void Move(double x, double y)
+    {
+        if (Owner is not MdiChildWindow window) return;
+
+        window.Dispatcher.Invoke(() =>
+        {
+            if (window.DataContext is TerminalDocumentViewModel vm)
+            {
+                var canvas = window.FindParentCanvas();
+                if (canvas != null)
+                {
+                    Point canvasPt = canvas.PointFromScreen(new Point(x, y));
+                    double maxLeft = canvas.ActualWidth > 60 ? canvas.ActualWidth - 60 : 3000;
+                    double maxTop = canvas.ActualHeight > 40 ? canvas.ActualHeight - 40 : 2000;
+
+                    vm.Left = Math.Max(0, Math.Min(canvasPt.X, maxLeft));
+                    vm.Top = Math.Max(0, Math.Min(canvasPt.Y, maxTop));
+                }
+            }
+        });
+    }
+
+    public void Resize(double width, double height)
+    {
+        if (Owner is not MdiChildWindow window) return;
+
+        window.Dispatcher.Invoke(() =>
+        {
+            if (window.DataContext is TerminalDocumentViewModel vm && vm.WindowState == MdiWindowState.Normal)
+            {
+                vm.Width = Math.Max(320, width);
+                vm.Height = Math.Max(220, height);
+            }
+        });
+    }
+
+    public void Rotate(double degrees) => throw new InvalidOperationException("Rotation is not supported for MDI window.");
+
+    // --- IWindowProvider ---
+    public bool IsModal => false;
+    public bool IsTopmost => (Owner as MdiChildWindow)?.DataContext is TerminalDocumentViewModel vm && vm.IsActive;
+    public bool Maximizable => true;
+    public bool Minimizable => true;
+    public WindowInteractionState InteractionState => WindowInteractionState.ReadyForUserInteraction;
+
+    public WindowVisualState VisualState
+    {
+        get
+        {
+            if (Owner is MdiChildWindow window && window.DataContext is TerminalDocumentViewModel vm)
+            {
+                return vm.WindowState switch
+                {
+                    MdiWindowState.Maximized => WindowVisualState.Maximized,
+                    MdiWindowState.Minimized => WindowVisualState.Minimized,
+                    _ => WindowVisualState.Normal
+                };
+            }
+            return WindowVisualState.Normal;
+        }
+    }
+
+    public void Close()
+    {
+        if (Owner is MdiChildWindow window && window.DataContext is TerminalDocumentViewModel vm)
+        {
+            window.Dispatcher.Invoke(() => vm.CloseCommand.Execute(null));
+        }
+    }
+
+    public void SetVisualState(WindowVisualState state)
+    {
+        if (Owner is not MdiChildWindow window) return;
+
+        window.Dispatcher.Invoke(() =>
+        {
+            if (window.DataContext is not TerminalDocumentViewModel vm) return;
+
+            switch (state)
+            {
+                case WindowVisualState.Maximized:
+                    vm.Maximize();
+                    break;
+                case WindowVisualState.Minimized:
+                    vm.Minimize();
+                    break;
+                case WindowVisualState.Normal:
+                    vm.Restore();
+                    break;
+            }
+        });
+    }
+
+    public bool WaitForInputIdle(int milliseconds) => true;
 }

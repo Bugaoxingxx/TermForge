@@ -9,35 +9,65 @@
              AutomationProperties.AutomationId="MdiChildWindow"
              AutomationProperties.Name="{Binding Title}"
              PreviewMouseDown="OnPreviewMouseDown">
-    
+
+    <UserControl.Resources>
+        <!-- 活动窗口 Aero 玻璃画刷 -->
+        <LinearGradientBrush x:Key="LocalActiveGlassBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#E8F1FA" Offset="0.0" />
+            <GradientStop Color="#C2E0F8" Offset="0.45" />
+            <GradientStop Color="#9BC7EE" Offset="0.5" />
+            <GradientStop Color="#CCE5FA" Offset="1.0" />
+        </LinearGradientBrush>
+
+        <!-- 非活动窗口 Aero 玻璃画刷 -->
+        <LinearGradientBrush x:Key="LocalInactiveGlassBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#EDF2F7" Offset="0.0" />
+            <GradientStop Color="#D2DCE6" Offset="0.45" />
+            <GradientStop Color="#BAC6D2" Offset="0.5" />
+            <GradientStop Color="#D8E2EB" Offset="1.0" />
+        </LinearGradientBrush>
+
+        <!-- 标题栏顶部半月形反光层 -->
+        <LinearGradientBrush x:Key="LocalSheenBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#C0FFFFFF" Offset="0.0" />
+            <GradientStop Color="#40FFFFFF" Offset="0.5" />
+            <GradientStop Color="#00FFFFFF" Offset="0.52" />
+            <GradientStop Color="#25FFFFFF" Offset="1.0" />
+        </LinearGradientBrush>
+
+        <!-- 标题文字发光特效 -->
+        <DropShadowEffect x:Key="LocalTitleGlow" Color="#FFFFFF" BlurRadius="8" ShadowDepth="0" Opacity="0.95" />
+        <DropShadowEffect x:Key="LocalInactiveTitleGlow" Color="#FFFFFF" BlurRadius="4" ShadowDepth="0" Opacity="0.75" />
+    </UserControl.Resources>
+
     <Grid>
-        <!-- 窗口主容器 -->
+        <!-- 窗口主容器 (Windows 7 Aero 外边框) -->
         <Border x:Name="WindowBorder"
                 BorderThickness="1"
-                Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
-                CornerRadius="3"
+                CornerRadius="6"
                 ClipToBounds="True">
             <Border.Style>
                 <Style TargetType="Border">
-                    <Setter Property="BorderBrush" Value="#7F7F7F" />
+                    <Setter Property="BorderBrush" Value="#805C7E9C" />
+                    <Setter Property="Background" Value="#0C0F14" />
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsActive}" Value="True">
-                            <Setter Property="BorderBrush" Value="#0078D7" />
+                            <Setter Property="BorderBrush" Value="#902672B5" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
             </Border.Style>
             <Border.Effect>
-                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.3" Direction="270" />
+                <DropShadowEffect BlurRadius="12" ShadowDepth="3" Opacity="0.45" Color="#000000" />
             </Border.Effect>
 
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="32" /> <!-- 标题栏 -->
-                    <RowDefinition Height="*" />  <!-- 文档内容区 -->
+                    <RowDefinition Height="28" /> <!-- Aero 经典高度标题栏 -->
+                    <RowDefinition Height="*" />  <!-- 终端文档内容区 -->
                 </Grid.RowDefinitions>
 
-                <!-- MMC 经典标题栏 -->
+                <!-- Aero 标题栏外壳 -->
                 <Grid Grid.Row="0" x:Name="TitleBar" 
                       AutomationProperties.AutomationId="MdiWindow.TitleBar"
                       MouseLeftButtonDown="OnTitleBarMouseDown"
@@ -46,10 +76,10 @@
                       LostMouseCapture="OnTitleBarLostMouseCapture">
                     <Grid.Style>
                         <Style TargetType="Grid">
-                            <Setter Property="Background" Value="#3F3F46" />
+                            <Setter Property="Background" Value="{StaticResource LocalInactiveGlassBrush}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsActive}" Value="True">
-                                    <Setter Property="Background" Value="#005A9E" />
+                                    <Setter Property="Background" Value="{StaticResource LocalActiveGlassBrush}" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -61,53 +91,151 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- 图标与标题 -->
-                    <TextBlock Grid.Column="0" Margin="8,0,4,0" Text=">_" Foreground="#FFFFFF" FontWeight="Bold" VerticalAlignment="Center" IsHitTestVisible="False" />
-                    <TextBlock Grid.Column="1" Margin="4,0,8,0" Text="{Binding Title}" AutomationProperties.AutomationId="MdiWindow.Title" Foreground="#FFFFFF" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" IsHitTestVisible="False" />
+                    <!-- 顶部高光反射条 (Sheen) -->
+                    <Border Grid.ColumnSpan="3" Height="14" VerticalAlignment="Top" Background="{StaticResource LocalSheenBrush}" IsHitTestVisible="False" />
+                    <!-- 底部分割线，与黑色终端内容产生清晰界线 -->
+                    <Border Grid.ColumnSpan="3" Height="1" VerticalAlignment="Bottom" Background="#601A3654" IsHitTestVisible="False" />
 
-                    <!-- 窗口控制按钮组：最小化、最大化/还原、关闭 -->
-                    <StackPanel Grid.Column="2" Orientation="Horizontal">
-                        <Button Width="30" Height="32" Background="Transparent" BorderThickness="0" Foreground="#FFFFFF"
+                    <!-- 图标与标题 -->
+                    <Border Grid.Column="0" Margin="6,0,4,0" VerticalAlignment="Center" Width="16" Height="16"
+                            CornerRadius="2" Background="#1E395B" BorderBrush="#80FFFFFF" BorderThickness="1" IsHitTestVisible="False">
+                        <TextBlock Text=">_" Foreground="#4EC9B0" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+
+                    <TextBlock Grid.Column="1" Margin="4,0,8,0" Text="{Binding Title}"
+                               AutomationProperties.AutomationId="MdiWindow.Title"
+                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                               FontFamily="Segoe UI, Tahoma, Microsoft YaHei" FontSize="11" FontWeight="Bold"
+                               IsHitTestVisible="False">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#3A4D60" />
+                                <Setter Property="Effect" Value="{StaticResource LocalInactiveTitleGlow}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                        <Setter Property="Foreground" Value="#0A1826" />
+                                        <Setter Property="Effect" Value="{StaticResource LocalTitleGlow}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <!-- 窗口控制按钮组：最小化、最大化/还原、红宝石关闭 -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,0,2,0">
+                        <!-- 最小化按钮 -->
+                        <Button Width="26" Height="18" Margin="0,0,1,0"
                                 Command="{Binding MinimizeCommand}" ToolTip="最小化"
-                                AutomationProperties.AutomationId="MdiWindow.BtnMinimize">
-                            <TextBlock Text="一" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                        </Button>
-                        <Button Width="30" Height="32" Background="Transparent" BorderThickness="0" Foreground="#FFFFFF"
-                                Click="OnMaximizeRestoreClicked" ToolTip="最大化/还原"
-                                AutomationProperties.AutomationId="MdiWindow.BtnMaxRestore">
-                            <TextBlock Text="{Binding WindowState, ConverterParameter='buttonText', RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                       x:Name="MaxRestoreText" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Text" Value="□" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding WindowState}" Value="{x:Static models:MdiWindowState.Maximized}">
-                                                <Setter Property="Text" Value="❐" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </Button>
-                        <Button Width="32" Height="32" Background="Transparent" BorderThickness="0" Foreground="#FFFFFF"
-                                Command="{Binding CloseCommand}" ToolTip="关闭"
-                                AutomationProperties.AutomationId="MdiWindow.BtnClose">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Background" Value="Transparent" />
-                                    <Style.Triggers>
+                                AutomationProperties.AutomationId="MdiWindow.BtnMinimize"
+                                Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bd" CornerRadius="0,0,2,2" BorderThickness="1,0,1,1"
+                                            BorderBrush="#60FFFFFF" Background="#30FFFFFF">
+                                        <Rectangle Width="8" Height="2" Fill="#1E395B" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#E81123" />
+                                            <Setter TargetName="bd" Property="Background" Value="#90C8EEFE" />
+                                            <Setter TargetName="bd" Property="BorderBrush" Value="#8000B4FF" />
                                         </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                            <TextBlock Text="✕" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <!-- 最大化/还原按钮 -->
+                        <Button Width="26" Height="18" Margin="0,0,1,0"
+                                Click="OnMaximizeRestoreClicked" ToolTip="最大化/还原"
+                                AutomationProperties.AutomationId="MdiWindow.BtnMaxRestore"
+                                Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bd" CornerRadius="0,0,2,2" BorderThickness="1,0,1,1"
+                                            BorderBrush="#60FFFFFF" Background="#30FFFFFF">
+                                        <TextBlock Text="{Binding WindowState, ConverterParameter='buttonText', RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                   x:Name="MaxRestoreText" FontSize="10" FontWeight="Bold" Foreground="#1E395B"
+                                                   VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="□" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding WindowState}" Value="{x:Static models:MdiWindowState.Maximized}">
+                                                            <Setter Property="Text" Value="❐" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bd" Property="Background" Value="#90C8EEFE" />
+                                            <Setter TargetName="bd" Property="BorderBrush" Value="#8000B4FF" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <!-- 红宝石关闭按钮 (Win7 标志性果冻红) -->
+                        <Button Width="38" Height="18"
+                                Command="{Binding CloseCommand}" ToolTip="关闭"
+                                AutomationProperties.AutomationId="MdiWindow.BtnClose"
+                                Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bd" CornerRadius="0,0,3,0" BorderThickness="1,0,1,1"
+                                            BorderBrush="#70B03020">
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                <GradientStop Color="#D8F3B0A4" Offset="0.0" />
+                                                <GradientStop Color="#B5DE6656" Offset="0.48" />
+                                                <GradientStop Color="#D5C51E14" Offset="0.52" />
+                                                <GradientStop Color="#E5E45244" Offset="1.0" />
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                        <TextBlock Text="✕" FontSize="9" FontWeight="Bold" Foreground="#FFFFFF"
+                                                   VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bd" Property="Background">
+                                                <Setter.Value>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                        <GradientStop Color="#FFFFA698" Offset="0.0" />
+                                                        <GradientStop Color="#F0F05847" Offset="0.48" />
+                                                        <GradientStop Color="#FFD8180E" Offset="0.52" />
+                                                        <GradientStop Color="#FFFF6052" Offset="1.0" />
+                                                    </LinearGradientBrush>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Setter TargetName="bd" Property="BorderBrush" Value="#A01005" />
+                                            <Setter TargetName="bd" Property="Effect">
+                                                <Setter.Value>
+                                                    <DropShadowEffect Color="#FF3228" BlurRadius="8" ShadowDepth="0" Opacity="0.95" />
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="bd" Property="Background">
+                                                <Setter.Value>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                        <GradientStop Color="#99160D" Offset="0.0" />
+                                                        <GradientStop Color="#D42213" Offset="0.5" />
+                                                        <GradientStop Color="#B0180C" Offset="1.0" />
+                                                    </LinearGradientBrush>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
                         </Button>
                     </StackPanel>
                 </Grid>
 
-                <!-- 内容区 -->
+                <!-- 内容区 (深空黑色终端视口) -->
                 <ContentPresenter Grid.Row="1" Content="{Binding}" />
             </Grid>
         </Border>

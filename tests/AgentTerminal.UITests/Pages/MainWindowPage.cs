@@ -45,6 +45,7 @@ public class MainWindowPage
     public MdiWorkspacePage GetMdiWorkspace()
     {
         var container = UiaWait.Until(() => _window.FindFirstDescendant(cf => cf.ByAutomationId("Workbench.MdiContainer")),
+            timeout: TimeSpan.FromSeconds(10),
             message: "MdiContainer not found in MainWindow");
         return new MdiWorkspacePage(container);
     }

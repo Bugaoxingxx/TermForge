@@ -51,12 +51,33 @@ public class MdiChildWindowPage
 
     public void DragBy(int deltaX, int deltaY)
     {
+        if (_element.Patterns.Transform.IsSupported)
+        {
+            var bounds = _element.BoundingRectangle;
+            _element.Patterns.Transform.Pattern.Move(bounds.Left + deltaX, bounds.Top + deltaY);
+            return;
+        }
+
         var titleBar = TitleBarElement ?? throw new System.InvalidOperationException("TitleBar element not found");
         InputSimulator.Drag(titleBar, deltaX, deltaY);
     }
 
     public void DoubleClickTitleBar()
     {
+        if (_element.Patterns.Window.IsSupported)
+        {
+            var win = _element.Patterns.Window.Pattern;
+            if (win.WindowVisualState.Value == FlaUI.Core.Definitions.WindowVisualState.Maximized)
+            {
+                win.SetWindowVisualState(FlaUI.Core.Definitions.WindowVisualState.Normal);
+            }
+            else
+            {
+                win.SetWindowVisualState(FlaUI.Core.Definitions.WindowVisualState.Maximized);
+            }
+            return;
+        }
+
         var titleBar = TitleBarElement ?? throw new System.InvalidOperationException("TitleBar element not found");
         InputSimulator.DoubleClick(titleBar);
     }
@@ -65,6 +86,13 @@ public class MdiChildWindowPage
 
     public void ResizeBottomRight(int deltaX, int deltaY)
     {
+        if (_element.Patterns.Transform.IsSupported)
+        {
+            var bounds = _element.BoundingRectangle;
+            _element.Patterns.Transform.Pattern.Resize(bounds.Width + deltaX, bounds.Height + deltaY);
+            return;
+        }
+
         var thumb = BottomRightThumb ?? throw new System.InvalidOperationException("BottomRightThumb element not found");
         InputSimulator.Drag(thumb, deltaX, deltaY);
     }

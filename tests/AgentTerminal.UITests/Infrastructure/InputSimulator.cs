@@ -47,25 +47,25 @@ public static class InputSimulator
     public static void Drag(AutomationElement targetElement, int deltaX, int deltaY)
     {
         var rect = targetElement.BoundingRectangle;
-        var startScreen = new Point(rect.Left + 50, rect.Top + rect.Height / 2);
+        var startX = rect.Width > 80 ? rect.Left + 50 : rect.Left + rect.Width / 2;
+        var startY = rect.Top + rect.Height / 2;
+        var startScreen = new Point(startX, startY);
         var endScreen = new Point(startScreen.X + deltaX, startScreen.Y + deltaY);
 
         try
         {
-            // 1. 优先使用标准 OS SendInput 物理鼠标驱动（在交互式真实桌面下生效）
             FlaUI.Core.Input.Mouse.Position = startScreen;
-            Thread.Sleep(50);
+            Thread.Sleep(30);
             FlaUI.Core.Input.Mouse.Down(FlaUI.Core.Input.MouseButton.Left);
-            Thread.Sleep(50);
+            Thread.Sleep(30);
             FlaUI.Core.Input.Mouse.MoveTo(endScreen);
-            Thread.Sleep(50);
+            Thread.Sleep(30);
             FlaUI.Core.Input.Mouse.Up(FlaUI.Core.Input.MouseButton.Left);
-            Thread.Sleep(100);
-            return;
+            Thread.Sleep(50);
         }
-        catch (System.ComponentModel.Win32Exception)
+        catch
         {
-            // 2. 当在 CI / 虚拟桌面 / 沙箱会话无物理鼠标句柄导致 SendInput 报错时，Fallback 至 Win32 窗口消息模拟
+            // 忽略并使用下面的 Win32 消息模拟保证可靠执行
         }
 
         var window = FindWindow(targetElement) 
@@ -79,15 +79,15 @@ public static class InputSimulator
         ScreenToClient(hWnd, ref ptEnd);
 
         SendMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)MK_LBUTTON, MakeLParam(ptStart.X, ptStart.Y));
-        Thread.Sleep(50);
+        Thread.Sleep(30);
 
-        int steps = 5;
+        int steps = 10;
         for (int i = 1; i <= steps; i++)
         {
             int curX = ptStart.X + (ptEnd.X - ptStart.X) * i / steps;
             int curY = ptStart.Y + (ptEnd.Y - ptStart.Y) * i / steps;
             SendMessage(hWnd, WM_MOUSEMOVE, (IntPtr)MK_LBUTTON, MakeLParam(curX, curY));
-            Thread.Sleep(20);
+            Thread.Sleep(15);
         }
 
         SendMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, MakeLParam(ptEnd.X, ptEnd.Y));
@@ -97,17 +97,18 @@ public static class InputSimulator
     public static void DoubleClick(AutomationElement targetElement)
     {
         var rect = targetElement.BoundingRectangle;
-        var screenPt = new Point(rect.Left + 50, rect.Top + rect.Height / 2);
+        var startX = rect.Width > 80 ? rect.Left + 50 : rect.Left + rect.Width / 2;
+        var startY = rect.Top + rect.Height / 2;
+        var screenPt = new Point(startX, startY);
 
         try
         {
             FlaUI.Core.Input.Mouse.DoubleClick(screenPt);
-            Thread.Sleep(200);
-            return;
+            Thread.Sleep(100);
         }
-        catch (System.ComponentModel.Win32Exception)
+        catch
         {
-            // Fallback for headless/sandbox/CI
+            // 忽略并执行 Win32 双击消息模拟
         }
 
         var window = FindWindow(targetElement) 
@@ -117,12 +118,12 @@ public static class InputSimulator
         var pt = new POINT { X = screenPt.X, Y = screenPt.Y };
         ScreenToClient(hWnd, ref pt);
 
-        // 模拟标准双击：发送两次快速连续的 DOWN/UP 消息，WPF 会自动根据系统双击间隔识别为 ClickCount = 2
+        // 标准 Win32 双击序列：WM_LBUTTONDOWN -> UP -> WM_LBUTTONDBLCLK -> UP
         SendMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)MK_LBUTTON, MakeLParam(pt.X, pt.Y));
         SendMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, MakeLParam(pt.X, pt.Y));
-        Thread.Sleep(50);
-        SendMessage(hWnd, WM_LBUTTONDOWN, (IntPtr)MK_LBUTTON, MakeLParam(pt.X, pt.Y));
+        Thread.Sleep(30);
+        SendMessage(hWnd, WM_LBUTTONDBLCLK, (IntPtr)MK_LBUTTON, MakeLParam(pt.X, pt.Y));
         SendMessage(hWnd, WM_LBUTTONUP, IntPtr.Zero, MakeLParam(pt.X, pt.Y));
-        Thread.Sleep(200);
+        Thread.Sleep(150);
     }
 }

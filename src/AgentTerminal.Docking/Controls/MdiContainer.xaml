@@ -9,17 +9,17 @@
              d:DesignHeight="600" d:DesignWidth="800"
              SizeChanged="OnContainerSizeChanged">
     
-    <Grid Background="#1E1E1E">
+    <Grid Background="#1B2631">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- 主工作区 Canvas：承载所有 Normal 和 Maximized 子窗口 -->
+        <!-- 主工作区 Canvas：承载所有 Normal 和 Maximized 子窗口，深色沉浸式点阵背景 -->
         <ItemsControl Grid.Row="0" x:Name="MdiItemsControl">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Canvas x:Name="MdiCanvas" ClipToBounds="True" Background="#252526" />
+                    <Canvas x:Name="MdiCanvas" ClipToBounds="True" Background="#1B2631" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
 
@@ -52,8 +52,8 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <!-- 底部最小化窗口托盘区 (Win32 MDI 风格托盘) -->
-        <Border Grid.Row="1" x:Name="MinimizedTray" Background="#2D2D30" BorderBrush="#3F3F46" BorderThickness="0,1,0,0" Padding="6,4">
+        <!-- 底部最小化窗口托盘区 (Windows 7 Aero 浅色卡片托盘) -->
+        <Border Grid.Row="1" x:Name="MinimizedTray" Background="#E8EDF4" BorderBrush="#B2BCC9" BorderThickness="0,1,0,0" Padding="6,4">
             <ItemsControl x:Name="MinimizedItemsControl">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -62,15 +62,20 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Background="#3E3E42" BorderBrush="#555555" BorderThickness="1" CornerRadius="3" Margin="0,0,6,0" Padding="8,4">
+                        <Border Background="#F7F9FC" BorderBrush="#9DB3C8" BorderThickness="1" CornerRadius="3" Margin="0,0,6,0" Padding="8,3">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.15" Color="#000000" />
+                            </Border.Effect>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text=">_" Foreground="#4EC9B0" FontWeight="Bold" Margin="0,0,6,0" VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding Title}" Foreground="#E0E0E0" Margin="0,0,8,0" VerticalAlignment="Center" />
-                                <Button Command="{Binding RestoreCommand}" Background="Transparent" BorderThickness="0" Foreground="#CCCCCC" ToolTip="还原窗口" Margin="0,0,4,0">
+                                <Border Background="#1E395B" CornerRadius="2" Padding="3,1" Margin="0,0,6,0">
+                                    <TextBlock Text=">_" Foreground="#4EC9B0" FontSize="9" FontWeight="Bold" VerticalAlignment="Center" />
+                                </Border>
+                                <TextBlock Text="{Binding Title}" Foreground="#1E395B" FontFamily="Segoe UI, Tahoma" FontSize="11" FontWeight="SemiBold" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <Button Command="{Binding RestoreCommand}" Background="Transparent" BorderThickness="0" Foreground="#2B4E74" ToolTip="还原窗口" Margin="0,0,4,0" Cursor="Hand">
                                     <TextBlock Text="❐" FontSize="11" />
                                 </Button>
-                                <Button Command="{Binding CloseCommand}" Background="Transparent" BorderThickness="0" Foreground="#CCCCCC" ToolTip="关闭窗口">
-                                    <TextBlock Text="✕" FontSize="11" />
+                                <Button Command="{Binding CloseCommand}" Background="Transparent" BorderThickness="0" Foreground="#C41E14" ToolTip="关闭窗口" Cursor="Hand">
+                                    <TextBlock Text="✕" FontSize="10" FontWeight="Bold" />
                                 </Button>
                             </StackPanel>
                         </Border>
