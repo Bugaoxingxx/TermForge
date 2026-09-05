@@ -84,8 +84,10 @@ dotnet test
 
 详细技术设计与阶段规范请参阅：[Windows 原生 Agent Terminal 工作台 详细开发计划](Windows原生Agent_Terminal开发计划.md) 与 [架构设计文档](docs/ARCHITECTURE.md)。
 
+产品目标：Windows MMC 风格的 MDI 多文档工作台，支持主窗口内的子窗口移动、缩放、层叠、平铺及最大化/还原。当前已完成 PowerShell 7 ConPTY 会话闭环与 MMC 风格 MDI 原型，验证报告详见 [ConPTY 验证报告](docs/validation/phase1-conpty.md) 与 [MDI 工作台验证报告](docs/validation/mdi-workbench.md)。
+
 * [x] **环境初始化**：工程多模块分层、依赖配置、代码规范、核心领域模型与测试套件
-* [ ] **Phase 1**：ConPTY POC（双向管道通信与 pwsh.exe 交互）
+* [x] **Phase 1**：ConPTY 原生会话与 MMC 风格 MDI 工作台（双向管道通信、pwsh 交互、Job Object 进程树管控、MdiContainer 层叠/平铺布局）
 * [ ] **Phase 2**：Terminal Buffer（行列网格、Cell、Cursor、Scrollback 缓冲区）
 * [ ] **Phase 3**：VT Parser（ANSI 转义序列、SGR、256/TrueColor 色彩）
 * [ ] **Phase 4**：Native Renderer（WPF DrawingVisual 高性能原生渲染控件）

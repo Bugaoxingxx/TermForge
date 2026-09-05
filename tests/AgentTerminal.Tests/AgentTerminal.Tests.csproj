@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\AgentTerminal.Core\AgentTerminal.Core.csproj" />
     <ProjectReference Include="..\..\src\AgentTerminal.Terminal\AgentTerminal.Terminal.csproj" />
+    <ProjectReference Include="..\..\src\AgentTerminal.Docking\AgentTerminal.Docking.csproj" />
     <ProjectReference Include="..\..\src\AgentTerminal.Infrastructure\AgentTerminal.Infrastructure.csproj" />
   </ItemGroup>
 

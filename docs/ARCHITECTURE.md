@@ -2,6 +2,8 @@
 
 本文档基于 [Windows 原生 Agent Terminal 工作台 详细开发计划](../Windows原生Agent_Terminal开发计划.md) 编写，指导系统设计与模块演进。
 
+界面目标已明确为 Windows MMC 风格的 MDI 多文档工作台，交互要求以 [统一 PRD](PRD-Phase1-ConPTY.md) 为准。文档区需支持内部子窗口重叠、层叠、平铺和窗口状态控制；AvalonDock 作为现有候选方案，须经原型验证后确定它与 MDI 容器的分工，不能将标签停靠视为完整 MDI 验收。
+
 ## 1. 核心架构原则
 
 1. **Native Terminal & ConPTY**：严禁采用 PuTTY + SetParent 或 WebView2 + xterm.js。使用 Windows 原生 ConPTY 伪终端 API，配合原生 WPF 自定义控件（DrawingVisual / GlyphRun）完成字符网格渲染。
