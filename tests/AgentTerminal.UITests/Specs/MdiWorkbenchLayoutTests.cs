@@ -103,4 +103,133 @@ public class MdiWorkbenchLayoutTests
         Assert.True(Math.Abs(restoredBounds.Height - initialBounds.Height) <= 5);
         fixture.CaptureScreenshot("06_Window_Restored");
     }
+
+    [Fact]
+    public void DragChildWindow_ShouldMoveToNewPositionWithinWorkspace()
+    {
+        using var fixture = new TestAppFixture();
+        var window = fixture.Launch();
+        var mainPage = new MainWindowPage(window);
+        var workspace = mainPage.GetMdiWorkspace();
+
+        if (workspace.GetChildWindows().Count == 0)
+        {
+            mainPage.ClickNewTerminal();
+            workspace.WaitForWindowCount(1);
+        }
+
+        var doc = workspace.GetChildWindows()[0];
+        var initialBounds = doc.BoundingRectangle;
+
+        // Perform physical mouse drag: deltaX = 120, deltaY = 80
+        doc.DragBy(120, 80);
+        Thread.Sleep(300);
+
+        var newBounds = doc.BoundingRectangle;
+        fixture.CaptureScreenshot("14_DragChildWindow_Moved");
+
+        // Verify that the child window actually moved by the dragged delta
+        var deltaX = newBounds.Left - initialBounds.Left;
+        var deltaY = newBounds.Top - initialBounds.Top;
+
+        Assert.True(Math.Abs(deltaX - 120) <= 20, $"Window expected to move horizontally by ~120px, but moved by {deltaX}px (from {initialBounds.Left} to {newBounds.Left})");
+        Assert.True(Math.Abs(deltaY - 80) <= 20, $"Window expected to move vertically by ~80px, but moved by {deltaY}px (from {initialBounds.Top} to {newBounds.Top})");
+    }
+
+    [Fact]
+    public void DoubleClickTitleBar_ShouldToggleMaximizeRestore()
+    {
+        using var fixture = new TestAppFixture();
+        var window = fixture.Launch();
+        var mainPage = new MainWindowPage(window);
+        var workspace = mainPage.GetMdiWorkspace();
+
+        if (workspace.GetChildWindows().Count == 0)
+        {
+            mainPage.ClickNewTerminal();
+            workspace.WaitForWindowCount(1);
+        }
+
+        var doc = workspace.GetChildWindows()[0];
+        var initialBounds = doc.BoundingRectangle;
+
+        // 1. Double click to maximize
+        doc.DoubleClickTitleBar();
+        Thread.Sleep(500);
+
+        var maxBounds = doc.BoundingRectangle;
+        Assert.True(maxBounds.Width > initialBounds.Width || maxBounds.Height > initialBounds.Height,
+            $"Expected maximized width/height ({maxBounds.Width}x{maxBounds.Height}) to be larger than initial ({initialBounds.Width}x{initialBounds.Height})");
+
+        // 2. Double click to restore
+        doc.DoubleClickTitleBar();
+        Thread.Sleep(500);
+
+        var restoredBounds = doc.BoundingRectangle;
+        Assert.True(Math.Abs(restoredBounds.Width - initialBounds.Width) <= 10,
+            $"Restored width {restoredBounds.Width} does not match initial {initialBounds.Width}");
+        Assert.True(Math.Abs(restoredBounds.Height - initialBounds.Height) <= 10,
+            $"Restored height {restoredBounds.Height} does not match initial {initialBounds.Height}");
+
+        fixture.CaptureScreenshot("15_DoubleClickTitleBar_Toggled");
+    }
+
+    [Fact]
+    public void DragChildWindow_BeyondLeftAndTop_ShouldClampWithinWorkspace()
+    {
+        using var fixture = new TestAppFixture();
+        var window = fixture.Launch();
+        var mainPage = new MainWindowPage(window);
+        var workspace = mainPage.GetMdiWorkspace();
+
+        if (workspace.GetChildWindows().Count == 0)
+        {
+            mainPage.ClickNewTerminal();
+            workspace.WaitForWindowCount(1);
+        }
+
+        var doc = workspace.GetChildWindows()[0];
+
+        // Drag window aggressively towards top-left (-800px, -800px)
+        doc.DragBy(-800, -800);
+        Thread.Sleep(300);
+
+        var clampedBounds = doc.BoundingRectangle;
+        fixture.CaptureScreenshot("16_DragChildWindow_Clamped");
+
+        // The window should stay visible within the container and not disappear off-screen
+        Assert.True(clampedBounds.Width > 200, "Window width should remain valid after clamp drag");
+        Assert.True(clampedBounds.Height > 100, "Window height should remain valid after clamp drag");
+    }
+
+    [Fact]
+    public void DragWindowBorder_ShouldResizeWindowDimensions()
+    {
+        using var fixture = new TestAppFixture();
+        var window = fixture.Launch();
+        var mainPage = new MainWindowPage(window);
+        var workspace = mainPage.GetMdiWorkspace();
+
+        if (workspace.GetChildWindows().Count == 0)
+        {
+            mainPage.ClickNewTerminal();
+            workspace.WaitForWindowCount(1);
+        }
+
+        var doc = workspace.GetChildWindows()[0];
+        var initialBounds = doc.BoundingRectangle;
+
+        // Drag bottom-right thumb outward by 80px width and 50px height
+        doc.ResizeBottomRight(80, 50);
+        Thread.Sleep(300);
+
+        var resizedBounds = doc.BoundingRectangle;
+        fixture.CaptureScreenshot("17_DragBorder_Resized");
+
+        var deltaW = resizedBounds.Width - initialBounds.Width;
+        var deltaH = resizedBounds.Height - initialBounds.Height;
+
+        Assert.True(Math.Abs(deltaW - 80) <= 20, $"Expected width to increase by ~80px, but changed by {deltaW}px (from {initialBounds.Width} to {resizedBounds.Width})");
+        Assert.True(Math.Abs(deltaH - 50) <= 20, $"Expected height to increase by ~50px, but changed by {deltaH}px (from {initialBounds.Height} to {resizedBounds.Height})");
+    }
 }

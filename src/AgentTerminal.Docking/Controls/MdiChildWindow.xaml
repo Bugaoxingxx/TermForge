@@ -39,6 +39,7 @@
 
                 <!-- MMC 经典标题栏 -->
                 <Grid Grid.Row="0" x:Name="TitleBar" 
+                      AutomationProperties.AutomationId="MdiWindow.TitleBar"
                       MouseLeftButtonDown="OnTitleBarMouseDown"
                       MouseMove="OnTitleBarMouseMove"
                       MouseLeftButtonUp="OnTitleBarMouseUp"
@@ -113,15 +114,15 @@
 
         <!-- 8 向拉伸手柄 (仅在 Normal 状态生效) -->
         <Grid x:Name="ResizeGrid">
-            <Thumb Cursor="SizeNWSE" HorizontalAlignment="Left" VerticalAlignment="Top" Width="7" Height="7" DragDelta="OnResizeTopLeft" Opacity="0" />
-            <Thumb Cursor="SizeNESW" HorizontalAlignment="Right" VerticalAlignment="Top" Width="7" Height="7" DragDelta="OnResizeTopRight" Opacity="0" />
-            <Thumb Cursor="SizeNESW" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="7" Height="7" DragDelta="OnResizeBottomLeft" Opacity="0" />
-            <Thumb Cursor="SizeNWSE" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="7" Height="7" DragDelta="OnResizeBottomRight" Opacity="0" />
+            <Thumb AutomationProperties.AutomationId="MdiWindow.Thumb.TopLeft" Cursor="SizeNWSE" HorizontalAlignment="Left" VerticalAlignment="Top" Width="7" Height="7" DragDelta="OnResizeTopLeft" Opacity="0" />
+            <Thumb AutomationProperties.AutomationId="MdiWindow.Thumb.TopRight" Cursor="SizeNESW" HorizontalAlignment="Right" VerticalAlignment="Top" Width="7" Height="7" DragDelta="OnResizeTopRight" Opacity="0" />
+            <Thumb AutomationProperties.AutomationId="MdiWindow.Thumb.BottomLeft" Cursor="SizeNESW" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="7" Height="7" DragDelta="OnResizeBottomLeft" Opacity="0" />
+            <Thumb AutomationProperties.AutomationId="MdiWindow.Thumb.BottomRight" Cursor="SizeNWSE" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="7" Height="7" DragDelta="OnResizeBottomRight" Opacity="0" />
 
-            <Thumb Cursor="SizeNS" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="5" Margin="7,0,7,0" DragDelta="OnResizeTop" Opacity="0" />
-            <Thumb Cursor="SizeNS" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="5" Margin="7,0,7,0" DragDelta="OnResizeBottom" Opacity="0" />
-            <Thumb Cursor="SizeWE" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="5" Margin="0,7,0,7" DragDelta="OnResizeLeft" Opacity="0" />
-            <Thumb Cursor="SizeWE" HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="5" Margin="0,7,0,7" DragDelta="OnResizeRight" Opacity="0" />
+            <Thumb AutomationProperties.AutomationId="MdiWindow.Thumb.Top" Cursor="SizeNS" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="5" Margin="7,0,7,0" DragDelta="OnResizeTop" Opacity="0" />
+            <Thumb AutomationProperties.AutomationId="MdiWindow.Thumb.Bottom" Cursor="SizeNS" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="5" Margin="7,0,7,0" DragDelta="OnResizeBottom" Opacity="0" />
+            <Thumb AutomationProperties.AutomationId="MdiWindow.Thumb.Left" Cursor="SizeWE" HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="5" Margin="0,7,0,7" DragDelta="OnResizeLeft" Opacity="0" />
+            <Thumb AutomationProperties.AutomationId="MdiWindow.Thumb.Right" Cursor="SizeWE" HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="5" Margin="0,7,0,7" DragDelta="OnResizeRight" Opacity="0" />
         </Grid>
     </Grid>
 </UserControl>

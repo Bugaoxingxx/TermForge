@@ -35,6 +35,10 @@ public class MdiChildWindowPage
 
     public Rectangle BoundingRectangle => _element.BoundingRectangle;
 
+    public AutomationElement? TitleBarElement => 
+        _element.FindFirstDescendant(cf => cf.ByAutomationId("MdiWindow.TitleBar")) 
+        ?? _element.FindFirstDescendant(cf => cf.ByAutomationId("MdiWindow.Title"));
+
     public Button? MinimizeButton => _element.FindFirstDescendant(cf => cf.ByAutomationId("MdiWindow.BtnMinimize"))?.AsButton();
     public Button? MaxRestoreButton => _element.FindFirstDescendant(cf => cf.ByAutomationId("MdiWindow.BtnMaxRestore"))?.AsButton();
     public Button? CloseButton => _element.FindFirstDescendant(cf => cf.ByAutomationId("MdiWindow.BtnClose"))?.AsButton();
@@ -43,6 +47,26 @@ public class MdiChildWindowPage
     {
         var titleElem = _element.FindFirstDescendant(cf => cf.ByAutomationId("MdiWindow.Title"));
         titleElem?.Click();
+    }
+
+    public void DragBy(int deltaX, int deltaY)
+    {
+        var titleBar = TitleBarElement ?? throw new System.InvalidOperationException("TitleBar element not found");
+        InputSimulator.Drag(titleBar, deltaX, deltaY);
+    }
+
+    public void DoubleClickTitleBar()
+    {
+        var titleBar = TitleBarElement ?? throw new System.InvalidOperationException("TitleBar element not found");
+        InputSimulator.DoubleClick(titleBar);
+    }
+
+    public AutomationElement? BottomRightThumb => _element.FindFirstDescendant(cf => cf.ByAutomationId("MdiWindow.Thumb.BottomRight"));
+
+    public void ResizeBottomRight(int deltaX, int deltaY)
+    {
+        var thumb = BottomRightThumb ?? throw new System.InvalidOperationException("BottomRightThumb element not found");
+        InputSimulator.Drag(thumb, deltaX, deltaY);
     }
 
     public void MaximizeOrRestore()
