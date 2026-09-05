@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 using AgentTerminal.Core.Models;
 using AgentTerminal.Docking.ViewModels;
 
@@ -12,7 +13,9 @@ namespace AgentTerminal.Docking.Controls;
 /// </summary>
 public partial class MdiChildWindow : UserControl
 {
-    private Point _dragStartPoint;
+    private Point _dragStartMousePos;
+    private double _dragStartLeft;
+    private double _dragStartTop;
     private bool _isDragging;
 
     public MdiChildWindow()
@@ -42,6 +45,25 @@ public partial class MdiChildWindow : UserControl
         {
             ResizeGrid.Visibility = state == MdiWindowState.Normal ? Visibility.Visible : Visibility.Collapsed;
         }
+    }
+
+    private IInputElement? GetReferenceElement()
+    {
+        return (Window.GetWindow(this) as IInputElement) ?? (FindParentCanvas() as IInputElement);
+    }
+
+    private Canvas? FindParentCanvas()
+    {
+        DependencyObject? current = this;
+        while (current != null)
+        {
+            current = VisualTreeHelper.GetParent(current);
+            if (current is Canvas canvas)
+            {
+                return canvas;
+            }
+        }
+        return null;
     }
 
     private void OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
@@ -76,11 +98,14 @@ public partial class MdiChildWindow : UserControl
         // 仅在 Normal 状态支持拖拽
         if (vm.WindowState == MdiWindowState.Normal && e.LeftButton == MouseButtonState.Pressed)
         {
+            var refElement = GetReferenceElement();
+            if (refElement == null) return;
+
             _isDragging = true;
-            _dragStartPoint = e.GetPosition(this);
+            _dragStartMousePos = e.GetPosition(refElement);
+            _dragStartLeft = vm.Left;
+            _dragStartTop = vm.Top;
             TitleBar.CaptureMouse();
-            TitleBar.MouseMove += OnTitleBarMouseMove;
-            TitleBar.MouseLeftButtonUp += OnTitleBarMouseUp;
             e.Handled = true;
         }
     }
@@ -89,16 +114,22 @@ public partial class MdiChildWindow : UserControl
     {
         if (!_isDragging || DataContext is not TerminalDocumentViewModel vm) return;
 
-        Point currentPoint = e.GetPosition(Parent as IInputElement);
-        if (Parent is FrameworkElement parentElement)
-        {
-            double newLeft = currentPoint.X - _dragStartPoint.X;
-            double newTop = currentPoint.Y - _dragStartPoint.Y;
+        var refElement = GetReferenceElement();
+        if (refElement == null) return;
 
-            // 保持在合理可视范围内
-            vm.Left = Math.Max(0, Math.Min(newLeft, parentElement.ActualWidth - 60));
-            vm.Top = Math.Max(0, Math.Min(newTop, parentElement.ActualHeight - 40));
-        }
+        Point currentMousePos = e.GetPosition(refElement);
+        double deltaX = currentMousePos.X - _dragStartMousePos.X;
+        double deltaY = currentMousePos.Y - _dragStartMousePos.Y;
+
+        double newLeft = _dragStartLeft + deltaX;
+        double newTop = _dragStartTop + deltaY;
+
+        var canvas = FindParentCanvas();
+        double maxLeft = canvas != null && canvas.ActualWidth > 60 ? canvas.ActualWidth - 60 : 3000;
+        double maxTop = canvas != null && canvas.ActualHeight > 40 ? canvas.ActualHeight - 40 : 2000;
+
+        vm.Left = Math.Max(0, Math.Min(newLeft, maxLeft));
+        vm.Top = Math.Max(0, Math.Min(newTop, maxTop));
     }
 
     private void OnTitleBarMouseUp(object sender, MouseButtonEventArgs e)
@@ -107,9 +138,12 @@ public partial class MdiChildWindow : UserControl
         {
             _isDragging = false;
             TitleBar.ReleaseMouseCapture();
-            TitleBar.MouseMove -= OnTitleBarMouseMove;
-            TitleBar.MouseLeftButtonUp -= OnTitleBarMouseUp;
         }
+    }
+
+    private void OnTitleBarLostMouseCapture(object sender, MouseEventArgs e)
+    {
+        _isDragging = false;
     }
 
     private void OnMaximizeRestoreClicked(object sender, RoutedEventArgs e)

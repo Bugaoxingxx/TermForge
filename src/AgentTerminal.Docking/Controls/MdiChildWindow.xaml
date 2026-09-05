@@ -6,6 +6,8 @@
              xmlns:models="clr-namespace:AgentTerminal.Core.Models;assembly=AgentTerminal.Core"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="400"
+             AutomationProperties.AutomationId="MdiChildWindow"
+             AutomationProperties.Name="{Binding Title}"
              PreviewMouseDown="OnPreviewMouseDown">
     
     <Grid>
@@ -36,7 +38,11 @@
                 </Grid.RowDefinitions>
 
                 <!-- MMC 经典标题栏 -->
-                <Grid Grid.Row="0" x:Name="TitleBar" MouseLeftButtonDown="OnTitleBarMouseDown" Background="#2D2D30">
+                <Grid Grid.Row="0" x:Name="TitleBar" 
+                      MouseLeftButtonDown="OnTitleBarMouseDown"
+                      MouseMove="OnTitleBarMouseMove"
+                      MouseLeftButtonUp="OnTitleBarMouseUp"
+                      LostMouseCapture="OnTitleBarLostMouseCapture">
                     <Grid.Style>
                         <Style TargetType="Grid">
                             <Setter Property="Background" Value="#3F3F46" />
@@ -55,17 +61,19 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- 图标与标题 -->
-                    <TextBlock Grid.Column="0" Margin="8,0,4,0" Text=">_" Foreground="#FFFFFF" FontWeight="Bold" VerticalAlignment="Center" />
-                    <TextBlock Grid.Column="1" Margin="4,0,8,0" Text="{Binding Title}" Foreground="#FFFFFF" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Column="0" Margin="8,0,4,0" Text=">_" Foreground="#FFFFFF" FontWeight="Bold" VerticalAlignment="Center" IsHitTestVisible="False" />
+                    <TextBlock Grid.Column="1" Margin="4,0,8,0" Text="{Binding Title}" AutomationProperties.AutomationId="MdiWindow.Title" Foreground="#FFFFFF" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" IsHitTestVisible="False" />
 
                     <!-- 窗口控制按钮组：最小化、最大化/还原、关闭 -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
                         <Button Width="30" Height="32" Background="Transparent" BorderThickness="0" Foreground="#FFFFFF"
-                                Command="{Binding MinimizeCommand}" ToolTip="最小化">
+                                Command="{Binding MinimizeCommand}" ToolTip="最小化"
+                                AutomationProperties.AutomationId="MdiWindow.BtnMinimize">
                             <TextBlock Text="一" FontSize="11" VerticalAlignment="Center" HorizontalAlignment="Center" />
                         </Button>
                         <Button Width="30" Height="32" Background="Transparent" BorderThickness="0" Foreground="#FFFFFF"
-                                Click="OnMaximizeRestoreClicked" ToolTip="最大化/还原">
+                                Click="OnMaximizeRestoreClicked" ToolTip="最大化/还原"
+                                AutomationProperties.AutomationId="MdiWindow.BtnMaxRestore">
                             <TextBlock Text="{Binding WindowState, ConverterParameter='buttonText', RelativeSource={RelativeSource AncestorType=UserControl}}" 
                                        x:Name="MaxRestoreText" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center">
                                 <TextBlock.Style>
@@ -81,7 +89,8 @@
                             </TextBlock>
                         </Button>
                         <Button Width="32" Height="32" Background="Transparent" BorderThickness="0" Foreground="#FFFFFF"
-                                Command="{Binding CloseCommand}" ToolTip="关闭">
+                                Command="{Binding CloseCommand}" ToolTip="关闭"
+                                AutomationProperties.AutomationId="MdiWindow.BtnClose">
                             <Button.Style>
                                 <Style TargetType="Button">
                                     <Setter Property="Background" Value="Transparent" />
