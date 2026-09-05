@@ -82,7 +82,7 @@ dotnet test
 
 ## 🗺️ 开发阶段与路线规划
 
-详细技术设计与阶段规范请参阅：[Windows 原生 Agent Terminal 工作台 详细开发计划](Windows原生Agent_Terminal开发计划.md) 与 [架构设计文档](docs/ARCHITECTURE.md)。
+详细技术设计与阶段规范请参阅：[Windows 原生 Agent Terminal 工作台 详细开发计划](Windows原生Agent_Terminal开发计划.md)、[架构设计文档](docs/ARCHITECTURE.md) 与 [Windows 7 Aero UI 设计规范](docs/design/UI-Win7-Aero-Design.md)。
 
 产品目标：Windows MMC 风格的 MDI 多文档工作台，支持主窗口内的子窗口移动、缩放、层叠、平铺及最大化/还原。当前已完成 PowerShell 7 ConPTY 会话闭环与 MMC 风格 MDI 原型，验证报告详见 [ConPTY 验证报告](docs/validation/phase1-conpty.md) 与 [MDI 工作台验证报告](docs/validation/mdi-workbench.md)。
 

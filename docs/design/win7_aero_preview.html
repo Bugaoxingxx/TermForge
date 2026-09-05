@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TermForge - Windows 7 Aero Glass 设计稿交互原型</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&family=Cascadia+Code:wght@400;600&display=swap');
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Tahoma, sans-serif;
+      font-size: 12px;
+      margin: 0;
+      padding: 16px;
+      background: #1e3c54 url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000&auto=format&fit=crop') no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Win7 Aero Glass Frame */
+    .aero-window {
+      border-radius: 8px 8px 5px 5px;
+      background: var(--glass-bg, rgba(165, 205, 235, 0.45));
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        inset 1px 0 0 rgba(255, 255, 255, 0.5),
+        inset -1px 0 0 rgba(255, 255, 255, 0.5),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.3);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 0.2s ease;
+    }
+
+    /* Aero Top Reflection Sheen */
+    .aero-window::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 34px;
+      background: linear-gradient(180deg, 
+        rgba(255, 255, 255, 0.75) 0%, 
+        rgba(255, 255, 255, 0.25) 45%, 
+        rgba(255, 255, 255, 0.0) 50%, 
+        rgba(255, 255, 255, 0.15) 100%);
+      pointer-events: none;
+      z-index: 10;
+      border-radius: 7px 7px 0 0;
+    }
+
+    /* Win7 Title Glow */
+    .aero-title {
+      color: #0c1a26;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.2px;
+      text-shadow: 
+        0 0 12px rgba(255, 255, 255, 0.95),
+        0 0 8px rgba(255, 255, 255, 0.9),
+        0 0 4px rgba(255, 255, 255, 0.8),
+        0 1px 1px rgba(255, 255, 255, 1);
+    }
+
+    /* Windows 7 Caption Buttons */
+    .caption-btn-group {
+      display: flex;
+      align-items: flex-start;
+      margin-right: -1px;
+      margin-top: -1px;
+      z-index: 20;
+    }
+
+    .cap-btn {
+      width: 29px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-top: none;
+      background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(200,230,255,0.2) 50%, rgba(150,200,240,0.3) 51%, rgba(220,240,255,0.5) 100%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s;
+    }
+
+    .cap-btn:first-child {
+      border-bottom-left-radius: 3px;
+    }
+
+    .cap-btn:hover {
+      background: linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(180,235,255,0.6) 50%, rgba(120,205,255,0.7) 51%, rgba(210,245,255,0.9) 100%);
+      box-shadow: 0 0 8px rgba(0, 180, 255, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      border-color: rgba(60, 160, 240, 0.8);
+    }
+
+    .cap-btn:active {
+      background: linear-gradient(180deg, rgba(140,200,240,0.8) 0%, rgba(100,170,220,0.6) 50%, rgba(70,140,200,0.8) 51%, rgba(150,210,250,0.9) 100%);
+    }
+
+    /* Win7 Close Button */
+    .cap-btn-close {
+      width: 48px;
+      height: 20px;
+      border-bottom-right-radius: 4px;
+      border-color: rgba(180, 60, 60, 0.5);
+      background: linear-gradient(180deg, 
+        rgba(242, 178, 168, 0.85) 0%, 
+        rgba(224, 110, 96, 0.7) 48%, 
+        rgba(196, 30, 20, 0.85) 52%, 
+        rgba(228, 80, 68, 0.95) 100%);
+      box-shadow: inset 0 1px 0 rgba(255, 220, 220, 0.9), 0 0 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .cap-btn-close:hover {
+      background: linear-gradient(180deg, 
+        rgba(255, 170, 160, 1) 0%, 
+        rgba(240, 90, 75, 0.95) 48%, 
+        rgba(215, 20, 10, 1) 52%, 
+        rgba(255, 100, 85, 1) 100%);
+      box-shadow: 0 0 10px rgba(255, 50, 40, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      border-color: #a01005;
+    }
+
+    .cap-btn-close:active {
+      background: linear-gradient(180deg, #99160d 0%, #d42213 50%, #b0180c 100%);
+    }
+
+    .cap-btn svg {
+      filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.7));
+    }
+    .cap-btn-close svg {
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+    }
+
+    /* Win7 Explorer/MMC Toolbar */
+    .aero-menubar {
+      background: linear-gradient(180deg, #fafbfd 0%, #ebedf2 60%, #e1e4eb 100%);
+      border-bottom: 1px solid #cdd1d9;
+      box-shadow: inset 0 1px 0 #ffffff;
+      padding: 1px 6px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #222;
+      font-size: 11px;
+    }
+
+    .aero-menubar-item {
+      padding: 3px 7px;
+      border-radius: 3px;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .aero-menubar-item:hover {
+      background: linear-gradient(180deg, #f0f7fd 0%, #d7eaf9 50%, #c4e1f7 51%, #d9ecfa 100%);
+      border: 1px solid #7da2ce;
+      box-shadow: inset 0 0 1px #ffffff, 0 0 3px rgba(60, 150, 240, 0.4);
+    }
+
+    .aero-toolbar {
+      background: linear-gradient(180deg, #fefefe 0%, #f4f6f9 45%, #e6ebf2 50%, #dbe2ec 100%);
+      border-bottom: 1px solid #b2b8c2;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .aero-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      height: 26px;
+      border: 1px solid #9fb4cc;
+      border-radius: 3px;
+      background: linear-gradient(180deg, #fbfcfe 0%, #e5edf6 48%, #d0dfef 52%, #e2eef9 100%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 1px 2px rgba(0, 0, 0, 0.1);
+      color: #1e395b;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+
+    .aero-btn:hover {
+      border-color: #5c8fc2;
+      background: linear-gradient(180deg, #f2f8fe 0%, #d5e8f9 48%, #b5d7f5 52%, #d7ebfb 100%);
+      box-shadow: 0 0 6px rgba(45, 145, 245, 0.5), inset 0 1px 0 #ffffff;
+      color: #0b2240;
+    }
+
+    .aero-btn:active {
+      background: linear-gradient(180deg, #c7dff3 0%, #a8cced 50%, #8dbbe5 52%, #bfe0f8 100%);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+    }
+
+    .aero-btn-primary {
+      border-color: #3b7bb5;
+      background: linear-gradient(180deg, #e4f3ff 0%, #b8dcfe 48%, #8bc2f8 52%, #cce7ff 100%);
+      font-weight: 600;
+    }
+
+    .aero-btn-primary:hover {
+      box-shadow: 0 0 8px rgba(0, 140, 255, 0.7), inset 0 1px 0 #ffffff;
+      border-color: #206ab0;
+    }
+
+    .aero-separator {
+      width: 1px;
+      height: 18px;
+      background: #b6bec8;
+      border-right: 1px solid #ffffff;
+      margin: 0 4px;
+    }
+
+    /* MMC Client Workspace */
+    .mmc-workspace {
+      background: #1b2631;
+      background-image: 
+        radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        radial-gradient(rgba(0, 0, 0, 0.3) 1px, transparent 1px);
+      background-size: 20px 20px;
+      background-position: 0 0, 10px 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* MDI Sub Window with Aero Glass Frame */
+    .mdi-child-window {
+      position: absolute;
+      border-radius: 6px 6px 4px 4px;
+      background: rgba(185, 215, 240, 0.5);
+      backdrop-filter: blur(12px) saturate(160%);
+      -webkit-backdrop-filter: blur(12px) saturate(160%);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95),
+        inset 0 0 2px rgba(255, 255, 255, 0.5);
+      display: flex;
+      flex-direction: column;
+      cursor: default;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .mdi-child-window.active-window {
+      z-index: 50;
+      background: rgba(165, 210, 245, 0.65);
+      border-color: rgba(255, 255, 255, 0.85);
+      box-shadow: 
+        0 12px 32px rgba(0, 0, 0, 0.75),
+        0 0 0 1px rgba(10, 45, 80, 0.5),
+        0 0 14px rgba(50, 160, 255, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 1);
+    }
+
+    .mdi-child-window.inactive-window {
+      background: rgba(215, 225, 235, 0.35);
+      border-color: rgba(255, 255, 255, 0.45);
+      filter: saturate(0.7);
+    }
+
+    .mdi-titlebar {
+      height: 24px;
+      padding: 0 4px 0 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: move;
+    }
+
+    .mdi-child-window.inactive-window .aero-title {
+      color: #4a5c6d;
+      text-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+    }
+
+    /* Terminal View Container */
+    .terminal-body {
+      background: #0c0f14;
+      border: 1px solid #101c28;
+      border-top: 1px solid #233446;
+      font-family: 'Cascadia Code', Consolas, 'Courier New', monospace;
+      color: #e2e8f0;
+      padding: 8px 10px;
+      overflow-y: auto;
+      font-size: 11px;
+      line-height: 1.45;
+      position: relative;
+    }
+
+    .terminal-body::-webkit-scrollbar {
+      width: 14px;
+      background: #1a222c;
+    }
+    .terminal-body::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #42586e 0%, #2f4051 100%);
+      border: 2px solid #1a222c;
+      border-radius: 4px;
+    }
+
+    /* Left MMC TreeView Explorer Style */
+    .mmc-treeview {
+      background: linear-gradient(180deg, #fcfdfe 0%, #f1f4f8 100%);
+      border-right: 1px solid #c2cad6;
+      box-shadow: inset 0 1px 0 #ffffff;
+    }
+
+    .tree-node {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+      color: #2b3d52;
+      font-size: 11px;
+      border: 1px solid transparent;
+    }
+
+    .tree-node:hover {
+      background: linear-gradient(180deg, #f2f7fc 0%, #e0effa 100%);
+      border-color: #a4c9e8;
+    }
+
+    .tree-node.selected {
+      background: linear-gradient(180deg, #e4f0fa 0%, #cce5f7 100%);
+      border-color: #79a7d3;
+      font-weight: 600;
+      color: #0b2240;
+    }
+
+    /* Win7 Status Bar */
+    .aero-statusbar {
+      height: 23px;
+      background: linear-gradient(180deg, #e5e9f0 0%, #d3d9e3 50%, #c4ccd8 51%, #d9e0eb 100%);
+      border-top: 1px solid #9aa3b2;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      padding: 0 6px;
+      font-size: 11px;
+      color: #334455;
+    }
+
+    .status-panel {
+      padding: 0 10px;
+      border-right: 1px solid #b8c1ce;
+      box-shadow: 1px 0 0 #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Win7 Resize Grip */
+    .resize-grip {
+      width: 14px;
+      height: 14px;
+      margin-left: auto;
+      background-image: radial-gradient(#6c7b8f 1.5px, transparent 1.5px);
+      background-size: 4px 4px;
+      background-position: 2px 2px;
+      opacity: 0.85;
+    }
+
+    /* Preset Tint Switcher */
+    .color-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 1px solid rgba(0, 0, 0, 0.4);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.8);
+      transition: transform 0.15s;
+    }
+    .color-swatch:hover {
+      transform: scale(1.2);
+    }
+
+    /* Command prompt blinking cursor */
+    .cursor-blink {
+      display: inline-block;
+      width: 7px;
+      height: 14px;
+      background: #00ffcc;
+      vertical-align: -2px;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Controller Banner -->
+  <div class="max-w-6xl w-full mb-3 flex items-center justify-between px-4 py-2 bg-black/60 backdrop-blur-md rounded-lg border border-white/20 text-white shadow-xl">
+    <div class="flex items-center gap-3">
+      <span class="text-sm font-semibold tracking-wide flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span>
+        TermForge - Windows 7 Aero Glass 设计稿交互演示
+      </span>
+      <span class="text-xs text-cyan-200/70 border-l border-white/20 pl-3">
+        支持 MDI 子窗口拖动、窗口层叠/平铺、毛玻璃色调切换与全功能交互体验
+      </span>
+    </div>
+
+    <!-- Theme / Glass Color Switcher -->
+    <div class="flex items-center gap-2 text-xs">
+      <span class="text-white/80">Aero 色调:</span>
+      <div class="color-swatch bg-[#a5cdeb]" title="天青默认 (Default Sky Cyan)" onclick="setAeroTint('rgba(165, 205, 235, 0.5)')"></div>
+      <div class="color-swatch bg-[#8bc4a2]" title="翡翠绿 (Sea Green)" onclick="setAeroTint('rgba(140, 200, 165, 0.5)')"></div>
+      <div class="color-swatch bg-[#9a9dbf]" title="石墨灰蓝 (Slate / Graphite)" onclick="setAeroTint('rgba(150, 160, 180, 0.55)')"></div>
+      <div class="color-swatch bg-[#d09fb8]" title="暮光粉紫 (Twilight Purple)" onclick="setAeroTint('rgba(200, 155, 180, 0.5)')"></div>
+      <div class="color-swatch bg-[#e5b382]" title="暖琥珀 (Amber)" onclick="setAeroTint('rgba(225, 175, 130, 0.5)')"></div>
+    </div>
+  </div>
+
+  <!-- Main Application Window in Win7 Aero -->
+  <div id="main-aero-window" class="aero-window w-full max-w-6xl h-[680px]">
+    
+    <!-- 1. Aero Glass Window Caption / Titlebar -->
+    <div class="h-[30px] px-3 flex items-center justify-between select-none relative z-20">
+      <!-- Icon + App Title -->
+      <div class="flex items-center gap-2">
+        <!-- Classic Win7 Terminal App Icon -->
+        <div class="w-4 h-4 rounded bg-gradient-to-b from-cyan-400 to-blue-700 p-[2px] shadow-sm flex items-center justify-center border border-white/60">
+          <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 9l4 4-4 4m6 0h3"/>
+          </svg>
+        </div>
+        <span class="aero-title">TermForge - [控制台根节点 (MMC 工作台)]</span>
+      </div>
+
+      <!-- Windows 7 Glass Caption Buttons -->
+      <div class="caption-btn-group">
+        <!-- Min -->
+        <button class="cap-btn" title="最小化" onclick="alert('触发窗口最小化')">
+          <svg width="8" height="2" viewBox="0 0 8 2" fill="#222">
+            <rect width="8" height="2" />
+          </svg>
+        </button>
+        <!-- Max -->
+        <button class="cap-btn" title="最大化" onclick="alert('触发窗口最大化/还原')">
+          <svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="#222" stroke-width="1.5">
+            <rect x="0.75" y="0.75" width="7.5" height="7.5" />
+          </svg>
+        </button>
+        <!-- Close -->
+        <button class="cap-btn cap-btn-close" title="关闭" onclick="alert('TermForge: 确认退出并回收所有后台 PTY 进程？')">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round">
+            <line x1="1.5" y1="1.5" x2="8.5" y2="8.5" />
+            <line x1="8.5" y1="1.5" x2="1.5" y2="8.5" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. Classic Win7 Menu Bar -->
+    <div class="aero-menubar">
+      <div class="aero-menubar-item">文件(_F)</div>
+      <div class="aero-menubar-item">操作(_A)</div>
+      <div class="aero-menubar-item">视图(_V)</div>
+      <div class="aero-menubar-item">窗口(_W)</div>
+      <div class="aero-menubar-item">工具(_T)</div>
+      <div class="aero-menubar-item">帮助(_H)</div>
+      <div class="ml-auto flex items-center gap-1 text-[#3b5998]">
+        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+        </svg>
+        <span class="text-[11px] text-gray-700">Windows 7 Aero Edition</span>
+      </div>
+    </div>
+
+    <!-- 3. Classic Win7 Explorer / MMC Ribbon Toolbar -->
+    <div class="aero-toolbar">
+      <!-- New Terminal -->
+      <button class="aero-btn aero-btn-primary" onclick="spawnNewTerminal()">
+        <span class="text-green-600 font-bold text-xs">✚</span>
+        <span>新建终端 (PowerShell)</span>
+      </button>
+
+      <!-- New AI Agent Session -->
+      <button class="aero-btn" onclick="spawnAgentSession()">
+        <span class="text-cyan-600 font-bold text-xs">🤖</span>
+        <span>新建 AI Agent 终端</span>
+      </button>
+
+      <div class="aero-separator"></div>
+
+      <!-- Stop Session -->
+      <button class="aero-btn" onclick="alert('已发送 SIGINT / Ctrl+C 中断信号')">
+        <span class="text-red-500 font-bold text-xs">⏹</span>
+        <span>停止会话</span>
+      </button>
+
+      <div class="aero-separator"></div>
+
+      <!-- Window Cascade -->
+      <button class="aero-btn" onclick="cascadeWindows()">
+        <svg class="w-3.5 h-3.5 text-blue-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="13" height="13" rx="1"/>
+          <rect x="8" y="8" width="13" height="13" rx="1"/>
+        </svg>
+        <span>层叠(_C)</span>
+      </button>
+
+      <!-- Tile Horizontal -->
+      <button class="aero-btn" onclick="tileHorizontal()">
+        <svg class="w-3.5 h-3.5 text-blue-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="8" rx="1"/>
+          <rect x="3" y="13" width="18" height="8" rx="1"/>
+        </svg>
+        <span>水平平铺</span>
+      </button>
+
+      <!-- Tile Vertical -->
+      <button class="aero-btn" onclick="tileVertical()">
+        <svg class="w-3.5 h-3.5 text-blue-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="8" height="18" rx="1"/>
+          <rect x="13" y="3" width="8" height="18" rx="1"/>
+        </svg>
+        <span>垂直平铺</span>
+      </button>
+
+      <div class="aero-separator"></div>
+
+      <button class="aero-btn" onclick="clearActiveTerminal()">
+        <span>清空输出</span>
+      </button>
+
+      <div class="ml-auto flex items-center gap-2">
+        <span class="text-[11px] text-gray-600">会话管理:</span>
+        <span class="px-2 py-0.5 bg-blue-100/80 text-blue-800 text-[10px] font-semibold rounded border border-blue-300">ConPTY Native</span>
+      </div>
+    </div>
+
+    <!-- 4. MMC Multi-Column Workspace -->
+    <div class="flex-1 flex overflow-hidden">
+      
+      <!-- 4.1 Left Navigation Tree (MMC Console Root) -->
+      <div class="w-56 mmc-treeview flex flex-col p-2 select-none">
+        <div class="text-[11px] font-bold text-[#1f3853] pb-1 border-b border-[#cbd5e1] mb-2 flex items-center justify-between">
+          <span>控制台根节点</span>
+          <span class="text-[10px] text-gray-500 font-normal">树状导航</span>
+        </div>
+
+        <div class="space-y-1 overflow-y-auto flex-1 text-[11px]">
+          <!-- Node 1: Active Sessions -->
+          <div class="tree-node selected" onclick="selectTreeNode(this)">
+            <span class="text-blue-600 text-xs">📂</span>
+            <span>活动终端会话 (3)</span>
+          </div>
+          <div class="pl-5 space-y-0.5">
+            <div class="tree-node" onclick="focusMdi('win-ps7'); selectTreeNode(this)">
+              <span class="text-cyan-600 text-xs">⚡</span>
+              <span>PowerShell 7 (#1)</span>
+            </div>
+            <div class="tree-node" onclick="focusMdi('win-agent'); selectTreeNode(this)">
+              <span class="text-purple-600 text-xs">🤖</span>
+              <span>AI Agent (Claude)</span>
+            </div>
+            <div class="tree-node" onclick="focusMdi('win-wsl'); selectTreeNode(this)">
+              <span class="text-orange-600 text-xs">🐧</span>
+              <span>WSL2: Ubuntu (#3)</span>
+            </div>
+          </div>
+
+          <!-- Node 2: Available Profiles -->
+          <div class="tree-node mt-2" onclick="selectTreeNode(this)">
+            <span class="text-yellow-600 text-xs">📁</span>
+            <span>Shell 与 Agent 配置</span>
+          </div>
+          <div class="pl-5 space-y-0.5 text-gray-600">
+            <div class="tree-node" onclick="spawnNewTerminal('PowerShell 7')">
+              <span class="text-blue-500 text-[10px]">▶</span>
+              <span>PowerShell 7.4</span>
+            </div>
+            <div class="tree-node" onclick="spawnNewTerminal('Windows PowerShell')">
+              <span class="text-blue-500 text-[10px]">▶</span>
+              <span>Windows PowerShell 5.1</span>
+            </div>
+            <div class="tree-node" onclick="spawnNewTerminal('Command Prompt')">
+              <span class="text-gray-500 text-[10px]">▶</span>
+              <span>Command Prompt (cmd)</span>
+            </div>
+            <div class="tree-node" onclick="spawnNewTerminal('WSL 2')">
+              <span class="text-orange-500 text-[10px]">▶</span>
+              <span>Ubuntu Linux (WSL)</span>
+            </div>
+            <div class="tree-node" onclick="spawnAgentSession()">
+              <span class="text-purple-500 text-[10px]">✨</span>
+              <span>Claude Code Agent</span>
+            </div>
+          </div>
+
+          <!-- Node 3: Environment -->
+          <div class="tree-node mt-2" onclick="selectTreeNode(this)">
+            <span class="text-gray-500 text-xs">⚙️</span>
+            <span>JobObject 监控器</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4.2 Central MDI Canvas -->
+      <div id="mdi-canvas" class="flex-1 mmc-workspace relative">
+
+        <!-- Child Window 1: PowerShell 7 -->
+        <div id="win-ps7" class="mdi-child-window active-window" style="left: 30px; top: 25px; width: 480px; height: 320px;" onmousedown="bringToFront('win-ps7')">
+          <!-- Window Titlebar -->
+          <div class="mdi-titlebar" onmousedown="startDrag(event, 'win-ps7')">
+            <div class="flex items-center gap-1.5 overflow-hidden">
+              <span class="text-xs">⚡</span>
+              <span class="aero-title truncate">PowerShell 7.4.2 [PID: 14208]</span>
+            </div>
+            <div class="caption-btn-group scale-90 origin-right">
+              <button class="cap-btn" onclick="minimizeWindow('win-ps7')"><svg width="7" height="2" fill="#222"><rect width="7" height="2"/></svg></button>
+              <button class="cap-btn" onclick="maximizeWindow('win-ps7')"><svg width="7" height="7" fill="none" stroke="#222" stroke-width="1.2"><rect x="0.6" y="0.6" width="5.8" height="5.8"/></svg></button>
+              <button class="cap-btn cap-btn-close !w-9" onclick="closeWindow('win-ps7')">
+                <svg width="8" height="8" stroke="#fff" stroke-width="1.8"><line x1="1" y1="1" x2="7" y2="7"/><line x1="7" y1="1" x2="1" y2="7"/></svg>
+              </button>
+            </div>
+          </div>
+          <!-- Terminal Content Area -->
+          <div class="terminal-body flex-1">
+            <div class="text-gray-400">PowerShell 7.4.2</div>
+            <div class="text-gray-400 mb-2">Loading personal and system profiles took 312ms.</div>
+            <div><span class="text-cyan-400 font-semibold">PS C:\Users\user\Desktop\TermForge</span>&gt; <span class="text-yellow-300">git status</span></div>
+            <div class="text-green-400 mt-1">On branch main</div>
+            <div class="text-gray-300">Your branch is up to date with 'origin/main'.</div>
+            <div class="text-gray-300">Changes not staged for commit:</div>
+            <div class="text-red-400 ml-4">modified:   src/AgentTerminal.App/MainWindow.xaml</div>
+            <div class="text-red-400 ml-4">modified:   src/AgentTerminal.App/Themes/AeroTheme.xaml</div>
+            <div class="mt-2"><span class="text-cyan-400 font-semibold">PS C:\Users\user\Desktop\TermForge</span>&gt; <span class="text-yellow-300">dotnet build -c Release</span></div>
+            <div class="text-gray-300">MSBuild version 17.10.4 for .NET</div>
+            <div class="text-green-400">  AgentTerminal.Core -&gt; bin\Release\net8.0\AgentTerminal.Core.dll</div>
+            <div class="text-green-400">  AgentTerminal.Terminal -&gt; bin\Release\net8.0\AgentTerminal.Terminal.dll</div>
+            <div class="text-emerald-300 font-bold mt-1">Build succeeded. 0 Warning(s), 0 Error(s).</div>
+            <div class="mt-2"><span class="text-cyan-400 font-semibold">PS C:\Users\user\Desktop\TermForge</span>&gt; <span class="cursor-blink"></span></div>
+          </div>
+        </div>
+
+        <!-- Child Window 2: AI Agent Terminal -->
+        <div id="win-agent" class="mdi-child-window inactive-window" style="left: 260px; top: 110px; width: 500px; height: 360px;" onmousedown="bringToFront('win-agent')">
+          <!-- Window Titlebar -->
+          <div class="mdi-titlebar" onmousedown="startDrag(event, 'win-agent')">
+            <div class="flex items-center gap-1.5 overflow-hidden">
+              <span class="text-xs">🤖</span>
+              <span class="aero-title truncate">AI Agent Terminal (Claude Code Agent)</span>
+            </div>
+            <div class="caption-btn-group scale-90 origin-right">
+              <button class="cap-btn" onclick="minimizeWindow('win-agent')"><svg width="7" height="2" fill="#222"><rect width="7" height="2"/></svg></button>
+              <button class="cap-btn" onclick="maximizeWindow('win-agent')"><svg width="7" height="7" fill="none" stroke="#222" stroke-width="1.2"><rect x="0.6" y="0.6" width="5.8" height="5.8"/></svg></button>
+              <button class="cap-btn cap-btn-close !w-9" onclick="closeWindow('win-agent')">
+                <svg width="8" height="8" stroke="#fff" stroke-width="1.8"><line x1="1" y1="1" x2="7" y2="7"/><line x1="7" y1="1" x2="1" y2="7"/></svg>
+              </button>
+            </div>
+          </div>
+          <!-- Terminal Content Area -->
+          <div class="terminal-body flex-1 flex flex-col justify-between">
+            <div class="space-y-2">
+              <div class="px-2 py-1 bg-cyan-950/80 border border-cyan-500/40 rounded text-cyan-300 text-[10px] flex items-center justify-between">
+                <span>⚡ AI Agent PTY 会话处于就绪状态</span>
+                <span class="text-gray-400">Context: 12.4k tokens</span>
+              </div>
+              <div class="text-purple-300 font-semibold">● Claude Code v0.2.29</div>
+              <div class="text-gray-300">
+                <span class="text-emerald-400">?</span> 终端样式优化建议：为 Windows 7 Aero 模式配置专属调色板与玻璃反光 Shader。
+              </div>
+              <div class="bg-gray-900/90 p-2 rounded border border-gray-800 text-[10px] text-gray-300 space-y-1">
+                <div class="text-cyan-400 font-mono">=== 架构建议与 DWM 接口 ===</div>
+                <div>1. 开启 <span class="text-yellow-300">DwmExtendFrameIntoClientArea</span> 穿透玻璃区域</div>
+                <div>2. WPF 采用 <span class="text-yellow-300">WindowChrome</span> 自定义高光边缘</div>
+                <div>3. 终端 DrawingVisual 缓冲区采用 TrueColor 原生渲染</div>
+              </div>
+              <div class="text-cyan-400 text-[11px] flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+                <span>Agent 正在监听 Terminal 输出流...</span>
+              </div>
+            </div>
+
+            <!-- Agent Prompt Input Box -->
+            <div class="mt-3 pt-2 border-t border-gray-800 flex items-center gap-2">
+              <span class="text-cyan-400 font-bold">&gt;</span>
+              <input type="text" placeholder="输入 Agent 指令或提问..." class="bg-transparent border-none text-white text-[11px] focus:outline-none flex-1 placeholder-gray-600" value="重构 WindowChrome 并适配 Windows 7 经典 Aero 材质">
+              <button class="px-2 py-0.5 bg-cyan-600 text-white rounded text-[10px] font-semibold hover:bg-cyan-500">发送</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Child Window 3: WSL Linux -->
+        <div id="win-wsl" class="mdi-child-window inactive-window" style="left: 100px; top: 190px; width: 440px; height: 260px;" onmousedown="bringToFront('win-wsl')">
+          <div class="mdi-titlebar" onmousedown="startDrag(event, 'win-wsl')">
+            <div class="flex items-center gap-1.5 overflow-hidden">
+              <span class="text-xs">🐧</span>
+              <span class="aero-title truncate">WSL2: Ubuntu 22.04 LTS</span>
+            </div>
+            <div class="caption-btn-group scale-90 origin-right">
+              <button class="cap-btn" onclick="minimizeWindow('win-wsl')"><svg width="7" height="2" fill="#222"><rect width="7" height="2"/></svg></button>
+              <button class="cap-btn" onclick="maximizeWindow('win-wsl')"><svg width="7" height="7" fill="none" stroke="#222" stroke-width="1.2"><rect x="0.6" y="0.6" width="5.8" height="5.8"/></svg></button>
+              <button class="cap-btn cap-btn-close !w-9" onclick="closeWindow('win-wsl')">
+                <svg width="8" height="8" stroke="#fff" stroke-width="1.8"><line x1="1" y1="1" x2="7" y2="7"/><line x1="7" y1="1" x2="1" y2="7"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="terminal-body flex-1">
+            <div class="text-gray-400">Linux DESKTOP-TERMFORGE 5.15.153.1-microsoft-standard-WSL2</div>
+            <div><span class="text-green-400 font-bold">user@termforge</span>:<span class="text-blue-400 font-bold">~</span>$ uname -a</div>
+            <div class="text-gray-300">Linux termforge 5.15.153.1 #1 SMP x86_64 GNU/Linux</div>
+            <div class="mt-1"><span class="text-green-400 font-bold">user@termforge</span>:<span class="text-blue-400 font-bold">~</span>$ ps aux | grep conpty</div>
+            <div class="text-gray-300">root       412  0.0  0.1  14208  3800 pts/1    S+   17:08   0:00 conpty-bridge</div>
+            <div class="mt-1"><span class="text-green-400 font-bold">user@termforge</span>:<span class="text-blue-400 font-bold">~</span>$ <span class="cursor-blink"></span></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 4.3 Right Properties Pane (MMC Action & Properties) -->
+      <div class="w-64 bg-[#f4f7fb] border-l border-[#c4cbd8] flex flex-col p-2 select-none text-[11px]">
+        <div class="text-[11px] font-bold text-[#1f3853] pb-1 border-b border-[#cbd5e1] mb-2 flex items-center justify-between">
+          <span>终端会话属性</span>
+          <span class="text-blue-600">刷新</span>
+        </div>
+
+        <div class="space-y-3 overflow-y-auto flex-1">
+          <!-- Group 1: Session Info -->
+          <div class="bg-white p-2.5 rounded border border-[#d6dbe3] shadow-xs">
+            <div class="text-xs font-bold text-[#204060] mb-2 border-b border-gray-100 pb-1">当前活动会话</div>
+            <table class="w-full text-[11px]">
+              <tr class="h-5"><td class="text-gray-500 w-20">名称:</td><td class="font-medium text-gray-800" id="prop-title">PowerShell 7.4</td></tr>
+              <tr class="h-5"><td class="text-gray-500">进程 PID:</td><td class="font-mono text-blue-700 font-semibold" id="prop-pid">14208</td></tr>
+              <tr class="h-5"><td class="text-gray-500">通道状态:</td><td><span class="px-1.5 py-0.2 bg-green-100 text-green-800 rounded font-semibold text-[10px]">Connected</span></td></tr>
+              <tr class="h-5"><td class="text-gray-500">ConPTY 规格:</td><td class="font-mono text-gray-700">120 cols × 30 rows</td></tr>
+              <tr class="h-5"><td class="text-gray-500">JobObject:</td><td class="text-emerald-700">Protected (AutoKill)</td></tr>
+            </table>
+          </div>
+
+          <!-- Group 2: Win7 Aero Styling Specs -->
+          <div class="bg-white p-2.5 rounded border border-[#d6dbe3] shadow-xs">
+            <div class="text-xs font-bold text-[#204060] mb-2 border-b border-gray-100 pb-1">Win7 Aero 视觉参数</div>
+            <div class="space-y-1.5 text-[11px]">
+              <div class="flex justify-between text-gray-600">
+                <span>边框圆角 (Corner):</span>
+                <span class="font-mono text-gray-800 font-semibold">8px / 6px</span>
+              </div>
+              <div class="flex justify-between text-gray-600">
+                <span>毛玻璃模糊 (Blur):</span>
+                <span class="font-mono text-gray-800 font-semibold">16px saturate(180%)</span>
+              </div>
+              <div class="flex justify-between text-gray-600">
+                <span>高光反光带 (Sheen):</span>
+                <span class="font-mono text-gray-800 font-semibold">45% 线性递减</span>
+              </div>
+              <div class="flex justify-between text-gray-600">
+                <span>标题光晕 (Glow):</span>
+                <span class="font-mono text-gray-800 font-semibold">#FFFFFF (12px)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Group 3: MMC Actions -->
+          <div class="bg-white p-2.5 rounded border border-[#d6dbe3] shadow-xs">
+            <div class="text-xs font-bold text-[#204060] mb-2 border-b border-gray-100 pb-1">操作任务</div>
+            <div class="space-y-1">
+              <a href="#" class="block py-1 text-blue-700 hover:underline" onclick="cascadeWindows()">• 自动重排并层叠全部终端</a>
+              <a href="#" class="block py-1 text-blue-700 hover:underline" onclick="tileHorizontal()">• 纵向拆分终端工作台</a>
+              <a href="#" class="block py-1 text-blue-700 hover:underline" onclick="alert('已复制当前选中终端 ANSI 文本至剪贴板')">• 导出终端缓冲区日志</a>
+              <a href="#" class="block py-1 text-blue-700 hover:underline" onclick="alert('已保存当前 Aero 布局与环境变量到工作区快照')">• 保存工作区快照 (Workspace)</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 5. Classic Win7 Status Bar -->
+    <div class="aero-statusbar">
+      <div class="status-panel">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span>就绪 (Ready)</span>
+      </div>
+      <div class="status-panel">
+        <span>活动会话: <strong>3 个</strong></span>
+      </div>
+      <div class="status-panel">
+        <span>ConPTY I/O 吞吐: <strong>1.4 MB/s</strong></span>
+      </div>
+      <div class="status-panel">
+        <span>AI Agent 状态: <strong class="text-cyan-700">监听中 (Idle)</strong></span>
+      </div>
+      <div class="status-panel">
+        <span>编码: <strong>UTF-8</strong></span>
+      </div>
+      <!-- Windows 7 resize grip -->
+      <div class="resize-grip" title="窗口缩放把手"></div>
+    </div>
+
+  </div>
+
+  <!-- Interactive JavaScript for Dragging, Focusing, Window Layouts -->
+  <script>
+    let topZ = 100;
+    let dragItem = null;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+
+    function setAeroTint(color) {
+      document.documentElement.style.setProperty('--glass-bg', color);
+    }
+
+    function bringToFront(winId) {
+      const win = document.getElementById(winId);
+      if (!win) return;
+      topZ++;
+      win.style.zIndex = topZ;
+
+      // Update active/inactive style
+      document.querySelectorAll('.mdi-child-window').forEach(w => {
+        w.classList.remove('active-window');
+        w.classList.add('inactive-window');
+      });
+      win.classList.remove('inactive-window');
+      win.classList.add('active-window');
+
+      // Update properties pane
+      if (winId === 'win-ps7') {
+        document.getElementById('prop-title').innerText = 'PowerShell 7.4.2';
+        document.getElementById('prop-pid').innerText = '14208';
+      } else if (winId === 'win-agent') {
+        document.getElementById('prop-title').innerText = 'AI Agent (Claude Code)';
+        document.getElementById('prop-pid').innerText = '18992';
+      } else if (winId === 'win-wsl') {
+        document.getElementById('prop-title').innerText = 'Ubuntu 22.04 (WSL)';
+        document.getElementById('prop-pid').innerText = '9420';
+      }
+    }
+
+    function focusMdi(winId) {
+      bringToFront(winId);
+      const win = document.getElementById(winId);
+      if (win) {
+        win.style.display = 'flex';
+      }
+    }
+
+    function startDrag(e, winId) {
+      bringToFront(winId);
+      dragItem = document.getElementById(winId);
+      const canvas = document.getElementById('mdi-canvas');
+      const canvasRect = canvas.getBoundingClientRect();
+      const winRect = dragItem.getBoundingClientRect();
+      dragOffsetX = e.clientX - winRect.left;
+      dragOffsetY = e.clientY - winRect.top;
+
+      window.addEventListener('mousemove', onDragMove);
+      window.addEventListener('mouseup', onDragEnd);
+      e.preventDefault();
+    }
+
+    function onDragMove(e) {
+      if (!dragItem) return;
+      const canvas = document.getElementById('mdi-canvas');
+      const canvasRect = canvas.getBoundingClientRect();
+
+      let left = e.clientX - canvasRect.left - dragOffsetX;
+      let top = e.clientY - canvasRect.top - dragOffsetY;
+
+      // Boundaries
+      left = Math.max(0, Math.min(canvasRect.width - 150, left));
+      top = Math.max(0, Math.min(canvasRect.height - 50, top));
+
+      dragItem.style.left = left + 'px';
+      dragItem.style.top = top + 'px';
+    }
+
+    function onDragEnd() {
+      dragItem = null;
+      window.removeEventListener('mousemove', onDragMove);
+      window.removeEventListener('mouseup', onDragEnd);
+    }
+
+    // Window operations
+    function closeWindow(winId) {
+      const win = document.getElementById(winId);
+      if (win) win.style.display = 'none';
+    }
+
+    function minimizeWindow(winId) {
+      const win = document.getElementById(winId);
+      if (win) win.style.display = 'none';
+    }
+
+    function maximizeWindow(winId) {
+      const win = document.getElementById(winId);
+      if (!win) return;
+      const canvas = document.getElementById('mdi-canvas');
+      if (win.getAttribute('data-maximized') === 'true') {
+        win.style.left = win.getAttribute('data-prev-left') || '30px';
+        win.style.top = win.getAttribute('data-prev-top') || '30px';
+        win.style.width = win.getAttribute('data-prev-width') || '480px';
+        win.style.height = win.getAttribute('data-prev-height') || '320px';
+        win.removeAttribute('data-maximized');
+      } else {
+        win.setAttribute('data-prev-left', win.style.left);
+        win.setAttribute('data-prev-top', win.style.top);
+        win.setAttribute('data-prev-width', win.style.width);
+        win.setAttribute('data-prev-height', win.style.height);
+        win.setAttribute('data-maximized', 'true');
+        win.style.left = '2px';
+        win.style.top = '2px';
+        win.style.width = (canvas.clientWidth - 4) + 'px';
+        win.style.height = (canvas.clientHeight - 4) + 'px';
+      }
+    }
+
+    // Cascade Layout
+    function cascadeWindows() {
+      const windows = Array.from(document.querySelectorAll('.mdi-child-window')).filter(w => w.style.display !== 'none');
+      let offset = 25;
+      windows.forEach((w, idx) => {
+        w.removeAttribute('data-maximized');
+        w.style.width = '480px';
+        w.style.height = '310px';
+        w.style.left = (25 + idx * 35) + 'px';
+        w.style.top = (25 + idx * 35) + 'px';
+        bringToFront(w.id);
+      });
+    }
+
+    // Tile Horizontal
+    function tileHorizontal() {
+      const canvas = document.getElementById('mdi-canvas');
+      const windows = Array.from(document.querySelectorAll('.mdi-child-window')).filter(w => w.style.display !== 'none');
+      const count = windows.length;
+      if (count === 0) return;
+      const h = Math.floor((canvas.clientHeight - 6) / count);
+      windows.forEach((w, idx) => {
+        w.removeAttribute('data-maximized');
+        w.style.left = '4px';
+        w.style.width = (canvas.clientWidth - 8) + 'px';
+        w.style.top = (4 + idx * h) + 'px';
+        w.style.height = (h - 4) + 'px';
+      });
+    }
+
+    // Tile Vertical
+    function tileVertical() {
+      const canvas = document.getElementById('mdi-canvas');
+      const windows = Array.from(document.querySelectorAll('.mdi-child-window')).filter(w => w.style.display !== 'none');
+      const count = windows.length;
+      if (count === 0) return;
+      const w = Math.floor((canvas.clientWidth - 6) / count);
+      windows.forEach((win, idx) => {
+        win.removeAttribute('data-maximized');
+        win.style.top = '4px';
+        win.style.height = (canvas.clientHeight - 8) + 'px';
+        win.style.left = (4 + idx * w) + 'px';
+        win.style.width = (w - 4) + 'px';
+      });
+    }
+
+    function selectTreeNode(el) {
+      document.querySelectorAll('.tree-node').forEach(node => node.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function spawnNewTerminal(name = 'PowerShell 7') {
+      const id = 'win-dyn-' + Date.now();
+      const canvas = document.getElementById('mdi-canvas');
+      const newWin = document.createElement('div');
+      newWin.id = id;
+      newWin.className = 'mdi-child-window active-window';
+      newWin.style.left = '120px';
+      newWin.style.top = '80px';
+      newWin.style.width = '460px';
+      newWin.style.height = '300px';
+      newWin.onmousedown = () => bringToFront(id);
+
+      newWin.innerHTML = `
+        <div class="mdi-titlebar" onmousedown="startDrag(event, '${id}')">
+          <div class="flex items-center gap-1.5 overflow-hidden">
+            <span class="text-xs">⚡</span>
+            <span class="aero-title truncate">${name} [New Session]</span>
+          </div>
+          <div class="caption-btn-group scale-90 origin-right">
+            <button class="cap-btn" onclick="minimizeWindow('${id}')"><svg width="7" height="2" fill="#222"><rect width="7" height="2"/></svg></button>
+            <button class="cap-btn" onclick="maximizeWindow('${id}')"><svg width="7" height="7" fill="none" stroke="#222" stroke-width="1.2"><rect x="0.6" y="0.6" width="5.8" height="5.8"/></svg></button>
+            <button class="cap-btn cap-btn-close !w-9" onclick="closeWindow('${id}')">
+              <svg width="8" height="8" stroke="#fff" stroke-width="1.8"><line x1="1" y1="1" x2="7" y2="7"/><line x1="7" y1="1" x2="1" y2="7"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="terminal-body flex-1">
+          <div class="text-gray-400">${name} Native ConPTY Attached.</div>
+          <div class="mt-2"><span class="text-cyan-400 font-semibold">PS C:\\Users\\user\\Desktop\\TermForge</span>&gt; <span class="cursor-blink"></span></div>
+        </div>
+      `;
+      canvas.appendChild(newWin);
+      bringToFront(id);
+    }
+
+    function spawnAgentSession() {
+      spawnNewTerminal('AI Agent CLI (Gemini)');
+    }
+
+    function clearActiveTerminal() {
+      const active = document.querySelector('.mdi-child-window.active-window .terminal-body');
+      if (active) {
+        active.innerHTML = `<div class="text-gray-400">Terminal buffer cleared.</div><div class="mt-2"><span class="text-cyan-400 font-semibold">PS C:\\Users\\user\\Desktop\\TermForge</span>&gt; <span class="cursor-blink"></span></div>`;
+      }
+    }
+  </script>
+</body>
+</html>
