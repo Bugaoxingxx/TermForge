@@ -129,4 +129,54 @@ public interface ITerminalBuffer
     /// 清空缓冲区内容与回滚历史
     /// </summary>
     void Clear();
+
+    /// <summary>
+    /// 多线程并发访问同步锁对象
+    /// </summary>
+    object SyncRoot { get; }
+
+    /// <summary>
+    /// 缓冲区内容或光标变更时触发的重绘请求事件
+    /// </summary>
+    event EventHandler? RefreshRequested;
+
+    /// <summary>
+    /// 请求触发重绘通知
+    /// </summary>
+    void RequestRefresh();
+
+    /// <summary>
+    /// 在当前光标处插入指定数量的空白字符（ICH），右侧字符向右顺移
+    /// </summary>
+    void InsertCharacters(int count = 1);
+
+    /// <summary>
+    /// 从当前光标处删除指定数量的字符（DCH），右侧字符向左顺移，行尾补空白
+    /// </summary>
+    void DeleteCharacters(int count = 1);
+
+    /// <summary>
+    /// 从当前光标处擦除指定数量的字符（ECH），替换为空白，光标位置不变
+    /// </summary>
+    void EraseCharacters(int count = 1);
+
+    /// <summary>
+    /// 在当前光标行插入指定数量的空白行（IL），下方行向下顺移
+    /// </summary>
+    void InsertLines(int count = 1);
+
+    /// <summary>
+    /// 从当前光标行删除指定数量的行（DL），下方行向上顺移，滚动区底部补空白行
+    /// </summary>
+    void DeleteLines(int count = 1);
+
+    /// <summary>
+    /// 保存当前光标位置（DECSC / SCP）
+    /// </summary>
+    void SaveCursor();
+
+    /// <summary>
+    /// 恢复之前保存的光标位置（DECRC / RCP）
+    /// </summary>
+    void RestoreCursor();
 }

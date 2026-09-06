@@ -15,6 +15,8 @@ public class TerminalBuffer : ITerminalBuffer
         public int Rows { get; set; }
         public int CursorX { get; set; }
         public int CursorY { get; set; }
+        public int SavedCursorX { get; set; }
+        public int SavedCursorY { get; set; }
         public int ScrollTop { get; set; }
         public int ScrollBottom { get; set; }
 
@@ -71,6 +73,15 @@ public class TerminalBuffer : ITerminalBuffer
     public int TotalLines => Dimensions.Rows + _scrollbackCount;
 
     public bool IsAlternateScreen => _activeScreen == _alternateScreen;
+
+    public object SyncRoot { get; } = new();
+
+    public event EventHandler? RefreshRequested;
+
+    public void RequestRefresh()
+    {
+        RefreshRequested?.Invoke(this, EventArgs.Empty);
+    }
 
     public TerminalBuffer(int columns = 120, int rows = 30, int maxScrollbackLines = 20000)
     {
@@ -567,5 +578,111 @@ public class TerminalBuffer : ITerminalBuffer
                 Array.Fill(_alternateScreen.ViewportRows[i], Cell.Empty);
             }
         }
+    }
+
+    public void InsertCharacters(int count = 1)
+    {
+        if (count <= 0) count = 1;
+        int y = _activeScreen.CursorY;
+        int x = _activeScreen.CursorX;
+        if (y < 0 || y >= Dimensions.Rows || x < 0 || x >= Dimensions.Columns) return;
+
+        var row = _activeScreen.GetViewportRow(y);
+        int moveCount = Dimensions.Columns - x - count;
+        if (moveCount > 0)
+        {
+            Array.Copy(row, x, row, x + count, moveCount);
+        }
+        int fillCount = Math.Min(count, Dimensions.Columns - x);
+        for (int i = 0; i < fillCount; i++)
+        {
+            row[x + i] = Cell.Empty;
+        }
+    }
+
+    public void DeleteCharacters(int count = 1)
+    {
+        if (count <= 0) count = 1;
+        int y = _activeScreen.CursorY;
+        int x = _activeScreen.CursorX;
+        if (y < 0 || y >= Dimensions.Rows || x < 0 || x >= Dimensions.Columns) return;
+
+        var row = _activeScreen.GetViewportRow(y);
+        int moveCount = Dimensions.Columns - x - count;
+        if (moveCount > 0)
+        {
+            Array.Copy(row, x + count, row, x, moveCount);
+        }
+        int clearStart = Math.Max(x, Dimensions.Columns - count);
+        for (int i = clearStart; i < Dimensions.Columns; i++)
+        {
+            row[i] = Cell.Empty;
+        }
+    }
+
+    public void EraseCharacters(int count = 1)
+    {
+        if (count <= 0) count = 1;
+        int y = _activeScreen.CursorY;
+        int x = _activeScreen.CursorX;
+        if (y < 0 || y >= Dimensions.Rows || x < 0 || x >= Dimensions.Columns) return;
+
+        var row = _activeScreen.GetViewportRow(y);
+        int end = Math.Min(x + count, Dimensions.Columns);
+        for (int i = x; i < end; i++)
+        {
+            row[i] = Cell.Empty;
+        }
+    }
+
+    public void InsertLines(int count = 1)
+    {
+        if (count <= 0) count = 1;
+        int y = _activeScreen.CursorY;
+        if (y < _activeScreen.ScrollTop || y > _activeScreen.ScrollBottom) return;
+
+        int scrollBottom = _activeScreen.ScrollBottom;
+        for (int i = 0; i < count; i++)
+        {
+            var bottomRow = _activeScreen.GetViewportRow(scrollBottom);
+            for (int r = scrollBottom; r > y; r--)
+            {
+                _activeScreen.SetViewportRow(r, _activeScreen.GetViewportRow(r - 1));
+            }
+            Array.Fill(bottomRow, Cell.Empty);
+            _activeScreen.SetViewportRow(y, bottomRow);
+        }
+        _activeScreen.CursorX = 0;
+    }
+
+    public void DeleteLines(int count = 1)
+    {
+        if (count <= 0) count = 1;
+        int y = _activeScreen.CursorY;
+        if (y < _activeScreen.ScrollTop || y > _activeScreen.ScrollBottom) return;
+
+        int scrollBottom = _activeScreen.ScrollBottom;
+        for (int i = 0; i < count; i++)
+        {
+            var topRow = _activeScreen.GetViewportRow(y);
+            for (int r = y; r < scrollBottom; r++)
+            {
+                _activeScreen.SetViewportRow(r, _activeScreen.GetViewportRow(r + 1));
+            }
+            Array.Fill(topRow, Cell.Empty);
+            _activeScreen.SetViewportRow(scrollBottom, topRow);
+        }
+        _activeScreen.CursorX = 0;
+    }
+
+    public void SaveCursor()
+    {
+        _activeScreen.SavedCursorX = _activeScreen.CursorX;
+        _activeScreen.SavedCursorY = _activeScreen.CursorY;
+    }
+
+    public void RestoreCursor()
+    {
+        SetCursorPosition(_activeScreen.SavedCursorX, _activeScreen.SavedCursorY);
     }
 }

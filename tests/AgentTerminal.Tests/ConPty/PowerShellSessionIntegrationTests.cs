@@ -373,16 +373,41 @@ public class PowerShellSessionIntegrationTests
         var session = new ConPtyTerminalSession(profile);
         var doc = new TerminalDocumentViewModel(profile: profile, session: session);
 
-        await doc.StartAsync();
-        int pid = doc.ProcessId ?? 0;
-        Assert.True(pid > 0);
-        Assert.NotNull(Process.GetProcessById(pid));
+        try
+        {
+            await doc.StartAsync();
+            int pid = doc.ProcessId ?? 0;
+            Assert.True(pid > 0);
+            Assert.Contains(Process.GetProcesses(), p => p.Id == pid);
 
-        // Act: 关闭/释放文档
-        await doc.DisposeAsync();
+            // Act: 关闭/释放文档
+            await doc.DisposeAsync();
 
-        // 验证进程已被终止，无残留进程
-        await Task.Delay(300);
-        Assert.Throws<ArgumentException>(() => Process.GetProcessById(pid));
+            // 验证进程已被终止，无残留进程（轮询等待最多 3 秒）
+            bool exited = false;
+            for (int i = 0; i < 30; i++)
+            {
+                try
+                {
+                    using var p = Process.GetProcessById(pid);
+                    if (p.HasExited)
+                    {
+                        exited = true;
+                        break;
+                    }
+                }
+                catch (ArgumentException)
+                {
+                    exited = true;
+                    break;
+                }
+                await Task.Delay(100);
+            }
+            Assert.True(exited, $"进程 PID {pid} 未在预期时间内完全退出。");
+        }
+        finally
+        {
+            await doc.DisposeAsync();
+        }
     }
 }

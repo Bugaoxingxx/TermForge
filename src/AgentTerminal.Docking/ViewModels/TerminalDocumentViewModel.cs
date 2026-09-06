@@ -160,7 +160,11 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument,
         Session = session;
         Columns = session.Dimensions.Columns;
         Rows = session.Dimensions.Rows;
-        Buffer.Resize(Columns, Rows);
+        lock (Buffer.SyncRoot)
+        {
+            Buffer.Resize(Columns, Rows);
+        }
+        Buffer.RequestRefresh();
         State = session.State;
         ExitCode = session.ExitCode;
         if (session.ProcessId != null)
@@ -288,7 +292,11 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument,
 
         try
         {
-            Buffer.Resize(Columns, Rows);
+            lock (Buffer.SyncRoot)
+            {
+                Buffer.Resize(Columns, Rows);
+            }
+            Buffer.RequestRefresh();
             await Session.ResizeAsync(Columns, Rows);
             StatusMessage = $"视口已更新为 {Columns}x{Rows}";
         }
@@ -325,12 +333,16 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument,
     {
         lock (_bufferLock)
         {
-            Buffer.Clear();
+            lock (Buffer.SyncRoot)
+            {
+                Buffer.Clear();
+            }
             _flushTimer?.Stop();
             _pendingBuffer.Clear();
             _outputBuffer.Clear();
             IsTruncated = false;
             OutputText = string.Empty;
+            Buffer.RequestRefresh();
         }
     }
 
@@ -396,7 +408,6 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument,
 
         lock (_bufferLock)
         {
-            Parser.Parse(text);
             _pendingBuffer.Append(text);
 
             // 待刷新队列有界限制（1 MiB）
@@ -466,8 +477,17 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument,
     {
         if (_pendingBuffer.Length == 0) return;
 
-        _outputBuffer.Append(_pendingBuffer.ToString());
+        string pendingText = _pendingBuffer.ToString();
         _pendingBuffer.Clear();
+
+        // 1. 在 UI 线程对累积文本解析 VT 序列，安全改写 Buffer
+        lock (Buffer.SyncRoot)
+        {
+            Parser.Parse(pendingText);
+        }
+
+        // 2. 累加诊断输出缓冲
+        _outputBuffer.Append(pendingText);
 
         // 显示缓冲有界限制（1 MiB）
         if (_outputBuffer.Length > MaxOutputBufferSize)
@@ -492,6 +512,9 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument,
         {
             OutputText = fullText;
         }
+
+        // 3. 通知 Buffer 刷新，驱动 TerminalControl 重绘
+        Buffer.RequestRefresh();
     }
 
     public async ValueTask DisposeAsync()

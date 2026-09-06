@@ -183,6 +183,16 @@ public class VtParser
                 _state = ParserState.Ground;
                 break;
 
+            case '7': // DECSC (Save Cursor)
+                buffer.SaveCursor();
+                _state = ParserState.Ground;
+                break;
+
+            case '8': // DECRC (Restore Cursor)
+                buffer.RestoreCursor();
+                _state = ParserState.Ground;
+                break;
+
             case '\x1B': // 连续 ESC
                 _state = ParserState.Escape;
                 break;
@@ -207,7 +217,7 @@ public class VtParser
 
         if (c >= '0' && c <= '9')
         {
-            _currentParam = _currentParam * 10 + (c - '0');
+            _currentParam = Math.Min(_currentParam * 10 + (c - '0'), 100_000);
             _hasParam = true;
             return;
         }
@@ -365,6 +375,34 @@ public class VtParser
                 int bottom = GetParam(1, buffer.Dimensions.Rows) - 1;
                 buffer.SetScrollRegion(top, bottom);
                 buffer.SetCursorPosition(0, 0);
+                break;
+
+            case '@': // ICH (Insert Character)
+                buffer.InsertCharacters(GetParam(0, 1));
+                break;
+
+            case 'P': // DCH (Delete Character)
+                buffer.DeleteCharacters(GetParam(0, 1));
+                break;
+
+            case 'L': // IL (Insert Line)
+                buffer.InsertLines(GetParam(0, 1));
+                break;
+
+            case 'M': // DL (Delete Line)
+                buffer.DeleteLines(GetParam(0, 1));
+                break;
+
+            case 'X': // ECH (Erase Character)
+                buffer.EraseCharacters(GetParam(0, 1));
+                break;
+
+            case 's': // SCP (Save Cursor Position)
+                buffer.SaveCursor();
+                break;
+
+            case 'u': // RCP (Restore Cursor Position)
+                buffer.RestoreCursor();
                 break;
         }
     }
