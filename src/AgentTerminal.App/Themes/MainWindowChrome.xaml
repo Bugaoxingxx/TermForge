@@ -140,8 +140,9 @@
                             <Setter TargetName="MaxRestoreGlyph" Property="Data" Value="{DynamicResource AeroRestoreGeometry}" />
                             <Setter TargetName="BtnMaxRestore" Property="Command" Value="{x:Static SystemCommands.RestoreWindowCommand}" />
                             <Setter TargetName="BtnMaxRestore" Property="ToolTip" Value="还原" />
-                            <!-- 最大化时微调边框，避免全屏微溢 -->
+                            <!-- 最大化时微调边框与外边距补偿，避免全屏微溢及标题栏裁切 -->
                             <Setter TargetName="WindowRootBorder" Property="BorderThickness" Value="0" />
+                            <Setter TargetName="WindowRootBorder" Property="Margin" Value="6" />
                         </Trigger>
                         <!-- 未激活主窗口时降低饱和度与发光 -->
                         <Trigger Property="IsActive" Value="False">

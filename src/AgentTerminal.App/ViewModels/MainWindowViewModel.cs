@@ -67,22 +67,27 @@ public partial class MainWindowViewModel : ObservableObject
         CreateNewDocument(targetProfile, autoStart: true);
     }
 
+    private readonly Dictionary<TerminalDocumentViewModel, (EventHandler RequestClose, System.ComponentModel.PropertyChangedEventHandler PropertyChanged)> _documentSubscriptions = new();
+
     [RelayCommand]
     public async Task CloseTerminalAsync(TerminalDocumentViewModel? doc)
     {
         var target = doc ?? ActiveDocument;
         if (target == null || !Documents.Contains(target)) return;
 
-        // 关闭文档时安全清理其绑定的会话与原生进程
-        if (target.Session != null)
+        // 解绑事件监听，防止委托残留
+        if (_documentSubscriptions.Remove(target, out var subs))
         {
-            try
-            {
-                await target.Session.StopAsync();
-                await target.Session.DisposeAsync();
-            }
-            catch { }
+            target.RequestClose -= subs.RequestClose;
+            target.PropertyChanged -= subs.PropertyChanged;
         }
+
+        // 关闭文档时安全清理其绑定的会话与原生进程
+        try
+        {
+            await target.DisposeAsync();
+        }
+        catch { }
 
         Documents.Remove(target);
 
@@ -154,13 +159,16 @@ public partial class MainWindowViewModel : ObservableObject
     public void ActivateDocument(TerminalDocumentViewModel doc)
     {
         if (doc == null || !Documents.Contains(doc)) return;
+        if (ActiveDocument == doc && doc.IsActive) return;
+
+        // 先设定 ActiveDocument，避免 d.IsActive 触发 PropertyChanged 时二次重入
+        ActiveDocument = doc;
 
         foreach (var d in Documents)
         {
             d.IsActive = (d == doc);
         }
 
-        ActiveDocument = doc;
         StatusMessage = $"当前活动文档：{doc.Title}";
     }
 
@@ -168,15 +176,17 @@ public partial class MainWindowViewModel : ObservableObject
     {
         foreach (var doc in Documents.ToList())
         {
-            if (doc.Session != null)
+            if (_documentSubscriptions.Remove(doc, out var subs))
             {
-                try
-                {
-                    await doc.Session.StopAsync();
-                    await doc.Session.DisposeAsync();
-                }
-                catch { }
+                doc.RequestClose -= subs.RequestClose;
+                doc.PropertyChanged -= subs.PropertyChanged;
             }
+
+            try
+            {
+                await doc.DisposeAsync();
+            }
+            catch { }
         }
     }
 
@@ -198,14 +208,18 @@ public partial class MainWindowViewModel : ObservableObject
             ZIndex = Documents.Count + 1
         };
 
-        doc.RequestClose += async (s, e) => await CloseTerminalAsync(doc);
-        doc.PropertyChanged += (s, e) =>
+        EventHandler requestCloseHandler = async (s, e) => await CloseTerminalAsync(doc);
+        System.ComponentModel.PropertyChangedEventHandler propChangedHandler = (s, e) =>
         {
             if (e.PropertyName == nameof(TerminalDocumentViewModel.IsActive) && doc.IsActive && ActiveDocument != doc)
             {
                 ActivateDocument(doc);
             }
         };
+
+        doc.RequestClose += requestCloseHandler;
+        doc.PropertyChanged += propChangedHandler;
+        _documentSubscriptions[doc] = (requestCloseHandler, propChangedHandler);
 
         Documents.Add(doc);
         ActivateDocument(doc);

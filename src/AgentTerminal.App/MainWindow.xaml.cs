@@ -28,7 +28,8 @@ public partial class MainWindow : Window
 
     private void OnShowSystemMenu(object sender, ExecutedRoutedEventArgs e)
     {
-        var point = PointToScreen(new Point(0, 30));
+        double captionHeight = System.Windows.Shell.WindowChrome.GetWindowChrome(this)?.CaptionHeight ?? 30.0;
+        var point = PointToScreen(new Point(0, captionHeight));
         SystemCommands.ShowSystemMenu(this, point);
     }
 

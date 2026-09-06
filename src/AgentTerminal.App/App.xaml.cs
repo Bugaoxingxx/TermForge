@@ -32,7 +32,7 @@ public partial class App : Application
     {
         if (e.Category == UserPreferenceCategory.Accessibility || e.Category == UserPreferenceCategory.Color)
         {
-            Dispatcher.Invoke(ApplyHighContrastThemeIfNeeded);
+            Dispatcher.BeginInvoke(ApplyHighContrastThemeIfNeeded);
         }
     }
 

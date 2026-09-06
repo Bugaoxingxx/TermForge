@@ -60,19 +60,21 @@ public partial class MdiChildWindow : UserControl
         return (Window.GetWindow(this) as IInputElement) ?? (FindParentCanvas() as IInputElement);
     }
 
-    internal Canvas? FindParentCanvas()
+    internal T? FindParent<T>() where T : DependencyObject
     {
         DependencyObject? current = this;
         while (current != null)
         {
             current = VisualTreeHelper.GetParent(current);
-            if (current is Canvas canvas)
+            if (current is T target)
             {
-                return canvas;
+                return target;
             }
         }
         return null;
     }
+
+    internal Canvas? FindParentCanvas() => FindParent<Canvas>();
 
     private void OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
     {
@@ -287,7 +289,25 @@ public class MdiChildWindowAutomationPeer : FrameworkElementAutomationPeer, ITra
 
     // --- ISelectionItemProvider ---
     public bool IsSelected => (Owner as MdiChildWindow)?.DataContext is TerminalDocumentViewModel vm && vm.IsActive;
-    public IRawElementProviderSimple? SelectionContainer => null;
+    public IRawElementProviderSimple? SelectionContainer
+    {
+        get
+        {
+            if (Owner is MdiChildWindow window)
+            {
+                var container = window.FindParent<MdiContainer>();
+                if (container != null)
+                {
+                    var peer = UIElementAutomationPeer.CreatePeerForElement(container);
+                    if (peer != null)
+                    {
+                        return ProviderFromPeer(peer);
+                    }
+                }
+            }
+            return null;
+        }
+    }
     public void AddToSelection() => Select();
     public void RemoveFromSelection()
     {

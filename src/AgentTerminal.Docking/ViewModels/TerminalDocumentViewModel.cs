@@ -132,6 +132,9 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument,
             }
         };
 
+        // 契约保证：用于 UI 呈现的 ViewModel 在 UI 线程构造（如 MainWindowViewModel.CreateNewDocument）；
+        // 若在非 UI 线程构造（如单元测试或无头后台任务），Dispatcher.CheckAccess() 为 false，
+        // 则 _flushTimer 保持为 null，所有输出刷新将安全退化为同步直写模式，避免测试环境因无消息循环导致输出悬挂。
         if (Application.Current?.Dispatcher != null &&
             Application.Current.Dispatcher.CheckAccess() &&
             Application.Current.Dispatcher.Thread.IsAlive &&
@@ -505,7 +508,20 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument,
             ? TruncationNoticeHeader + _outputBuffer.ToString()
             : _outputBuffer.ToString();
 
-        OutputText = fullText;
+        // 显式防御：若处于 UI 环境（_flushTimer 已初始化）但当前调用处于后台线程（例如 OnSessionProcessExited 回调），
+        // 封送到 UI 线程赋值，避免双向绑定、转换器或同步 UI 访问产生跨线程异常。
+        if (_flushTimer != null &&
+            Application.Current?.Dispatcher is { } dispatcher &&
+            !dispatcher.CheckAccess() &&
+            dispatcher.Thread.IsAlive &&
+            !dispatcher.HasShutdownStarted)
+        {
+            dispatcher.BeginInvoke(() => OutputText = fullText);
+        }
+        else
+        {
+            OutputText = fullText;
+        }
 
         // 3. 通知 Buffer 刷新，驱动 TerminalControl 重绘
         Buffer.RequestRefresh();
