@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 using AgentTerminal.UITests.Infrastructure;
 using AgentTerminal.UITests.Pages;
@@ -8,6 +9,22 @@ namespace AgentTerminal.UITests.Specs;
 
 public class MdiWorkbenchLayoutTests
 {
+    [DllImport("user32.dll")]
+    private static extern uint GetDpiForWindow(IntPtr hWnd);
+
+    private static double GetDpiScale(IntPtr hWnd)
+    {
+        try
+        {
+            uint dpi = GetDpiForWindow(hWnd);
+            if (dpi > 0) return dpi / 96.0;
+        }
+        catch
+        {
+        }
+        return 1.0;
+    }
+
     [Fact]
     public void CreateThreeDocuments_ShouldDisplayInWorkspace()
     {
@@ -219,22 +236,31 @@ public class MdiWorkbenchLayoutTests
         Assert.True(brClampedBounds.Top > tlClampedBounds.Top + 100,
             $"Window top ({brClampedBounds.Top}) must move significantly down from top-left clamped position ({tlClampedBounds.Top})");
 
-        // 验证 2.2：按照产品规则（Left 钳制于 canvas.Width - 60，Top 钳制于 canvas.Height - 40），
-        // 窗口左上角必须停留在 Canvas 右/下内侧约 60/40 像素处（留 15px 容差）
-        var expectedLeft = canvasBounds.Right - 60;
-        var expectedTop = canvasBounds.Bottom - 40;
-        Assert.True(Math.Abs(brClampedBounds.Left - expectedLeft) <= 15,
-            $"Window left ({brClampedBounds.Left}) should clamp near canvas.Right - 60 ({expectedLeft})");
-        Assert.True(Math.Abs(brClampedBounds.Top - expectedTop) <= 15,
-            $"Window top ({brClampedBounds.Top}) should clamp near canvas.Bottom - 40 ({expectedTop})");
+        var hWnd = window.Properties.NativeWindowHandle.Value;
+        double dpiScale = GetDpiScale(hWnd);
 
-        // 验证 2.3：计算窗口与工作区 Canvas 的实际交集矩形，确认至少保留 50px 宽和 30px 高的可视交互区域（产品标称保留 60x40）
+        int expectedClampPaddingX = (int)Math.Round(60 * dpiScale);
+        int expectedClampPaddingY = (int)Math.Round(40 * dpiScale);
+        int tolerance = (int)Math.Ceiling(15 * dpiScale);
+
+        // 验证 2.2：按照产品规则（Left 钳制于 canvas.Width - 60 DIP，Top 钳制于 canvas.Height - 40 DIP），
+        // 窗口左上角必须停留在 Canvas 右/下内侧约 60/40 DIP 处（按 DPI 缩放换算物理像素并留动态容差）
+        var expectedLeft = canvasBounds.Right - expectedClampPaddingX;
+        var expectedTop = canvasBounds.Bottom - expectedClampPaddingY;
+        Assert.True(Math.Abs(brClampedBounds.Left - expectedLeft) <= tolerance,
+            $"Window left ({brClampedBounds.Left}) should clamp near canvas.Right - {expectedClampPaddingX} ({expectedLeft}) with tolerance {tolerance}px at {dpiScale * 100}% scaling");
+        Assert.True(Math.Abs(brClampedBounds.Top - expectedTop) <= tolerance,
+            $"Window top ({brClampedBounds.Top}) should clamp near canvas.Bottom - {expectedClampPaddingY} ({expectedTop}) with tolerance {tolerance}px at {dpiScale * 100}% scaling");
+
+        // 验证 2.3：计算窗口与工作区 Canvas 的实际交集矩形，确认至少保留 50x30 DIP 的可视交互区域（产品标称保留 60x40 DIP）
         var intersection = System.Drawing.Rectangle.Intersect(brClampedBounds, canvasBounds);
         Assert.False(intersection.IsEmpty, "Clamped window must intersect with canvas workspace");
-        Assert.True(intersection.Width >= 50,
-            $"Visible intersection width ({intersection.Width}) must be at least 50px (product target 60px)");
-        Assert.True(intersection.Height >= 30,
-            $"Visible intersection height ({intersection.Height}) must be at least 30px (product target 40px)");
+        int minIntersectionWidth = (int)Math.Round(50 * dpiScale);
+        int minIntersectionHeight = (int)Math.Round(30 * dpiScale);
+        Assert.True(intersection.Width >= minIntersectionWidth,
+            $"Visible intersection width ({intersection.Width}) must be at least {minIntersectionWidth}px at {dpiScale * 100}% scaling (product target 60 DIP)");
+        Assert.True(intersection.Height >= minIntersectionHeight,
+            $"Visible intersection height ({intersection.Height}) must be at least {minIntersectionHeight}px at {dpiScale * 100}% scaling (product target 40 DIP)");
     }
 
     [Fact]

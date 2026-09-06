@@ -49,9 +49,13 @@ public class MdiChildWindowPage
         titleElem?.Click();
     }
 
-    public void DragBy(int deltaX, int deltaY, bool forceInputSimulator = false)
+    /// <summary>
+    /// 移动子窗口。优先使用 UI 自动化标准 ITransformProvider.Move（保障 CI/无头/非交互会话稳定性），
+    /// 当目标元素未暴露 Transform 模式时回退至 InputSimulator（物理/Win32 模拟）。
+    /// </summary>
+    public void DragBy(int deltaX, int deltaY)
     {
-        if (!forceInputSimulator && _element.Patterns.Transform.IsSupported)
+        if (_element.Patterns.Transform.IsSupported)
         {
             var bounds = _element.BoundingRectangle;
             _element.Patterns.Transform.Pattern.Move(bounds.Left + deltaX, bounds.Top + deltaY);
@@ -62,9 +66,13 @@ public class MdiChildWindowPage
         InputSimulator.Drag(titleBar, deltaX, deltaY);
     }
 
-    public void DoubleClickTitleBar(bool forceInputSimulator = false)
+    /// <summary>
+    /// 双击标题栏切换最大化/还原。优先使用 UI 自动化标准 IWindowProvider.SetWindowVisualState，
+    /// 未暴露 Window 模式时回退至 InputSimulator。
+    /// </summary>
+    public void DoubleClickTitleBar()
     {
-        if (!forceInputSimulator && _element.Patterns.Window.IsSupported)
+        if (_element.Patterns.Window.IsSupported)
         {
             var win = _element.Patterns.Window.Pattern;
             if (win.WindowVisualState.Value == FlaUI.Core.Definitions.WindowVisualState.Maximized)
@@ -84,9 +92,13 @@ public class MdiChildWindowPage
 
     public AutomationElement? BottomRightThumb => _element.FindFirstDescendant(cf => cf.ByAutomationId("MdiWindow.Thumb.BottomRight"));
 
-    public void ResizeBottomRight(int deltaX, int deltaY, bool forceInputSimulator = false)
+    /// <summary>
+    /// 拉伸右下角。优先使用 UI 自动化标准 ITransformProvider.Resize，
+    /// 未暴露 Transform 模式时回退至 InputSimulator。
+    /// </summary>
+    public void ResizeBottomRight(int deltaX, int deltaY)
     {
-        if (!forceInputSimulator && _element.Patterns.Transform.IsSupported)
+        if (_element.Patterns.Transform.IsSupported)
         {
             var bounds = _element.BoundingRectangle;
             _element.Patterns.Transform.Pattern.Resize(bounds.Width + deltaX, bounds.Height + deltaY);
