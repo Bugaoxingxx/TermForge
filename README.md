@@ -1,6 +1,17 @@
 # TermForge (AgentTerminal)
 
-> 终端之锻造台 / The Terminal Workspace & Agent CLI for Windows
+<p align="center">
+  <img src="docs/design/images/termforge_brand_banner.jpg" width="780" alt="TermForge Official Brand Banner" />
+</p>
+
+<p align="center">
+  <b>终端之锻造台 / The Terminal Workspace &amp; Agent CLI for Windows</b><br>
+  <a href="docs/design/LOGO_DESIGN_SYSTEM.md">🎨 LOGO 视觉识别规范</a> • 
+  <a href="docs/design/termforge_logo_preview.html">🌐 本地交互式设计原型</a> • 
+  <a href="docs/design/UI-Win7-Aero-Design.md">🪟 Win7 Aero 视觉设计规范</a>
+</p>
+
+---
 
 **TermForge** 是一款 Windows 原生的专业级终端工作台，为开发者和运维工程师打造原生的 Shell + AI Agent 集成工作区。
 本项目基于 **.NET 8 LTS + WPF + ConPTY + AvalonDock + Native Terminal Renderer** 深度构建，提供极致原生的终端交互与现代化 IDE 级的自由停靠体验。

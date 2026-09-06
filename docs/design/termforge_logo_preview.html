@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TermForge - 品牌 LOGO 与视觉标识设计系统 (Logo &amp; Brand Identity)</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700;800&family=Cascadia+Code:wght@400;600&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Tahoma, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #0B111A radial-gradient(circle at 50% 10%, #16263B 0%, #080D15 100%);
+      color: #E2E8F0;
+      min-height: 100vh;
+    }
+
+    /* Aero Glass Container */
+    .aero-panel {
+      background: rgba(22, 35, 52, 0.65);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      box-shadow: 
+        0 16px 36px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        inset 0 0 20px rgba(56, 189, 248, 0.08);
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .aero-panel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 36px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.03) 80%, transparent 100%);
+      pointer-events: none;
+    }
+
+    /* Glow highlights */
+    .glow-cyan {
+      text-shadow: 0 0 16px rgba(56, 189, 248, 0.6), 0 0 32px rgba(56, 189, 248, 0.2);
+    }
+
+    .glow-amber {
+      text-shadow: 0 0 16px rgba(255, 122, 0, 0.6), 0 0 32px rgba(255, 122, 0, 0.2);
+    }
+
+    .card-hover {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-4px);
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+
+    /* Win7 Taskbar Simulation */
+    .win7-taskbar {
+      height: 44px;
+      background: linear-gradient(180deg, 
+        rgba(30, 50, 70, 0.8) 0%, 
+        rgba(15, 25, 40, 0.9) 30%, 
+        rgba(10, 18, 30, 0.95) 50%, 
+        rgba(25, 40, 60, 0.85) 100%);
+      border-top: 1px solid rgba(255, 255, 255, 0.4);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 -4px 12px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(16px);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 8px;
+    }
+
+    .win7-orb {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #4facfe 0%, #00f2fe 30%, #0066cc 70%, #003366 100%);
+      box-shadow: 0 0 10px rgba(0, 242, 254, 0.8), inset 0 2px 4px rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      cursor: pointer;
+    }
+
+    .taskbar-item {
+      height: 34px;
+      padding: 0 10px;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+    .taskbar-item.active {
+      background: linear-gradient(180deg, rgba(165, 205, 235, 0.4) 0%, rgba(56, 189, 248, 0.25) 50%, rgba(3, 105, 161, 0.5) 100%);
+      border-color: rgba(56, 189, 248, 0.7);
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.5), inset 0 1px 0 #fff;
+    }
+  </style>
+</head>
+<body class="max-w-7xl mx-auto space-y-10">
+
+  <!-- ================================================================= -->
+  <!-- Header & Brand Intro                                              -->
+  <!-- ================================================================= -->
+  <header class="text-center space-y-4 pt-6 pb-2">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 text-xs font-semibold uppercase tracking-wider">
+      <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+      Visual Identity System • 视觉识别设计
+    </div>
+    
+    <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">
+      <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-cyan-400 to-sky-500 glow-cyan">Term</span><span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-orange-500 to-red-500 glow-amber">Forge</span>
+      <span class="text-slate-400 text-2xl font-light ml-3">LOGO 设计规范</span>
+    </h1>
+    
+    <p class="text-slate-300 max-w-3xl mx-auto text-sm md:text-base leading-relaxed">
+      终端之锻造台 (The Terminal Workspace &amp; Agent CLI for Windows) 官方专属 LOGO 方案。<br>
+      融合 <strong class="text-cyan-300">Windows 7 Aero Glass 毛玻璃拟物经典</strong>、<strong class="text-amber-400">铁砧与锻造烈火 (Forge &amp; Sparks)</strong> 以及 <strong class="text-sky-300">极客终端字符提示符 (&gt;_)</strong>。
+    </p>
+  </header>
+
+  <!-- ================================================================= -->
+  <!-- Section 1: 4 Core Logo Directions                                -->
+  <!-- ================================================================= -->
+  <section class="space-y-6">
+    <div class="flex items-center justify-between border-b border-slate-700/60 pb-3">
+      <div>
+        <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2">
+          <span class="text-cyan-400 text-2xl">❖</span> 四套精心设计的方案展示 (Design Concepts)
+        </h2>
+        <p class="text-xs text-slate-400">覆盖桌面应用图标、任务栏小标、极简矢量徽标与官方品牌横幅</p>
+      </div>
+      <span class="text-xs font-mono text-cyan-400/80 bg-slate-800/60 px-2.5 py-1 rounded border border-cyan-500/20">4 Unique Variations</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Concept 1: Aero Glass Crystal Squircle (推荐主力应用图标) -->
+      <div class="aero-panel p-6 space-y-4 card-hover">
+        <div class="flex items-center justify-between">
+          <div class="space-y-0.5">
+            <div class="flex items-center gap-2">
+              <span class="bg-cyan-500/20 text-cyan-300 text-xs px-2 py-0.5 rounded font-bold border border-cyan-400/40">⭐ 推荐方案 1</span>
+              <h3 class="text-base font-bold text-white">Aero Glass 晶莹拟物图标 (Crystal Squircle)</h3>
+            </div>
+            <p class="text-xs text-slate-400">Windows 7 Aero 圆角毛玻璃胶囊 + 炽热熔光铁砧 + 荧光 &gt;_ 提示符</p>
+          </div>
+          <span class="text-xs bg-slate-800 text-slate-300 px-2 py-1 rounded font-mono">App Icon / 3D</span>
+        </div>
+
+        <div class="relative bg-slate-950/80 rounded-lg p-6 flex flex-col items-center justify-center border border-slate-800/80 overflow-hidden group">
+          <div class="w-64 h-64 relative flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+            <img src="./images/termforge_app_icon_aero.jpg" alt="TermForge Aero Glass App Icon" class="w-full h-full object-contain rounded-2xl shadow-2xl" />
+          </div>
+          <div class="absolute bottom-3 left-4 text-xs font-mono text-slate-400 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> 资产已生成: docs/design/images/termforge_app_icon_aero.jpg
+          </div>
+        </div>
+
+        <div class="text-xs text-slate-300 space-y-1.5 leading-relaxed bg-slate-900/50 p-3 rounded border border-slate-800">
+          <p><strong class="text-cyan-300">设计寓意：</strong> 外层采用 Windows 7 黄金时代晶莹通透的天青色 Aero Glass 玻璃外壳，顶部带有细腻的 45° 高光折射；内部则是一座坚固沉稳的重工业铁砧，其上闪烁着流光溢彩的终端输入提示符，背景则是炽热的金色熔炉火焰与飞溅星火，寓意“在 Windows 终端中锻造无限可能”。</p>
+          <p><strong class="text-amber-400">最佳场景：</strong> 桌面快捷方式图标 (256x256 / 48x48)、启动屏幕 (Splash Screen)、安装包封面。</p>
+        </div>
+      </div>
+
+      <!-- Concept 2: Aero Frosted Glass Window Icon -->
+      <div class="aero-panel p-6 space-y-4 card-hover">
+        <div class="flex items-center justify-between">
+          <div class="space-y-0.5">
+            <div class="flex items-center gap-2">
+              <span class="bg-blue-500/20 text-blue-300 text-xs px-2 py-0.5 rounded font-bold border border-blue-400/40">方案 2</span>
+              <h3 class="text-base font-bold text-white">Aero Console 视窗桌面图标 (Glass Window)</h3>
+            </div>
+            <p class="text-xs text-slate-400">经典毛玻璃终端视窗 + 锻造金砧 + 顶部 &gt;_ 发光字符</p>
+          </div>
+          <span class="text-xs bg-slate-800 text-slate-300 px-2 py-1 rounded font-mono">Console / MDI</span>
+        </div>
+
+        <div class="relative bg-slate-950/80 rounded-lg p-6 flex flex-col items-center justify-center border border-slate-800/80 overflow-hidden group">
+          <div class="w-64 h-64 relative flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+            <img src="./images/termforge_app_icon_glass_window.jpg" alt="TermForge Glass Window Icon" class="w-full h-full object-contain rounded-2xl shadow-2xl" />
+          </div>
+          <div class="absolute bottom-3 left-4 text-xs font-mono text-slate-400 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-blue-400"></span> 资产已生成: docs/design/images/termforge_app_icon_glass_window.jpg
+          </div>
+        </div>
+
+        <div class="text-xs text-slate-300 space-y-1.5 leading-relaxed bg-slate-900/50 p-3 rounded border border-slate-800">
+          <p><strong class="text-cyan-300">设计寓意：</strong> 直接将 Windows 经典 MMC / 终端子窗口拟物化为发光玻璃边框，内部为沉浸式深墨色控制台视口。左上方常驻天蓝色的终端光标，中央由铁砧激起璀璨金色星花，完美呼应了本项目 MMC MDI 多文档工作台的技术灵魂。</p>
+          <p><strong class="text-amber-400">最佳场景：</strong> MDI 标题栏小图标、任务栏切换预览、系统托盘右键菜单标识。</p>
+        </div>
+      </div>
+
+      <!-- Concept 3: Minimalist Tech Vector Mark -->
+      <div class="aero-panel p-6 space-y-4 card-hover">
+        <div class="flex items-center justify-between">
+          <div class="space-y-0.5">
+            <div class="flex items-center gap-2">
+              <span class="bg-indigo-500/20 text-indigo-300 text-xs px-2 py-0.5 rounded font-bold border border-indigo-400/40">方案 3</span>
+              <h3 class="text-base font-bold text-white">极简现代矢量标 (Minimal Tech Vector)</h3>
+            </div>
+            <p class="text-xs text-slate-400">硬核几何线条 + 渐变撞色 + 极小尺寸极致清晰度</p>
+          </div>
+          <span class="text-xs bg-slate-800 text-slate-300 px-2 py-1 rounded font-mono">Vector / SVG</span>
+        </div>
+
+        <div class="relative bg-slate-950/80 rounded-lg p-6 flex flex-col items-center justify-center border border-slate-800/80 overflow-hidden group">
+          <div class="w-64 h-64 relative flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+            <img src="./images/termforge_logo_minimal.jpg" alt="TermForge Minimal Vector Logo" class="w-full h-full object-contain rounded-2xl shadow-2xl" />
+          </div>
+          <div class="absolute bottom-3 left-4 text-xs font-mono text-slate-400 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-indigo-400"></span> 资产已生成: docs/design/images/termforge_logo_minimal.jpg
+          </div>
+        </div>
+
+        <div class="text-xs text-slate-300 space-y-1.5 leading-relaxed bg-slate-900/50 p-3 rounded border border-slate-800">
+          <p><strong class="text-cyan-300">设计寓意：</strong> 剔除多余细节，将重锤敲击的闪电火花演化为顶部的折线指令流，主体为电光青蓝到熔岩炽橙的双色渐变铁砧。在大尺寸下极具现代科技感，在 16x16 / 32x32 微型像素下依然轮廓分明、一眼辨识。</p>
+          <p><strong class="text-amber-400">最佳场景：</strong> 网页 Favicon、Git 徽标 Badge、开发者文档左上角导航 Logo、单色印刷与贴纸。</p>
+        </div>
+      </div>
+
+      <!-- Concept 4: Full Official Brand Banner & Wordmark -->
+      <div class="aero-panel p-6 space-y-4 card-hover">
+        <div class="flex items-center justify-between">
+          <div class="space-y-0.5">
+            <div class="flex items-center gap-2">
+              <span class="bg-amber-500/20 text-amber-300 text-xs px-2 py-0.5 rounded font-bold border border-amber-400/40">方案 4</span>
+              <h3 class="text-base font-bold text-white">官方全景品牌横幅 (Brand Banner &amp; Typography)</h3>
+            </div>
+            <p class="text-xs text-slate-400">Aero 水晶发光铁砧 + 双色品牌字标 + Windows 副标题</p>
+          </div>
+          <span class="text-xs bg-slate-800 text-slate-300 px-2 py-1 rounded font-mono">Banner / 16:9</span>
+        </div>
+
+        <div class="relative bg-slate-950/80 rounded-lg p-6 flex flex-col items-center justify-center border border-slate-800/80 overflow-hidden group">
+          <div class="w-full h-64 relative flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
+            <img src="./images/termforge_brand_banner.jpg" alt="TermForge Official Brand Banner" class="w-full h-full object-contain rounded-lg shadow-2xl" />
+          </div>
+          <div class="absolute bottom-3 left-4 text-xs font-mono text-slate-400 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span> 资产已生成: docs/design/images/termforge_brand_banner.jpg
+          </div>
+        </div>
+
+        <div class="text-xs text-slate-300 space-y-1.5 leading-relaxed bg-slate-900/50 p-3 rounded border border-slate-800">
+          <p><strong class="text-cyan-300">设计寓意：</strong> 适用于官方展示的标准排版。左侧由发光透亮的水晶 Aero 铁砧承托能量，右侧采用粗体 Segoe UI 无衬线排版，“Term”呈现电光天蓝，“Forge”呈现炽烈暖橙，下方缀以 Windows 官方风格标语，尽显工程旗舰气质。</p>
+          <p><strong class="text-amber-400">最佳场景：</strong> GitHub README.md 顶部大横幅 (Hero Image)、官网主页、技术演示 PPT 封面。</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- Section 2: Production Vector SVG & Realtime Scaler                 -->
+  <!-- ================================================================= -->
+  <section class="aero-panel p-6 space-y-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-700/60 pb-3 gap-2">
+      <div>
+        <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2">
+          <span class="text-amber-400 text-2xl">⚡</span> 纯矢量 SVG 原生渲染与多级尺寸验证
+        </h2>
+        <p class="text-xs text-slate-400">基于纯数学矢量几何与滤镜编写，零失真无损缩放，支持直接嵌入 WPF 与 Web</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="./images/termforge-logo-mark.svg" target="_blank" class="px-3 py-1.5 rounded bg-cyan-600/30 hover:bg-cyan-600/50 border border-cyan-400/40 text-cyan-200 text-xs font-semibold flex items-center gap-1.5 transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+          下载/查看独立 SVG
+        </a>
+      </div>
+    </div>
+
+    <!-- Scaler & Preview Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <!-- Main Large SVG Preview -->
+      <div class="lg:col-span-6 bg-slate-950/90 p-8 rounded-xl border border-cyan-500/30 flex flex-col items-center justify-center relative shadow-inner">
+        <span class="absolute top-3 left-4 text-xs font-mono text-cyan-400/70">512×512 Native SVG Render</span>
+        <div class="w-64 h-64 md:w-80 md:h-80 flex items-center justify-center">
+          <img src="./images/termforge-logo-mark.svg" alt="TermForge SVG Vector" class="w-full h-full object-contain" />
+        </div>
+        <div class="mt-4 flex items-center gap-4 text-xs text-slate-400 font-mono">
+          <span>文件: termforge-logo-mark.svg</span>
+          <span>•</span>
+          <span>体积: 5.6 KB</span>
+          <span>•</span>
+          <span>无损矢量</span>
+        </div>
+      </div>
+
+      <!-- Realtime Multi-Scale Test (16px to 128px) -->
+      <div class="lg:col-span-6 space-y-4">
+        <h3 class="text-sm font-bold text-slate-200">各系统级分级尺寸清晰度测试 (Pixel Legibility Matrix)</h3>
+        
+        <div class="space-y-3 bg-slate-900/60 p-4 rounded-lg border border-slate-800">
+          
+          <!-- 128px -->
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div class="flex items-center gap-4">
+              <div class="w-16 h-16 bg-slate-950 p-1 rounded-lg border border-slate-700 flex items-center justify-center">
+                <img src="./images/termforge-logo-mark.svg" class="w-14 h-14" alt="128px" />
+              </div>
+              <div>
+                <div class="text-xs font-bold text-slate-200">128 × 128 px</div>
+                <div class="text-[11px] text-slate-400">Windows 开始菜单大磁贴 / 控制面板程序大图标</div>
+              </div>
+            </div>
+            <span class="text-xs text-emerald-400 font-mono">清晰锐利</span>
+          </div>
+
+          <!-- 48px -->
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 bg-slate-950 p-1 rounded-lg border border-slate-700 flex items-center justify-center">
+                <img src="./images/termforge-logo-mark.svg" class="w-12 h-12" alt="48px" />
+              </div>
+              <div>
+                <div class="text-xs font-bold text-slate-200">48 × 48 px</div>
+                <div class="text-[11px] text-slate-400">Windows 7 / 10 / 11 桌面常规快捷方式图标</div>
+              </div>
+            </div>
+            <span class="text-xs text-emerald-400 font-mono">细节丰富</span>
+          </div>
+
+          <!-- 32px -->
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-slate-950 p-1 rounded-lg border border-slate-700 flex items-center justify-center">
+                <img src="./images/termforge-logo-mark.svg" class="w-8 h-8" alt="32px" />
+              </div>
+              <div>
+                <div class="text-xs font-bold text-slate-200">32 × 32 px</div>
+                <div class="text-[11px] text-slate-400">MMC 控制台主树状节点 / 对话框标头 / Alt+Tab 切换</div>
+              </div>
+            </div>
+            <span class="text-xs text-emerald-400 font-mono">字符明显</span>
+          </div>
+
+          <!-- 16px -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 bg-slate-950 p-1 rounded-lg border border-slate-700 flex items-center justify-center">
+                <img src="./images/termforge-logo-flat.svg" class="w-4 h-4" alt="16px" />
+              </div>
+              <div>
+                <div class="text-xs font-bold text-slate-200">16 × 16 px (Flat Mode)</div>
+                <div class="text-[11px] text-slate-400">系统托盘 (Notification Tray) / 浏览器 Favicon / 窗口左上角徽标</div>
+              </div>
+            </div>
+            <span class="text-xs text-emerald-400 font-mono">高对比度</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Horizontal SVG Banner Preview -->
+    <div class="space-y-3 pt-2">
+      <h3 class="text-sm font-bold text-slate-200">全幅横版矢量徽标 (Horizontal SVG Brand Banner)</h3>
+      <div class="bg-slate-950/90 p-4 rounded-xl border border-slate-800 flex items-center justify-center overflow-x-auto shadow-inner">
+        <img src="./images/termforge-logo-horizontal.svg" alt="TermForge Horizontal Vector Banner" class="max-w-full h-auto" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- Section 3: Windows OS Simulation Environment                      -->
+  <!-- ================================================================= -->
+  <section class="aero-panel p-6 space-y-6">
+    <div class="border-b border-slate-700/60 pb-3">
+      <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2">
+        <span class="text-cyan-400 text-2xl">🪟</span> 真实操作系统环境拟真预览 (OS Mockups)
+      </h2>
+      <p class="text-xs text-slate-400">验证 LOGO 在 Windows 7 经典任务栏与 MDI 多文档标题栏中的视觉融合度</p>
+    </div>
+
+    <!-- 1. Win7 Taskbar Simulation -->
+    <div class="space-y-2">
+      <div class="text-xs font-semibold text-slate-300">① Windows 7 Aero 经典任务栏 (Taskbar Integration):</div>
+      <div class="win7-taskbar rounded-lg">
+        <!-- Start Orb -->
+        <div class="win7-orb">
+          <span class="text-white text-xs font-bold">田</span>
+        </div>
+
+        <!-- Explorer Pin -->
+        <div class="taskbar-item">
+          <span class="text-yellow-400 text-sm">📁</span>
+        </div>
+
+        <!-- TermForge Active Pin -->
+        <div class="taskbar-item active">
+          <img src="./images/termforge_app_icon_aero.jpg" class="w-5 h-5 rounded-sm" alt="TermForge Icon" />
+          <span class="text-white font-semibold text-xs tracking-wide">TermForge - 管理员: pwsh 7</span>
+        </div>
+
+        <!-- VS Code Pin -->
+        <div class="taskbar-item">
+          <span class="text-blue-400 text-sm">⚡</span>
+        </div>
+
+        <div class="ml-auto text-slate-300 text-[11px] font-mono pr-2">
+          12:30 PM
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. MDI Window Header Simulation -->
+    <div class="space-y-2 pt-2">
+      <div class="text-xs font-semibold text-slate-300">② MDI 子窗口标题栏融合预览 (Child Window Titlebar):</div>
+      <div class="rounded-lg overflow-hidden border border-cyan-400/40 shadow-xl max-w-xl">
+        <!-- Win7 Aero Child Titlebar -->
+        <div class="h-8 px-3 bg-gradient-to-b from-sky-200/60 via-sky-300/40 to-sky-400/50 backdrop-blur-md flex items-center justify-between border-b border-cyan-400/30">
+          <div class="flex items-center gap-2">
+            <img src="./images/termforge-logo-mark.svg" class="w-4 h-4" alt="Mark" />
+            <span class="text-slate-900 font-bold text-xs" style="text-shadow: 0 0 6px #fff, 0 0 10px #fff;">PowerShell 7 [PID: 28410] - TermForge</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <div class="w-4 h-3 bg-white/40 rounded-sm border border-white/60"></div>
+            <div class="w-4 h-3 bg-white/40 rounded-sm border border-white/60"></div>
+            <div class="w-6 h-3 bg-red-500/70 rounded-sm border border-red-300"></div>
+          </div>
+        </div>
+        <!-- Terminal Body -->
+        <div class="bg-[#0C0F14] p-4 text-xs font-mono text-slate-300 space-y-1">
+          <div class="text-cyan-400">PowerShell 7.4.5</div>
+          <div class="text-slate-400">TermForge Terminal Workspace [Native ConPTY Engine Ready]</div>
+          <div class="text-emerald-400 mt-2">PS C:\Users\user\Desktop\TermForge&gt; <span class="text-white animate-pulse">█</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- Section 4: Brand Colors & Design Tokens                           -->
+  <!-- ================================================================= -->
+  <section class="aero-panel p-6 space-y-6">
+    <div class="border-b border-slate-700/60 pb-3">
+      <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2">
+        <span class="text-sky-400 text-2xl">🎨</span> 品牌标准色板与设计令牌 (Color Palette)
+      </h2>
+      <p class="text-xs text-slate-400">严格遵守文档《UI-Win7-Aero-Design.md》规范体系的官方色彩规范</p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <!-- Color 1: Sky Cyan -->
+      <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 space-y-2">
+        <div class="h-16 rounded-md bg-[#38BDF8] shadow-lg flex items-end p-2 text-slate-950 font-bold text-xs">
+          #38BDF8
+        </div>
+        <div>
+          <div class="text-xs font-bold text-white">天青蓝 (Sky Cyan)</div>
+          <div class="text-[11px] text-slate-400">Aero 经典玻璃主窗框、活动窗口、&gt;_ 终端提示符</div>
+        </div>
+      </div>
+
+      <!-- Color 2: Molten Forge Amber -->
+      <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 space-y-2">
+        <div class="h-16 rounded-md bg-[#FF7A00] shadow-lg flex items-end p-2 text-slate-950 font-bold text-xs">
+          #FF7A00
+        </div>
+        <div>
+          <div class="text-xs font-bold text-white">锻造炽橙 (Molten Amber)</div>
+          <div class="text-[11px] text-slate-400">锻造烈火、冲击星花、Agent 智能活力火花</div>
+        </div>
+      </div>
+
+      <!-- Color 3: Deep Terminal Obsidian -->
+      <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 space-y-2">
+        <div class="h-16 rounded-md bg-[#0C0F14] border border-slate-700 shadow-lg flex items-end p-2 text-slate-200 font-bold text-xs">
+          #0C0F14
+        </div>
+        <div>
+          <div class="text-xs font-bold text-white">深邃黑曜 (Terminal Obsidian)</div>
+          <div class="text-[11px] text-slate-400">终端字符画布底色、高对比度黑底、铁砧沉稳基底</div>
+        </div>
+      </div>
+
+      <!-- Color 4: Aero High-Gloss Sheen -->
+      <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 space-y-2">
+        <div class="h-16 rounded-md bg-gradient-to-b from-white/90 to-white/20 border border-slate-700 shadow-lg flex items-end p-2 text-slate-950 font-bold text-xs">
+          #FFFFFF (45%~90%)
+        </div>
+        <div>
+          <div class="text-xs font-bold text-white">玻璃镜面高光 (Aero Sheen)</div>
+          <div class="text-[11px] text-slate-400">双层高光边框、半月反光带、白色外发光光晕</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================= -->
+  <!-- Section 5: WPF XAML & Code Integration Guide                      -->
+  <!-- ================================================================= -->
+  <section class="aero-panel p-6 space-y-4">
+    <div class="border-b border-slate-700/60 pb-3">
+      <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2">
+        <span class="text-emerald-400 text-2xl">💻</span> 工程落地指南 (Developer Integration)
+      </h2>
+      <p class="text-xs text-slate-400">如何在本项目 WPF 主程序与文档中快速引入该 LOGO 资源</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Usage 1: README.md Banner -->
+      <div class="space-y-2">
+        <div class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+          <span>① 在 README.md 或 GitHub 主页展示品牌徽标</span>
+        </div>
+        <pre class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-xs font-mono text-cyan-300 overflow-x-auto"><code>&lt;p align="center"&gt;
+  &lt;img src="docs/design/images/termforge_brand_banner.jpg" width="700" alt="TermForge Banner" /&gt;
+&lt;/p&gt;</code></pre>
+      </div>
+
+      <!-- Usage 2: WPF Window Icon -->
+      <div class="space-y-2">
+        <div class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+          <span>② 在 WPF MainWindow.xaml 中配置主窗口与任务栏图标</span>
+        </div>
+        <pre class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-xs font-mono text-amber-300 overflow-x-auto"><code>&lt;Window x:Class="AgentTerminal.App.MainWindow"
+        ...
+        Icon="Assets/termforge_app_icon_aero.jpg"
+        Title="TermForge"&gt;</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="text-center text-xs text-slate-500 py-6 border-t border-slate-800">
+    TermForge (AgentTerminal) • Windows 原生终端工作台 • 品牌视觉资产规范
+  </footer>
+
+</body>
+</html>

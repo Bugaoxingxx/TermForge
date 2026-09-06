@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="100%" height="100%">
+  <defs>
+    <linearGradient id="flatGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D2FF" />
+      <stop offset="50%" stop-color="#00A8FF" />
+      <stop offset="100%" stop-color="#FF6B00" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Dark Rounded Square -->
+  <rect width="256" height="256" rx="56" fill="#0E1724" />
+
+  <!-- Flat Anvil + Prompt Fusion Geometry -->
+  <g transform="translate(18, 16)">
+    <!-- Main Anvil Body -->
+    <path d="M 40 100 
+             C 65 106 88 108 110 108 
+             L 180 108 
+             C 192 108 196 114 194 122 
+             L 192 130 
+             C 178 134 150 144 136 178 
+             C 150 184 172 188 182 196 
+             L 38 196 
+             C 48 188 70 184 84 178 
+             C 70 144 42 134 28 130 
+             L 26 122 
+             C 26 114 30 104 40 100 Z" 
+          fill="url(#flatGrad)" />
+
+    <!-- Top Anvil Working Table -->
+    <polygon points="40,100 110,108 180,108 194,94 116,94 30,94" 
+             fill="#E0F2FE" />
+
+    <!-- Terminal Prompt '>' Cutout / Overlay in White -->
+    <path d="M 92 126 L 114 142 L 92 158" 
+          fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+    
+    <!-- Cursor '_' in Pure Gold/White -->
+    <path d="M 126 158 L 146 158" 
+          stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" />
+
+    <!-- Single Crisp Spark at Strike Point -->
+    <path d="M 115 76 Q 115 88 127 88 Q 115 88 115 100 Q 115 88 103 88 Q 115 88 115 76 Z" 
+          fill="#FFF275" />
+  </g>
+</svg>
