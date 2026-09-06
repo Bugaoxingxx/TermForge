@@ -26,6 +26,16 @@ public class MainWindowPage
     public MenuItem? MenuWindow => _window.FindFirstDescendant(cf => cf.ByAutomationId("Menu.Window"))?.AsMenuItem();
     public MenuItem? MenuView => _window.FindFirstDescendant(cf => cf.ByAutomationId("Menu.View"))?.AsMenuItem();
 
+    public AutomationElement? MainMenu => _window.FindFirstDescendant(cf => cf.ByAutomationId("MainMenu"));
+    public AutomationElement? MainToolBar => _window.FindFirstDescendant(cf => cf.ByAutomationId("MainToolBar"));
+    public AutomationElement? StatusBar => _window.FindFirstDescendant(cf => cf.ByAutomationId("Workbench.StatusBar"));
+    public Button? BtnToggleDiagnostic => _window.FindFirstDescendant(cf => cf.ByAutomationId("Toolbar.BtnToggleDiagnostic"))?.AsButton();
+
+    public Button? BtnWindowMinimize => _window.FindFirstDescendant(cf => cf.ByAutomationId("MainWindow.BtnMinimize"))?.AsButton();
+    public Button? BtnWindowMaxRestore => _window.FindFirstDescendant(cf => cf.ByAutomationId("MainWindow.BtnMaxRestore"))?.AsButton();
+    public Button? BtnWindowClose => _window.FindFirstDescendant(cf => cf.ByAutomationId("MainWindow.BtnClose"))?.AsButton();
+    public AutomationElement? TitleBar => _window.FindFirstDescendant(cf => cf.ByAutomationId("MainWindow.TitleBar"));
+
     public AutomationElement? NavigationPane => _window.FindFirstDescendant(cf => cf.ByAutomationId("Pane.Navigation"));
     public AutomationElement? PropertiesPane => _window.FindFirstDescendant(cf => cf.ByAutomationId("Pane.Properties"));
     public AutomationElement? DiagnosticsPane => _window.FindFirstDescendant(cf => cf.ByAutomationId("Pane.Diagnostics"));
@@ -44,8 +54,10 @@ public class MainWindowPage
 
     public MdiWorkspacePage GetMdiWorkspace()
     {
-        var container = UiaWait.Until(() => _window.FindFirstDescendant(cf => cf.ByAutomationId("Workbench.MdiContainer")),
-            timeout: TimeSpan.FromSeconds(10),
+        var container = UiaWait.Until(() => 
+            _window.FindFirstDescendant(cf => cf.ByAutomationId("Workbench.MdiContainer")) 
+            ?? _window.FindFirstDescendant(cf => cf.ByAutomationId("Workbench.MdiCanvasArea")),
+            timeout: TimeSpan.FromSeconds(30),
             message: "MdiContainer not found in MainWindow");
         return new MdiWorkspacePage(container);
     }

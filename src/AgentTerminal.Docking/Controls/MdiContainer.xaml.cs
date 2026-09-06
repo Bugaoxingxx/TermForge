@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using AgentTerminal.Core.Models;
 using AgentTerminal.Docking.ViewModels;
@@ -191,4 +192,22 @@ public partial class MdiContainer : UserControl
     {
         UpdateMaximizedWindows();
     }
+
+    protected override AutomationPeer OnCreateAutomationPeer()
+    {
+        return new MdiContainerAutomationPeer(this);
+    }
+}
+
+public class MdiContainerAutomationPeer : FrameworkElementAutomationPeer
+{
+    public MdiContainerAutomationPeer(MdiContainer owner) : base(owner)
+    {
+    }
+
+    protected override string GetClassNameCore() => nameof(MdiContainer);
+
+    protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Pane;
+
+    protected override bool IsControlElementCore() => true;
 }

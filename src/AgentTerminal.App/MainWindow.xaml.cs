@@ -18,6 +18,18 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        CommandBindings.Add(new CommandBinding(SystemCommands.CloseWindowCommand, (s, e) => SystemCommands.CloseWindow(this)));
+        CommandBindings.Add(new CommandBinding(SystemCommands.MaximizeWindowCommand, (s, e) => SystemCommands.MaximizeWindow(this)));
+        CommandBindings.Add(new CommandBinding(SystemCommands.MinimizeWindowCommand, (s, e) => SystemCommands.MinimizeWindow(this)));
+        CommandBindings.Add(new CommandBinding(SystemCommands.RestoreWindowCommand, (s, e) => SystemCommands.RestoreWindow(this)));
+        CommandBindings.Add(new CommandBinding(SystemCommands.ShowSystemMenuCommand, OnShowSystemMenu));
+    }
+
+    private void OnShowSystemMenu(object sender, ExecutedRoutedEventArgs e)
+    {
+        var point = PointToScreen(new Point(0, 30));
+        SystemCommands.ShowSystemMenu(this, point);
     }
 
 

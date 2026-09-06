@@ -1,0 +1,156 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework">
+
+    <!-- ================================================================= -->
+    <!-- 5. Aero 主窗口自定义 Chrome 模板 (Main Window Chrome)               -->
+    <!-- ================================================================= -->
+
+    <Style x:Key="AeroMainWindowChromeStyle" TargetType="Window">
+        <Setter Property="shell:WindowChrome.WindowChrome">
+            <Setter.Value>
+                <shell:WindowChrome CaptionHeight="30"
+                                    ResizeBorderThickness="6"
+                                    CornerRadius="0"
+                                    GlassFrameThickness="0"
+                                    UseAeroCaptionButtons="False" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Background" Value="{DynamicResource AeroGlassBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Window">
+                    <!-- 外层窗口边框与高光 (8px 圆角模拟，保持 AllowsTransparency=False) -->
+                    <Border x:Name="WindowRootBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{DynamicResource AeroBorderDarkEdgeBrush}"
+                            BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="30" /> <!-- 标题栏 (Caption) -->
+                                <RowDefinition Height="*" />  <!-- 客户区 (MMC 工作台) -->
+                            </Grid.RowDefinitions>
+
+                            <!-- 标题栏顶部半透明反光层 (Sheen) -->
+                            <Border Grid.Row="0"
+                                    Background="{DynamicResource AeroGlassSheenBrush}"
+                                    IsHitTestVisible="False" />
+
+                            <!-- 标题栏内容 (图标、标题、控制按钮) -->
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" /> <!-- 应用图标 -->
+                                    <ColumnDefinition Width="*" />    <!-- 窗口标题 (可拖动) -->
+                                    <ColumnDefinition Width="Auto" /> <!-- 最小化/最大化/关闭按钮组 -->
+                                </Grid.ColumnDefinitions>
+
+                                <!-- 应用图标 (双击关闭，右键系统菜单) -->
+                                <Button Grid.Column="0"
+                                        shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                                        Margin="6,4,4,4"
+                                        Width="18" Height="18"
+                                        Cursor="Hand"
+                                        Focusable="False"
+                                        Command="{x:Static SystemCommands.ShowSystemMenuCommand}"
+                                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                                        AutomationProperties.AutomationId="MainWindow.AppIcon">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Image Source="{Binding Icon, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                   RenderOptions.BitmapScalingMode="HighQuality"
+                                                   Stretch="Uniform" />
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+
+                                <!-- 窗口主标题 (居中/左对齐发光文字) -->
+                                <Label Grid.Column="1"
+                                       Content="{TemplateBinding Title}"
+                                       VerticalAlignment="Center"
+                                       Margin="4,0"
+                                       Padding="0"
+                                       FontFamily="{DynamicResource AeroFontFamily}"
+                                       FontSize="{DynamicResource AeroFontSizeTitle}"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource AeroTextNormalBrush}"
+                                       Effect="{DynamicResource AeroTitleGlowEffect}"
+                                       AutomationProperties.AutomationId="MainWindow.TitleBar"
+                                       AutomationProperties.Name="主窗口标题" />
+
+                                <!-- 标题栏右侧窗口控制按钮组 (Win7 风格胶囊按钮) -->
+                                <StackPanel Grid.Column="2"
+                                            Orientation="Horizontal"
+                                            VerticalAlignment="Top"
+                                            Margin="0,0,4,0">
+                                    <!-- 最小化 -->
+                                    <Button Style="{DynamicResource AeroCaptionButtonStyle}"
+                                            Command="{x:Static SystemCommands.MinimizeWindowCommand}"
+                                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                                            ToolTip="最小化"
+                                            AutomationProperties.AutomationId="MainWindow.BtnMinimize">
+                                        <Path Data="{DynamicResource AeroMinimizeGeometry}"
+                                              Stroke="{DynamicResource AeroTextNormalBrush}"
+                                              StrokeThickness="1.5"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                                    </Button>
+
+                                    <!-- 最大化 / 还原 -->
+                                    <Button x:Name="BtnMaxRestore"
+                                            Style="{DynamicResource AeroCaptionButtonStyle}"
+                                            Command="{x:Static SystemCommands.MaximizeWindowCommand}"
+                                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                                            ToolTip="最大化"
+                                            AutomationProperties.AutomationId="MainWindow.BtnMaxRestore">
+                                        <Path x:Name="MaxRestoreGlyph"
+                                              Data="{DynamicResource AeroMaximizeGeometry}"
+                                              Stroke="{DynamicResource AeroTextNormalBrush}"
+                                              Fill="Transparent"
+                                              StrokeThickness="1"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                                    </Button>
+
+                                    <!-- 关闭按钮 (红宝石玻璃) -->
+                                    <Button Style="{DynamicResource AeroCloseButtonStyle}"
+                                            Command="{x:Static SystemCommands.CloseWindowCommand}"
+                                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                                            ToolTip="关闭"
+                                            AutomationProperties.AutomationId="MainWindow.BtnClose">
+                                        <Path Data="{DynamicResource AeroCloseGeometry}"
+                                              Stroke="#FFFFFF"
+                                              StrokeThickness="1.5"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- 主工作区内容容器 -->
+                            <AdornerDecorator Grid.Row="1">
+                                <ContentPresenter />
+                            </AdornerDecorator>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!-- 最大化状态时切换图元和命令 -->
+                        <Trigger Property="WindowState" Value="Maximized">
+                            <Setter TargetName="MaxRestoreGlyph" Property="Data" Value="{DynamicResource AeroRestoreGeometry}" />
+                            <Setter TargetName="BtnMaxRestore" Property="Command" Value="{x:Static SystemCommands.RestoreWindowCommand}" />
+                            <Setter TargetName="BtnMaxRestore" Property="ToolTip" Value="还原" />
+                            <!-- 最大化时微调边框，避免全屏微溢 -->
+                            <Setter TargetName="WindowRootBorder" Property="BorderThickness" Value="0" />
+                        </Trigger>
+                        <!-- 未激活主窗口时降低饱和度与发光 -->
+                        <Trigger Property="IsActive" Value="False">
+                            <Setter Property="Background" Value="{DynamicResource AeroInactiveGlassBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

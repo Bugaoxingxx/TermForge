@@ -115,8 +115,52 @@ public class MdiChildWindowPage
         UiaWait.Until(() => CloseButton, message: "Close button not found").Invoke();
     }
 
+    public void Activate()
+    {
+        var btn = _element.FindFirstDescendant(cf => cf.ByAutomationId("MdiWindow.BtnActivate"))?.AsButton();
+        if (btn != null && btn.Patterns.Invoke.IsSupported)
+        {
+            btn.Invoke();
+            return;
+        }
+
+        if (_element.Patterns.Invoke.IsSupported)
+        {
+            _element.Patterns.Invoke.Pattern.Invoke();
+        }
+        else if (_element.Patterns.SelectionItem.IsSupported)
+        {
+            _element.Patterns.SelectionItem.Pattern.Select();
+        }
+        else
+        {
+            try
+            {
+                _element.Focus();
+            }
+            catch { }
+        }
+    }
+
+    public void EnsureDiagnosticMode()
+    {
+        if (_element.FindFirstDescendant(cf => cf.ByAutomationId("DebugView.BtnStart")) == null)
+        {
+            Activate();
+            System.Threading.Thread.Sleep(300);
+
+            var btnToggle = _element.Automation.GetDesktop().FindFirstDescendant(cf => cf.ByAutomationId("Toolbar.BtnToggleDiagnostic"))?.AsButton();
+            if (btnToggle != null && btnToggle.Patterns.Invoke.IsSupported)
+            {
+                btnToggle.Invoke();
+            }
+            System.Threading.Thread.Sleep(500);
+        }
+    }
+
     public TerminalDebugViewPage GetDebugView()
     {
+        EnsureDiagnosticMode();
         return new TerminalDebugViewPage(_element);
     }
 }

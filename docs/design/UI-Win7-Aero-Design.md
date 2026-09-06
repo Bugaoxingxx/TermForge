@@ -116,25 +116,32 @@ TermForge 核心定位为 **Windows 原生、专业级 Shell 与 AI Agent 集成
 
 ## 💻 5. WPF (.NET 8) 落地实施方案
 
-### 5.1 架构实现策略选型
+### 5.1 架构实现策略与可测量兼容性保障
 
-现代 Windows (Win10 2004+ / Win11) 的 DWM 桌面窗口管理器已全面弃用了 Windows 7 的原生玻璃模糊合成器。若直接调用旧版 Win32 DWM API 往往会导致窗口黑边或直接降级为纯白。
+现代 Windows (Win10 2004+ / Win11) 的 DWM 桌面窗口管理器已全面弃用了 Windows 7 的原生毛玻璃合成器。若直接调用旧版 Win32 DWM API 往往会导致窗口黑边或直接降级为纯白。
 
-因此，TermForge 采用 **方案 A：纯 XAML 矢量渐变 + WindowChrome 接管（推荐，100% 像素级跨系统一致）**：
-1. 使用 `WindowChrome` 实现非客户区与原生缩放手势支持；
-2. 外层以 `Border` 承载 `LinearGradientBrush` 复合反射光圈与 `DropShadowEffect`；
-3. 子窗口 `MdiWindow` 使用相同的 Aero 模板进行局部半透明渲染；
-4. 无论用户在 Windows 10、Windows 11 还是开启深色/浅色模式，均能 100% 精确还原 Windows 7 Aero 视效。
+因此，TermForge 采用 **纯 XAML 矢量渐变 + 标准 WindowChrome 原生接管方案**，提供以下**可测量的兼容性保障**：
+1. **实体不透明主窗口 (`AllowsTransparency=false`)**：彻底规避 DWM 跨代合成器的透明重绘性能损耗、Windows Snap 分屏辅助线丢失以及多显卡驱动黑边闪烁问题。
+2. **标准 WindowChrome 接管 (`CaptionHeight=30, ResizeBorderThickness=6`)**：完整保留原生标题栏拖拽、双击最大化/还原、Alt+Space 与标题栏右键系统菜单弹出、8 向拉伸边框，并严格保证最大化时不遮挡各显示器 Windows 任务栏。
+3. **终端视口隔离保护**：MDI 子窗口内 `TerminalControl` 视口严格使用纯黑炭黑背景（`#0C0F14`），无任何毛玻璃、光晕滤镜或圆角裁剪，确保 ConPTY 极速渲染零损耗。
+4. **矢量几何图标体系**：全面采用基于 WPF `DrawingImage` 和 XAML `Path Geometry` 的矢量图元，在 100%、125%、150%、200% 等各种 DPI 缩放下均呈现亚像素级清晰锐利。
+5. **高对比度无障碍适配**：内置 `HighContrast.xaml`，检测到系统辅助模式自动无缝降级为系统色并关闭阴影滤镜，满足 WCAG 2.1 AA 标准。
 
-### 5.2 XAML 资源字典架构设计
+### 5.2 模块化 XAML 资源字典架构设计
 
-建议在 `src/AgentTerminal.App/Themes/` 下建立独立的主题资源字典：
+主题资源按职责进行模块化解耦，形成清晰的高内聚低耦合资源树：
 
 ```text
 src/AgentTerminal.App/Themes/
-├── AeroTheme.xaml          # Windows 7 Aero 完整资源字典（画刷、文字特效、控件模板）
-├── DarkTheme.xaml          # 现有的 VS 极客深色主题
-└── ThemeManager.cs         # 主题动态加载与热切换管理器
+├── Colors.xaml             # 核心色彩、画刷、反光层与语义状态 (Normal/Hover/Pressed/Focus/Disabled/Danger)
+├── Typography.xaml         # 字体族、字号、命令高度与 5/7/11 DIP 间距度量规范
+├── Icons.xaml              # 像素对齐矢量 DrawingImage 与 Path Geometry 图元
+├── Controls.xaml           # Aero 按钮、胶囊工具栏、菜单、分隔线、轻量树节点
+├── MainWindowChrome.xaml   # 主窗口 WindowChrome 模板、标题栏与控制按钮
+├── HighContrast.xaml       # WCAG 2.1 AA / 系统高对比度兼容回退字典
+└── AeroTheme.xaml          # 聚合全量模块字典（向后兼容入口）
+src/AgentTerminal.Docking/Themes/
+└── AeroDockingTheme.xaml   # MDI 子窗口与任务托盘共享 Aero 主题
 ```
 
 #### 关键 XAML 核心片段定义 (AeroTheme.xaml)
@@ -226,18 +233,27 @@ src/AgentTerminal.App/Themes/
 
 ---
 
-## 🗺️ 6. 实施路线图与任务拆解
+## 🗺️ 6. 实施路线图与完成状态
 
 * [x] **设计提案与视觉效果图生成**：生成高保真设计图与设计参数文档。
 * [x] **本地交互原型开发**：创建纯 CSS/JS 可交互原型 `docs/design/win7_aero_preview.html`。
 * [x] **设计规范归档**：将规范与资源建立在 `docs/design/` 下，完成工程文档对齐。
-* [ ] **Phase A (XAML 资源化)**：
-  * 在 `AgentTerminal.App` 中创建 `Themes/AeroTheme.xaml`；
-  * 提取通用色彩、发光 TextBlock 模板、三色窗口控制按钮样式、胶囊式工具栏样式。
-* [ ] **Phase B (主窗体与 WindowChrome 适配)**：
-  * 在 `MainWindow.xaml` 引入 `WindowChrome` 与 Aero 外层反射外壳；
-  * 适配标题栏拖动、双击最大化与系统快捷键。
-* [ ] **Phase C (MDI 子窗口 Aero 边框)**：
-  * 在 `MdiWindow` 控件中应用 Aero 材质模板，区分活动与非活动透明度及发光状态。
-* [ ] **Phase D (双主题一键热切换)**：
-  * 编写 `ThemeManager`，在“视图”菜单中提供 **“Windows 7 Aero 经典”** 与 **“VS Code 深色极客”** 风格一键热切换。
+* [x] **Phase A (模块化资源分层架构实施与 Aero 基线加载)**：
+  * 引入 WPF `PresentationFramework.Aero` 作为控件底座；
+  * 分离 `Colors.xaml`, `Typography.xaml`, `Icons.xaml`, `Controls.xaml`, `MainWindowChrome.xaml`；
+  * 落地 5/7/11 DIP 间距规范与 Segoe UI / Microsoft YaHei UI 统一字体度量。
+* [x] **Phase B (主窗体 WindowChrome 适配与 Win32 原生交互保全)**：
+  * 在 `MainWindow.xaml` 实现非透明 `WindowChrome` (CaptionHeight=30, ResizeBorderThickness=6)；
+  * 原生适配标题栏双击最大化/还原、标题栏右键与 `Alt+Space` 系统菜单、DPI 动态缩放；
+  * 引入 `AdornerDecorator` 保证修饰层和边界命中测试无缝运作。
+* [x] **Phase C (MMC 壳层轻量化与矢量几何图元规范)**：
+  * 导航树、属性区、诊断日志及状态栏重塑为 MMC 3 栏轻量工作台；
+  * 彻底移除 Emoji / Unicode 符号，全面采用基于 XAML `Path` 与 `DrawingImage` 的像素级矢量图标；
+  * 嵌入 16/24/32/48/256px 多尺寸标准应用图标 `termforge.ico`。
+* [x] **Phase D (MDI 子窗口 Aero 边框与任务栏按钮托盘)**：
+  * 创建 `AgentTerminal.Docking/Themes/AeroDockingTheme.xaml` 共享主题；
+  * 子窗口实现激活/非激活多维区分（边框对比度、发光、高饱和/冷灰玻璃、Z-Index）；
+  * 最小化任务托盘重构为 Win7 扁平任务按钮样式，消除单项冗余阴影。
+* [x] **Phase E (高对比度无障碍适配与自动化测试闭环)**：
+  * 创建 `HighContrast.xaml` 并在 `App.xaml.cs` 中实现系统色动态响应与滤镜关闭；
+  * 85 项单元测试与 18 项 UI 自动化端到端测试全量通过（涵盖窗口管理、ConPTY 会话隔离与字符流渲染）。

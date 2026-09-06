@@ -82,6 +82,14 @@ public partial class MdiChildWindow : UserControl
         }
     }
 
+    private void OnActivateClicked(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is TerminalDocumentViewModel vm)
+        {
+            vm.IsActive = true;
+        }
+    }
+
     private void OnTitleBarMouseDown(object sender, MouseButtonEventArgs e)
     {
         if (DataContext is not TerminalDocumentViewModel vm) return;
@@ -244,7 +252,7 @@ public partial class MdiChildWindow : UserControl
 /// MdiChildWindow 的 UI 自动化对等体，提供 ITransformProvider（窗口拖动与尺寸拉伸）及 IWindowProvider（窗口状态切换）支持，
 /// 确保无物理交互桌面/CI 环境下 UI 自动化测试及辅助技术的标准化控制。
 /// </summary>
-public class MdiChildWindowAutomationPeer : FrameworkElementAutomationPeer, ITransformProvider, IWindowProvider
+public class MdiChildWindowAutomationPeer : FrameworkElementAutomationPeer, ITransformProvider, IWindowProvider, ISelectionItemProvider, IInvokeProvider
 {
     public MdiChildWindowAutomationPeer(MdiChildWindow owner) : base(owner)
     {
@@ -254,13 +262,46 @@ public class MdiChildWindowAutomationPeer : FrameworkElementAutomationPeer, ITra
 
     protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Window;
 
+    protected override bool IsControlElementCore() => true;
+
     public override object? GetPattern(PatternInterface patternInterface)
     {
-        if (patternInterface == PatternInterface.Transform || patternInterface == PatternInterface.Window)
+        if (patternInterface == PatternInterface.Transform || 
+            patternInterface == PatternInterface.Window ||
+            patternInterface == PatternInterface.SelectionItem ||
+            patternInterface == PatternInterface.Invoke)
         {
             return this;
         }
         return base.GetPattern(patternInterface);
+    }
+
+    // --- IInvokeProvider ---
+    public void Invoke()
+    {
+        if (Owner is MdiChildWindow window && window.DataContext is TerminalDocumentViewModel vm)
+        {
+            window.Dispatcher.Invoke(() => vm.IsActive = true);
+        }
+    }
+
+    // --- ISelectionItemProvider ---
+    public bool IsSelected => (Owner as MdiChildWindow)?.DataContext is TerminalDocumentViewModel vm && vm.IsActive;
+    public IRawElementProviderSimple? SelectionContainer => null;
+    public void AddToSelection() => Select();
+    public void RemoveFromSelection()
+    {
+        if (Owner is MdiChildWindow window && window.DataContext is TerminalDocumentViewModel vm)
+        {
+            window.Dispatcher.Invoke(() => vm.IsActive = false);
+        }
+    }
+    public void Select()
+    {
+        if (Owner is MdiChildWindow window && window.DataContext is TerminalDocumentViewModel vm)
+        {
+            window.Dispatcher.Invoke(() => vm.IsActive = true);
+        }
     }
 
     // --- ITransformProvider ---

@@ -9,17 +9,17 @@
              d:DesignHeight="600" d:DesignWidth="800"
              SizeChanged="OnContainerSizeChanged">
     
-    <Grid Background="#1B2631">
+    <Grid Background="{DynamicResource MdiWorkspaceBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- 主工作区 Canvas：承载所有 Normal 和 Maximized 子窗口，深色沉浸式点阵背景 -->
+        <!-- 主工作区 Canvas：承载所有 Normal 和 Maximized 子窗口，低噪蓝灰 MDI 工作区背景 -->
         <ItemsControl Grid.Row="0" x:Name="MdiItemsControl" AutomationProperties.AutomationId="Workbench.MdiCanvasArea">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Canvas x:Name="MdiCanvas" ClipToBounds="True" Background="#1B2631" />
+                    <Canvas x:Name="MdiCanvas" ClipToBounds="True" Background="{DynamicResource MdiWorkspaceBackgroundBrush}" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
 
@@ -52,8 +52,12 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <!-- 底部最小化窗口托盘区 (Windows 7 Aero 浅色卡片托盘) -->
-        <Border Grid.Row="1" x:Name="MinimizedTray" Background="#E8EDF4" BorderBrush="#B2BCC9" BorderThickness="0,1,0,0" Padding="6,4">
+        <!-- 底部最小化窗口托盘区 (Windows 7 Aero 浅色任务按钮托盘) -->
+        <Border Grid.Row="1" x:Name="MinimizedTray"
+                AutomationProperties.AutomationId="Workbench.MinimizedTray"
+                Background="{DynamicResource MdiTrayBackgroundBrush}"
+                BorderBrush="{DynamicResource MdiTrayBorderBrush}"
+                BorderThickness="0,1,0,0" Padding="6,4">
             <ItemsControl x:Name="MinimizedItemsControl">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -62,20 +66,67 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Background="#F7F9FC" BorderBrush="#9DB3C8" BorderThickness="1" CornerRadius="3" Margin="0,0,6,0" Padding="8,3">
-                            <Border.Effect>
-                                <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.15" Color="#000000" />
-                            </Border.Effect>
-                            <StackPanel Orientation="Horizontal">
-                                <Border Background="#1E395B" CornerRadius="2" Padding="3,1" Margin="0,0,6,0">
-                                    <TextBlock Text=">_" Foreground="#4EC9B0" FontSize="9" FontWeight="Bold" VerticalAlignment="Center" />
-                                </Border>
-                                <TextBlock Text="{Binding Title}" Foreground="#1E395B" FontFamily="Segoe UI, Tahoma" FontSize="11" FontWeight="SemiBold" Margin="0,0,8,0" VerticalAlignment="Center" />
-                                <Button Command="{Binding RestoreCommand}" Background="Transparent" BorderThickness="0" Foreground="#2B4E74" ToolTip="还原窗口" Margin="0,0,4,0" Cursor="Hand">
-                                    <TextBlock Text="❐" FontSize="11" />
+                        <Border Background="{DynamicResource MdiTaskButtonBackgroundBrush}"
+                                BorderBrush="{DynamicResource MdiTaskButtonBorderBrush}"
+                                BorderThickness="1" CornerRadius="3" Margin="0,0,6,0" Padding="6,2">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <!-- 还原/激活区域 -->
+                                <Button Command="{Binding RestoreCommand}"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Padding="2,1"
+                                        Cursor="Hand"
+                                        ToolTip="还原窗口"
+                                        AutomationProperties.AutomationId="MdiTray.BtnRestore">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="Transparent">
+                                                <ContentPresenter />
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Border Background="#1E395B" CornerRadius="2" Padding="3,1" Margin="0,0,5,0">
+                                            <TextBlock Text=">_" Foreground="#4EC9B0" FontSize="9" FontWeight="Bold" VerticalAlignment="Center" />
+                                        </Border>
+                                        <TextBlock Text="{Binding Title}"
+                                                   Foreground="#1E395B"
+                                                   FontFamily="Segoe UI, Microsoft YaHei UI, Tahoma"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,6,0"
+                                                   VerticalAlignment="Center"
+                                                   MaxWidth="140"
+                                                   TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
                                 </Button>
-                                <Button Command="{Binding CloseCommand}" Background="Transparent" BorderThickness="0" Foreground="#C41E14" ToolTip="关闭窗口" Cursor="Hand">
-                                    <TextBlock Text="✕" FontSize="10" FontWeight="Bold" />
+                                <!-- 关闭按钮 -->
+                                <Button Command="{Binding CloseCommand}"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Width="16"
+                                        Height="16"
+                                        Margin="2,0,0,0"
+                                        Padding="0"
+                                        Cursor="Hand"
+                                        ToolTip="关闭窗口"
+                                        AutomationProperties.AutomationId="MdiTray.BtnClose">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="bd" Background="Transparent" CornerRadius="2">
+                                                <Path x:Name="p" Data="{DynamicResource MdiCloseGeometry}"
+                                                      Stroke="#708090" StrokeThickness="1.2"
+                                                      Width="8" Height="8" Stretch="Uniform"
+                                                      HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="bd" Property="Background" Value="#FFE81123" />
+                                                    <Setter TargetName="p" Property="Stroke" Value="#FFFFFF" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
                                 </Button>
                             </StackPanel>
                         </Border>

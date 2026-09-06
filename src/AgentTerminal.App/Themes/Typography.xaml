@@ -1,0 +1,43 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- ================================================================= -->
+    <!-- 2. Aero 字体系统与度量标准 (Typography & Metrics)                   -->
+    <!-- ================================================================= -->
+
+    <!-- 字体族定义 -->
+    <FontFamily x:Key="AeroFontFamily">Segoe UI, Microsoft YaHei UI, Tahoma, sans-serif</FontFamily>
+    <FontFamily x:Key="AeroCodeFontFamily">Consolas, Cascadia Code, Courier New, monospace</FontFamily>
+
+    <!-- 字号标准 (DIP): 常规 12 DIP, 辅助最小 11 DIP) -->
+    <sys:Double x:Key="AeroFontSizeTitle">12.0</sys:Double>
+    <sys:Double x:Key="AeroFontSizeNormal">12.0</sys:Double>
+    <sys:Double x:Key="AeroFontSizeSmall">11.0</sys:Double>
+    <sys:Double x:Key="AeroFontSizeLarge">14.0</sys:Double>
+
+    <!-- 核心控件度量标准 (Heights & Widths) -->
+    <sys:Double x:Key="AeroCommandButtonHeight">24.0</sys:Double>
+    <sys:Double x:Key="AeroCaptionButtonHeight">20.0</sys:Double>
+    <sys:Double x:Key="AeroCaptionButtonWidth">29.0</sys:Double>
+    <sys:Double x:Key="AeroCloseButtonWidth">48.0</sys:Double>
+    <sys:Double x:Key="AeroWindowCaptionHeight">30.0</sys:Double>
+    <sys:Double x:Key="AeroToolBarHeight">28.0</sys:Double>
+    <sys:Double x:Key="AeroStatusBarHeight">24.0</sys:Double>
+
+    <!-- 5 / 7 / 11 DIP 间距节奏 (Spacing Tokens) -->
+    <Thickness x:Key="AeroMarginTight">5,5,5,5</Thickness>
+    <Thickness x:Key="AeroMarginMedium">7,7,7,7</Thickness>
+    <Thickness x:Key="AeroMarginLarge">11,11,11,11</Thickness>
+
+    <Thickness x:Key="AeroPaddingTight">5,2,5,2</Thickness>
+    <Thickness x:Key="AeroPaddingNormal">7,3,7,3</Thickness>
+    <Thickness x:Key="AeroPaddingCommand">8,2,8,2</Thickness>
+    <Thickness x:Key="AeroPaddingSection">11,7,11,7</Thickness>
+
+    <!-- 边框圆角标记 -->
+    <CornerRadius x:Key="AeroCornerRadiusSmall">3</CornerRadius>
+    <CornerRadius x:Key="AeroCornerRadiusWindow">8</CornerRadius>
+    <CornerRadius x:Key="AeroCornerRadiusChild">6</CornerRadius>
+
+</ResourceDictionary>

@@ -132,7 +132,10 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument,
             }
         };
 
-        if (Application.Current?.Dispatcher != null)
+        if (Application.Current?.Dispatcher != null &&
+            Application.Current.Dispatcher.CheckAccess() &&
+            Application.Current.Dispatcher.Thread.IsAlive &&
+            !Application.Current.Dispatcher.HasShutdownStarted)
         {
             _flushTimer = new System.Windows.Threading.DispatcherTimer(
                 TimeSpan.FromMilliseconds(16),
@@ -389,6 +392,7 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument,
             Width = _restoreWidth;
             Height = _restoreHeight;
         }
+        IsActive = true;
     }
 
     public void SaveRestoreBounds()
@@ -418,9 +422,9 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument,
                 _pendingBuffer.Remove(0, excess);
             }
 
-            if (_flushTimer == null)
+            if (_flushTimer == null || !_flushTimer.Dispatcher.Thread.IsAlive || _flushTimer.Dispatcher.HasShutdownStarted)
             {
-                // 无 UI 调度器环境（如单元测试），同步刷新
+                // 无 UI 调度器环境（如单元测试）或调度线程已终止，同步刷新
                 FlushPendingBufferLocked();
             }
             else
@@ -501,17 +505,7 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument,
             ? TruncationNoticeHeader + _outputBuffer.ToString()
             : _outputBuffer.ToString();
 
-        if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
-        {
-            Application.Current.Dispatcher.BeginInvoke(() =>
-            {
-                OutputText = fullText;
-            });
-        }
-        else
-        {
-            OutputText = fullText;
-        }
+        OutputText = fullText;
 
         // 3. 通知 Buffer 刷新，驱动 TerminalControl 重绘
         Buffer.RequestRefresh();

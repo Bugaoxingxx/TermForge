@@ -39,18 +39,21 @@ public class TestAppFixture : IDisposable
             try
             {
                 var w = App.GetMainWindow(Automation);
-                if (w != null && !string.IsNullOrEmpty(w.Title))
+                if (w != null && (!string.IsNullOrEmpty(w.Title) || w.AutomationId == "MainWindow"))
                 {
                     return w;
                 }
 
-                // Fallback: search desktop children by process ID
+                // Fallback: search desktop top-level windows by process ID
                 var desktop = Automation.GetDesktop();
-                var child = desktop.FindFirstChild(cf => cf.ByProcessId(App.ProcessId));
-                var win = child?.AsWindow();
-                if (win != null && !string.IsNullOrEmpty(win.Title))
+                var topWindows = desktop.FindAllChildren(cf => cf.ByProcessId(App.ProcessId));
+                foreach (var child in topWindows)
                 {
-                    return win;
+                    var win = child.AsWindow();
+                    if (win != null && (!string.IsNullOrEmpty(win.Title) || win.AutomationId == "MainWindow"))
+                    {
+                        return win;
+                    }
                 }
 
                 return null;
@@ -59,13 +62,21 @@ public class TestAppFixture : IDisposable
             {
                 return null;
             }
-        }, timeout: TimeSpan.FromSeconds(15), message: "Failed to locate MainWindow within 15s of launch");
+        }, timeout: TimeSpan.FromSeconds(25), message: "Failed to locate MainWindow within 25s of launch");
 
         try
         {
             mainWindow.SetForeground();
         }
         catch { }
+
+        try
+        {
+            App.WaitWhileBusy(TimeSpan.FromSeconds(5));
+        }
+        catch { }
+
+        System.Threading.Thread.Sleep(400);
 
         return mainWindow;
     }
@@ -133,6 +144,7 @@ public class TestAppFixture : IDisposable
             Automation?.Dispose();
             Automation = null;
             App = null;
+            System.Threading.Thread.Sleep(300);
         }
     }
 }

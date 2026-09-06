@@ -199,6 +199,13 @@ public partial class MainWindowViewModel : ObservableObject
         };
 
         doc.RequestClose += async (s, e) => await CloseTerminalAsync(doc);
+        doc.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(TerminalDocumentViewModel.IsActive) && doc.IsActive && ActiveDocument != doc)
+            {
+                ActivateDocument(doc);
+            }
+        };
 
         Documents.Add(doc);
         ActivateDocument(doc);
