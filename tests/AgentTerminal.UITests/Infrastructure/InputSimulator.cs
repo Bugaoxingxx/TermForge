@@ -55,20 +55,25 @@ public static class InputSimulator
         try
         {
             FlaUI.Core.Input.Mouse.Position = startScreen;
-            Thread.Sleep(30);
-            FlaUI.Core.Input.Mouse.Down(FlaUI.Core.Input.MouseButton.Left);
-            Thread.Sleep(30);
-            FlaUI.Core.Input.Mouse.MoveTo(endScreen);
-            Thread.Sleep(30);
-            FlaUI.Core.Input.Mouse.Up(FlaUI.Core.Input.MouseButton.Left);
-            Thread.Sleep(50);
+            var curPos = FlaUI.Core.Input.Mouse.Position;
+            if (Math.Abs(curPos.X - startScreen.X) <= 5 && Math.Abs(curPos.Y - startScreen.Y) <= 5)
+            {
+                Thread.Sleep(30);
+                FlaUI.Core.Input.Mouse.Down(FlaUI.Core.Input.MouseButton.Left);
+                Thread.Sleep(30);
+                FlaUI.Core.Input.Mouse.MoveTo(endScreen);
+                Thread.Sleep(30);
+                FlaUI.Core.Input.Mouse.Up(FlaUI.Core.Input.MouseButton.Left);
+                Thread.Sleep(50);
+                return;
+            }
         }
         catch
         {
-            // 忽略并使用下面的 Win32 消息模拟保证可靠执行
+            // 物理鼠标调用失败，回退至 Win32 消息模拟
         }
 
-        var window = FindWindow(targetElement) 
+        var window = FindWindow(targetElement)
             ?? throw new InvalidOperationException("Could not find parent Window for target element");
 
         var hWnd = window.Properties.NativeWindowHandle.Value;
@@ -103,15 +108,21 @@ public static class InputSimulator
 
         try
         {
-            FlaUI.Core.Input.Mouse.DoubleClick(screenPt);
-            Thread.Sleep(100);
+            FlaUI.Core.Input.Mouse.Position = screenPt;
+            var curPos = FlaUI.Core.Input.Mouse.Position;
+            if (Math.Abs(curPos.X - screenPt.X) <= 5 && Math.Abs(curPos.Y - screenPt.Y) <= 5)
+            {
+                FlaUI.Core.Input.Mouse.DoubleClick(screenPt);
+                Thread.Sleep(100);
+                return;
+            }
         }
         catch
         {
-            // 忽略并执行 Win32 双击消息模拟
+            // 物理鼠标调用失败，回退至 Win32 消息模拟
         }
 
-        var window = FindWindow(targetElement) 
+        var window = FindWindow(targetElement)
             ?? throw new InvalidOperationException("Could not find parent Window for target element");
 
         var hWnd = window.Properties.NativeWindowHandle.Value;

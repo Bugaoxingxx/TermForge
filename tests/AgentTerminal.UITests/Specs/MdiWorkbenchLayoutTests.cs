@@ -189,17 +189,39 @@ public class MdiWorkbenchLayoutTests
         }
 
         var doc = workspace.GetChildWindows()[0];
+        var workspaceBounds = workspace.Container.BoundingRectangle;
 
-        // Drag window aggressively towards top-left (-800px, -800px)
+        // 1. 针对左上边界：剧烈向左上方拖拽 (-800px, -800px)
         doc.DragBy(-800, -800);
         Thread.Sleep(300);
 
         var clampedBounds = doc.BoundingRectangle;
         fixture.CaptureScreenshot("16_DragChildWindow_Clamped");
 
-        // The window should stay visible within the container and not disappear off-screen
+        // 验证：子窗口左上角不得逃逸出工作区左侧及顶部
+        Assert.True(clampedBounds.Left >= workspaceBounds.Left - 5,
+            $"Window left ({clampedBounds.Left}) should clamp to workspace left ({workspaceBounds.Left})");
+        Assert.True(clampedBounds.Top >= workspaceBounds.Top - 5,
+            $"Window top ({clampedBounds.Top}) should clamp to workspace top ({workspaceBounds.Top})");
         Assert.True(clampedBounds.Width > 200, "Window width should remain valid after clamp drag");
         Assert.True(clampedBounds.Height > 100, "Window height should remain valid after clamp drag");
+
+        // 2. 针对右下边界：剧烈向右下方拖拽 (+3000px, +3000px)
+        doc.DragBy(3000, 3000);
+        Thread.Sleep(300);
+
+        var brClampedBounds = doc.BoundingRectangle;
+        fixture.CaptureScreenshot("16_DragChildWindow_Clamped_BottomRight");
+
+        // 验证：子窗口右下方向拖拽后，至少保留 60px 宽度和 40px 高度的可视区域在工作区内
+        Assert.True(brClampedBounds.Left <= workspaceBounds.Right - 50,
+            $"Window left ({brClampedBounds.Left}) must leave visible area within workspace right ({workspaceBounds.Right})");
+        Assert.True(brClampedBounds.Top <= workspaceBounds.Bottom - 30,
+            $"Window top ({brClampedBounds.Top}) must leave visible area within workspace bottom ({workspaceBounds.Bottom})");
+        Assert.True(brClampedBounds.Right > workspaceBounds.Left + 50,
+            "Window right boundary must remain within workspace");
+        Assert.True(brClampedBounds.Bottom > workspaceBounds.Top + 30,
+            "Window bottom boundary must remain within workspace");
     }
 
     [Fact]

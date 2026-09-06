@@ -188,6 +188,9 @@ public class PowerShellSessionIntegrationTests
         {
             await session.StartAsync();
 
+            // 等待 PowerShell 完成启动与控制台初始化
+            await Task.Delay(1200);
+
             // 发送长耗时循环命令
             await session.WriteAsync("Start-Sleep -Seconds 30\r\n");
             await Task.Delay(500);

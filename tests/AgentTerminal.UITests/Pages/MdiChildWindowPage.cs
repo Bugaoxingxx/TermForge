@@ -35,8 +35,8 @@ public class MdiChildWindowPage
 
     public Rectangle BoundingRectangle => _element.BoundingRectangle;
 
-    public AutomationElement? TitleBarElement => 
-        _element.FindFirstDescendant(cf => cf.ByAutomationId("MdiWindow.TitleBar")) 
+    public AutomationElement? TitleBarElement =>
+        _element.FindFirstDescendant(cf => cf.ByAutomationId("MdiWindow.TitleBar"))
         ?? _element.FindFirstDescendant(cf => cf.ByAutomationId("MdiWindow.Title"));
 
     public Button? MinimizeButton => _element.FindFirstDescendant(cf => cf.ByAutomationId("MdiWindow.BtnMinimize"))?.AsButton();
