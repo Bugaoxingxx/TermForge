@@ -431,7 +431,12 @@ public class TerminalControl : Control
         if (Buffer == null) return;
 
         int lines = e.Delta > 0 ? 3 : -3;
-        int newOffset = Math.Clamp(ScrollOffset + lines, 0, Buffer.ScrollbackLineCount);
+        int scrollbackLineCount;
+        lock (Buffer.SyncRoot)
+        {
+            scrollbackLineCount = Buffer.ScrollbackLineCount;
+        }
+        int newOffset = Math.Clamp(ScrollOffset + lines, 0, scrollbackLineCount);
         if (newOffset != ScrollOffset)
         {
             ScrollOffset = newOffset;

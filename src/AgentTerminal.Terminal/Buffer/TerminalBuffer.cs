@@ -642,6 +642,8 @@ public class TerminalBuffer : ITerminalBuffer
         if (y < _activeScreen.ScrollTop || y > _activeScreen.ScrollBottom) return;
 
         int scrollBottom = _activeScreen.ScrollBottom;
+        // 截断到滚动区可插入行数：超出部分等价于整体清空，无需重复搬移
+        count = Math.Min(count, scrollBottom - y + 1);
         for (int i = 0; i < count; i++)
         {
             var bottomRow = _activeScreen.GetViewportRow(scrollBottom);
@@ -662,6 +664,8 @@ public class TerminalBuffer : ITerminalBuffer
         if (y < _activeScreen.ScrollTop || y > _activeScreen.ScrollBottom) return;
 
         int scrollBottom = _activeScreen.ScrollBottom;
+        // 截断到滚动区可删除行数：超出部分等价于整体清空，无需重复搬移
+        count = Math.Min(count, scrollBottom - y + 1);
         for (int i = 0; i < count; i++)
         {
             var topRow = _activeScreen.GetViewportRow(y);

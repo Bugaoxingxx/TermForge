@@ -140,6 +140,48 @@ public class VtParserEditingTests
     }
 
     [Fact]
+    public void InsertLines_WithCountExceedingScrollRegion_ShouldClearFromCursorDown()
+    {
+        // Arrange
+        var buffer = new TerminalBuffer(columns: 10, rows: 4);
+        var parser = new VtParser(buffer);
+
+        parser.Parse("Row0\r\nRow1\r\nRow2\r\nRow3");
+        // Move cursor to line 1
+        parser.Parse("\x1B[2;1H");
+
+        // Act: Insert far more lines than the scroll region can hold（等价于从光标行向下整体清空）
+        parser.Parse("\x1B[99999L");
+
+        // Assert: Row 0 保留，Row 1..3 全部清空，且不越界
+        Assert.Equal('0', buffer.GetCell(3, 0).Character);
+        Assert.Equal(' ', buffer.GetCell(0, 1).Character);
+        Assert.Equal(' ', buffer.GetCell(0, 2).Character);
+        Assert.Equal(' ', buffer.GetCell(0, 3).Character);
+    }
+
+    [Fact]
+    public void DeleteLines_WithCountExceedingScrollRegion_ShouldClearFromCursorDown()
+    {
+        // Arrange
+        var buffer = new TerminalBuffer(columns: 10, rows: 4);
+        var parser = new VtParser(buffer);
+
+        parser.Parse("Row0\r\nRow1\r\nRow2\r\nRow3");
+        // Move cursor to line 1
+        parser.Parse("\x1B[2;1H");
+
+        // Act: Delete far more lines than the scroll region can hold（等价于从光标行向下整体清空）
+        parser.Parse("\x1B[99999M");
+
+        // Assert: Row 0 保留，Row 1..3 全部清空，且不越界
+        Assert.Equal('0', buffer.GetCell(3, 0).Character);
+        Assert.Equal(' ', buffer.GetCell(0, 1).Character);
+        Assert.Equal(' ', buffer.GetCell(0, 2).Character);
+        Assert.Equal(' ', buffer.GetCell(0, 3).Character);
+    }
+
+    [Fact]
     public void CursorSaveAndRestore_Esc7Esc8_ShouldRestorePosition()
     {
         // Arrange
