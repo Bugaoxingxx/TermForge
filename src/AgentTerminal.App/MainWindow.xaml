@@ -7,6 +7,7 @@
         xmlns:dockingControls="clr-namespace:AgentTerminal.Docking.Controls;assembly=AgentTerminal.Docking"
         xmlns:dockingVm="clr-namespace:AgentTerminal.Docking.ViewModels;assembly=AgentTerminal.Docking"
         xmlns:views="clr-namespace:AgentTerminal.App.Views"
+        xmlns:terminalRendering="clr-namespace:AgentTerminal.Terminal.Rendering;assembly=AgentTerminal.Terminal"
         mc:Ignorable="d"
         Title="{Binding Title}" Height="750" Width="1200"
         Icon="Assets/termforge_app_icon_aero.jpg"
@@ -20,9 +21,40 @@
     </Window.DataContext>
 
     <Window.Resources>
-        <!-- 将 TerminalDocumentViewModel 映射为 TerminalDebugView 单文档调试呈现 -->
+        <!-- 将 TerminalDocumentViewModel 映射为原生 TerminalControl 呈现；支持切换诊断模式 -->
         <DataTemplate DataType="{x:Type dockingVm:TerminalDocumentViewModel}">
-            <views:TerminalDebugView />
+            <Grid>
+                <!-- 原生高性能字符网格终端控件 (默认主视图) -->
+                <terminalRendering:TerminalControl
+                    Buffer="{Binding Buffer}"
+                    Session="{Binding Session}"
+                    AutomationProperties.AutomationId="MainTerminalControl">
+                    <terminalRendering:TerminalControl.Style>
+                        <Style TargetType="{x:Type terminalRendering:TerminalControl}">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsDiagnosticMode}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </terminalRendering:TerminalControl.Style>
+                </terminalRendering:TerminalControl>
+
+                <!-- 原始输出调试视图 (可选诊断模式) -->
+                <views:TerminalDebugView>
+                    <views:TerminalDebugView.Style>
+                        <Style TargetType="{x:Type views:TerminalDebugView}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsDiagnosticMode}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </views:TerminalDebugView.Style>
+                </views:TerminalDebugView>
+            </Grid>
         </DataTemplate>
 
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
@@ -73,6 +105,9 @@
                                   AutomationProperties.AutomationId="Menu.View.ToggleProps" />
                         <MenuItem Header="底部诊断日志" IsCheckable="True" IsChecked="{Binding IsLogPaneVisible}"
                                   AutomationProperties.AutomationId="Menu.View.ToggleLogs" />
+                        <Separator />
+                        <MenuItem Header="原始输出诊断模式" IsCheckable="True" IsChecked="{Binding ActiveDocument.IsDiagnosticMode}"
+                                  AutomationProperties.AutomationId="Menu.View.ToggleDiagnostic" />
                     </MenuItem>
 
                     <!-- 窗口菜单 (Win32 MDI 核心：层叠、平铺、还原与动态文档列表) -->
@@ -149,6 +184,15 @@
                         Command="{Binding ActiveDocument.ClearOutputCommand}" ToolTip="清空当前调试窗口文本"
                         AutomationProperties.AutomationId="Toolbar.BtnClearOutput" Margin="2,0">
                     <TextBlock Text="清空输出" Foreground="#1E395B" />
+                </Button>
+                <Separator Style="{DynamicResource AeroToolBarSeparatorStyle}" />
+                <Button Style="{DynamicResource AeroToolBarButtonStyle}"
+                        Command="{Binding ActiveDocument.ToggleDiagnosticModeCommand}" ToolTip="切换原生终端 / 原始输出诊断模式"
+                        AutomationProperties.AutomationId="Toolbar.BtnToggleDiagnostic" Margin="2,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🛠" Margin="0,0,4,0" Foreground="#E65100" />
+                        <TextBlock Text="诊断模式" Foreground="#1E395B" />
+                    </StackPanel>
                 </Button>
             </ToolBar>
         </ToolBarTray>

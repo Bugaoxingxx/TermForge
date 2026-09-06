@@ -25,8 +25,10 @@
 * **原生 Shell 全覆盖**：深度支持 PowerShell 7、Windows PowerShell、CMD、WSL。统一抽象为 `TerminalSession`。
 
 ### 🎨 原生 WPF 高性能渲染 (Native Renderer)
-* **字符网格渲染**：基于 `DrawingVisual` / `DrawingContext` / `GlyphRun` 自研终端绘制，彻底避免海量 WPF 控件树与 TextBlock 带来的内存与排版开销。
-* **现代终端体验**：支持 ANSI / 256 色 / TrueColor、Unicode、光标、平滑滚动与灵活选区。
+* **字符网格渲染**：基于 `DrawingContext` + `GlyphRun` 自研高性能终端绘制，彻底杜绝海量 WPF 控件树与 TextBlock 带来的内存与排版开销（Visual 数量恒定为 0）。
+* **高性能缓冲区**：基于 Ring Buffer 实现 O(1) 零拷贝滚动与行数组重用，支持 10 万行回滚历史与主屏/备用屏（Alternate Screen）物理隔离。
+* **完整 VT/ANSI 引擎**：覆盖 Ground/ESC/CSI/OSC/DCS 状态机，支持 SGR 16/256 色/24 位 TrueColor、光标定位（CUP）、清屏/清行（ED/EL）、DEC 私有模式（光标显隐、备用屏）。
+* **现代终端交互体验**：键盘直连会话（方向键、功能键、Ctrl 组合）、鼠标选区高亮与复制/粘贴、Ctrl+C 智能分流（选区复制 vs 0x03 中断）、尺寸联动 50ms 去抖自适应。
 
 ### 🤖 AI Agent 工作台一等公民
 * **Agent CLI 深度集成**：直接支持 Codex、Claude Code、Gemini CLI 及自定义 Agent。

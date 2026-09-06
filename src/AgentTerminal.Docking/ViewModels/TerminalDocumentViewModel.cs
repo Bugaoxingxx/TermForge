@@ -2,6 +2,8 @@ using System.Text;
 using System.Windows;
 using AgentTerminal.Core.Abstractions;
 using AgentTerminal.Core.Models;
+using AgentTerminal.Terminal.Buffer;
+using AgentTerminal.Terminal.VT;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -83,7 +85,13 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument,
     private bool _isTruncated;
 
     [ObservableProperty]
+    private bool _isDiagnosticMode;
+
+    [ObservableProperty]
     private string _statusMessage = "就绪 (Created)";
+
+    public ITerminalBuffer Buffer { get; }
+    public VtParser Parser { get; }
 
     public ITerminalSession? Session { get; private set; }
 
@@ -106,6 +114,23 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument,
         Profile = profile ?? ShellProfile.CreatePowerShellCore();
         Title = title ?? Profile.Name;
         _sessionFactory = sessionFactory;
+
+        Buffer = new TerminalBuffer(Columns, Rows);
+        Parser = new VtParser(Buffer);
+        Parser.TitleChanged += (_, newTitle) =>
+        {
+            if (!string.IsNullOrWhiteSpace(newTitle))
+            {
+                if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
+                {
+                    Application.Current.Dispatcher.BeginInvoke(() => Title = newTitle);
+                }
+                else
+                {
+                    Title = newTitle;
+                }
+            }
+        };
 
         if (Application.Current?.Dispatcher != null)
         {
@@ -135,6 +160,7 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument,
         Session = session;
         Columns = session.Dimensions.Columns;
         Rows = session.Dimensions.Rows;
+        Buffer.Resize(Columns, Rows);
         State = session.State;
         ExitCode = session.ExitCode;
         if (session.ProcessId != null)
@@ -262,6 +288,7 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument,
 
         try
         {
+            Buffer.Resize(Columns, Rows);
             await Session.ResizeAsync(Columns, Rows);
             StatusMessage = $"视口已更新为 {Columns}x{Rows}";
         }
@@ -298,12 +325,19 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument,
     {
         lock (_bufferLock)
         {
+            Buffer.Clear();
             _flushTimer?.Stop();
             _pendingBuffer.Clear();
             _outputBuffer.Clear();
             IsTruncated = false;
             OutputText = string.Empty;
         }
+    }
+
+    [RelayCommand]
+    public void ToggleDiagnosticMode()
+    {
+        IsDiagnosticMode = !IsDiagnosticMode;
     }
 
     [RelayCommand]
@@ -362,6 +396,7 @@ public partial class TerminalDocumentViewModel : ObservableObject, IMdiDocument,
 
         lock (_bufferLock)
         {
+            Parser.Parse(text);
             _pendingBuffer.Append(text);
 
             // 待刷新队列有界限制（1 MiB）

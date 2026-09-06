@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AgentTerminal.Core\AgentTerminal.Core.csproj" />
+    <ProjectReference Include="..\AgentTerminal.Terminal\AgentTerminal.Terminal.csproj" />
   </ItemGroup>
 
   <ItemGroup>

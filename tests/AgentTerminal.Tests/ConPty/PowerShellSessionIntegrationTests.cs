@@ -188,8 +188,27 @@ public class PowerShellSessionIntegrationTests
         {
             await session.StartAsync();
 
-            // 等待 PowerShell 完成启动与控制台初始化
-            await Task.Delay(1200);
+            // 等待 PowerShell 完成启动与控制台初始化（侦听提示符就绪并保持足量安全缓冲，避免 PSReadLine 启动时清空输入缓冲）
+            var promptTcs = new TaskCompletionSource<bool>();
+            void OnPromptReceived(object? s, string text)
+            {
+                if (text.Contains('>') || text.Contains("PS "))
+                {
+                    promptTcs.TrySetResult(true);
+                }
+            }
+
+            session.OutputReceived += OnPromptReceived;
+            try
+            {
+                await Task.WhenAny(promptTcs.Task, Task.Delay(3000));
+                // 确保至少保留 1500ms（与 AC01 保持一致），避开 PSReadLine 内部清空缓冲
+                await Task.Delay(1500);
+            }
+            finally
+            {
+                session.OutputReceived -= OnPromptReceived;
+            }
 
             // 发送长耗时循环命令
             await session.WriteAsync("Start-Sleep -Seconds 30\r\n");
