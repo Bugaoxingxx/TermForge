@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using AgentTerminal.Core.Models;
+using AgentTerminal.Docking.ViewModels;
 using AgentTerminal.Terminal.ConPty;
 using Xunit;
 
@@ -354,5 +355,34 @@ public class PowerShellSessionIntegrationTests
             Assert.Equal(TerminalState.Failed, session2.State);
             await session2.DisposeAsync();
         }
+    }
+
+    [Fact]
+    public async Task AC07_DocumentClose_ShouldTerminateSessionAndLeaveNoResidualProcess()
+    {
+        string? psExe = GetPowerShellExecutable();
+        if (psExe == null) return;
+
+        var profile = new ShellProfile
+        {
+            Name = "Test Close",
+            ExecutablePath = psExe,
+            Arguments = "-NoLogo -NoProfile"
+        };
+
+        var session = new ConPtyTerminalSession(profile);
+        var doc = new TerminalDocumentViewModel(profile: profile, session: session);
+
+        await doc.StartAsync();
+        int pid = doc.ProcessId ?? 0;
+        Assert.True(pid > 0);
+        Assert.NotNull(Process.GetProcessById(pid));
+
+        // Act: 关闭/释放文档
+        await doc.DisposeAsync();
+
+        // 验证进程已被终止，无残留进程
+        await Task.Delay(300);
+        Assert.Throws<ArgumentException>(() => Process.GetProcessById(pid));
     }
 }
