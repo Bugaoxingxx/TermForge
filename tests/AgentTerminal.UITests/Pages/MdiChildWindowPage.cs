@@ -50,63 +50,54 @@ public class MdiChildWindowPage
     }
 
     /// <summary>
-    /// 移动子窗口。优先使用 UI 自动化标准 ITransformProvider.Move（保障 CI/无头/非交互会话稳定性），
-    /// 当目标元素未暴露 Transform 模式时回退至 InputSimulator（物理/Win32 模拟）。
+    /// 移动子窗口（使用 UI 自动化标准 ITransformProvider.Move）。
     /// </summary>
     public void DragBy(int deltaX, int deltaY)
     {
-        if (_element.Patterns.Transform.IsSupported)
+        if (!_element.Patterns.Transform.IsSupported)
         {
-            var bounds = _element.BoundingRectangle;
-            _element.Patterns.Transform.Pattern.Move(bounds.Left + deltaX, bounds.Top + deltaY);
-            return;
+            throw new System.InvalidOperationException("Transform pattern is not supported on this MDI child window");
         }
 
-        var titleBar = TitleBarElement ?? throw new System.InvalidOperationException("TitleBar element not found");
-        InputSimulator.Drag(titleBar, deltaX, deltaY);
+        var bounds = _element.BoundingRectangle;
+        _element.Patterns.Transform.Pattern.Move(bounds.Left + deltaX, bounds.Top + deltaY);
     }
 
     /// <summary>
-    /// 双击标题栏切换最大化/还原。优先使用 UI 自动化标准 IWindowProvider.SetWindowVisualState，
-    /// 未暴露 Window 模式时回退至 InputSimulator。
+    /// 双击标题栏切换最大化/还原（使用 UI 自动化标准 IWindowProvider.SetWindowVisualState）。
     /// </summary>
     public void DoubleClickTitleBar()
     {
-        if (_element.Patterns.Window.IsSupported)
+        if (!_element.Patterns.Window.IsSupported)
         {
-            var win = _element.Patterns.Window.Pattern;
-            if (win.WindowVisualState.Value == FlaUI.Core.Definitions.WindowVisualState.Maximized)
-            {
-                win.SetWindowVisualState(FlaUI.Core.Definitions.WindowVisualState.Normal);
-            }
-            else
-            {
-                win.SetWindowVisualState(FlaUI.Core.Definitions.WindowVisualState.Maximized);
-            }
-            return;
+            throw new System.InvalidOperationException("Window pattern is not supported on this MDI child window");
         }
 
-        var titleBar = TitleBarElement ?? throw new System.InvalidOperationException("TitleBar element not found");
-        InputSimulator.DoubleClick(titleBar);
+        var win = _element.Patterns.Window.Pattern;
+        if (win.WindowVisualState.Value == FlaUI.Core.Definitions.WindowVisualState.Maximized)
+        {
+            win.SetWindowVisualState(FlaUI.Core.Definitions.WindowVisualState.Normal);
+        }
+        else
+        {
+            win.SetWindowVisualState(FlaUI.Core.Definitions.WindowVisualState.Maximized);
+        }
     }
 
     public AutomationElement? BottomRightThumb => _element.FindFirstDescendant(cf => cf.ByAutomationId("MdiWindow.Thumb.BottomRight"));
 
     /// <summary>
-    /// 拉伸右下角。优先使用 UI 自动化标准 ITransformProvider.Resize，
-    /// 未暴露 Transform 模式时回退至 InputSimulator。
+    /// 拉伸右下角（使用 UI 自动化标准 ITransformProvider.Resize）。
     /// </summary>
     public void ResizeBottomRight(int deltaX, int deltaY)
     {
-        if (_element.Patterns.Transform.IsSupported)
+        if (!_element.Patterns.Transform.IsSupported)
         {
-            var bounds = _element.BoundingRectangle;
-            _element.Patterns.Transform.Pattern.Resize(bounds.Width + deltaX, bounds.Height + deltaY);
-            return;
+            throw new System.InvalidOperationException("Transform pattern is not supported on this MDI child window");
         }
 
-        var thumb = BottomRightThumb ?? throw new System.InvalidOperationException("BottomRightThumb element not found");
-        InputSimulator.Drag(thumb, deltaX, deltaY);
+        var bounds = _element.BoundingRectangle;
+        _element.Patterns.Transform.Pattern.Resize(bounds.Width + deltaX, bounds.Height + deltaY);
     }
 
     public void MaximizeOrRestore()
