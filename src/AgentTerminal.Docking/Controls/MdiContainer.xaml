@@ -16,7 +16,7 @@
         </Grid.RowDefinitions>
 
         <!-- 主工作区 Canvas：承载所有 Normal 和 Maximized 子窗口，深色沉浸式点阵背景 -->
-        <ItemsControl Grid.Row="0" x:Name="MdiItemsControl">
+        <ItemsControl Grid.Row="0" x:Name="MdiItemsControl" AutomationProperties.AutomationId="Workbench.MdiCanvasArea">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas x:Name="MdiCanvas" ClipToBounds="True" Background="#1B2631" />

@@ -175,7 +175,7 @@ public class MdiWorkbenchLayoutTests
     }
 
     [Fact]
-    public void DragChildWindow_BeyondLeftAndTop_ShouldClampWithinWorkspace()
+    public void DragChildWindow_BeyondBoundaries_ShouldClampWithinWorkspace()
     {
         using var fixture = new TestAppFixture();
         var window = fixture.Launch();
@@ -189,22 +189,22 @@ public class MdiWorkbenchLayoutTests
         }
 
         var doc = workspace.GetChildWindows()[0];
-        var workspaceBounds = workspace.Container.BoundingRectangle;
+        var canvasBounds = workspace.CanvasBounds;
 
         // 1. 针对左上边界：剧烈向左上方拖拽 (-800px, -800px)
         doc.DragBy(-800, -800);
         Thread.Sleep(300);
 
-        var clampedBounds = doc.BoundingRectangle;
-        fixture.CaptureScreenshot("16_DragChildWindow_Clamped");
+        var tlClampedBounds = doc.BoundingRectangle;
+        fixture.CaptureScreenshot("16_DragChildWindow_Clamped_TopLeft");
 
-        // 验证：子窗口左上角不得逃逸出工作区左侧及顶部
-        Assert.True(clampedBounds.Left >= workspaceBounds.Left - 5,
-            $"Window left ({clampedBounds.Left}) should clamp to workspace left ({workspaceBounds.Left})");
-        Assert.True(clampedBounds.Top >= workspaceBounds.Top - 5,
-            $"Window top ({clampedBounds.Top}) should clamp to workspace top ({workspaceBounds.Top})");
-        Assert.True(clampedBounds.Width > 200, "Window width should remain valid after clamp drag");
-        Assert.True(clampedBounds.Height > 100, "Window height should remain valid after clamp drag");
+        // 验证：子窗口左上角不得逃逸出工作区 Canvas 左侧及顶部（允许少量 DPI / 边框容差）
+        Assert.True(tlClampedBounds.Left >= canvasBounds.Left - 5,
+            $"Window left ({tlClampedBounds.Left}) should clamp to canvas left ({canvasBounds.Left})");
+        Assert.True(tlClampedBounds.Top >= canvasBounds.Top - 5,
+            $"Window top ({tlClampedBounds.Top}) should clamp to canvas top ({canvasBounds.Top})");
+        Assert.True(tlClampedBounds.Width > 200, "Window width should remain valid after clamp drag");
+        Assert.True(tlClampedBounds.Height > 100, "Window height should remain valid after clamp drag");
 
         // 2. 针对右下边界：剧烈向右下方拖拽 (+3000px, +3000px)
         doc.DragBy(3000, 3000);
@@ -213,15 +213,28 @@ public class MdiWorkbenchLayoutTests
         var brClampedBounds = doc.BoundingRectangle;
         fixture.CaptureScreenshot("16_DragChildWindow_Clamped_BottomRight");
 
-        // 验证：子窗口右下方向拖拽后，至少保留 60px 宽度和 40px 高度的可视区域在工作区内
-        Assert.True(brClampedBounds.Left <= workspaceBounds.Right - 50,
-            $"Window left ({brClampedBounds.Left}) must leave visible area within workspace right ({workspaceBounds.Right})");
-        Assert.True(brClampedBounds.Top <= workspaceBounds.Bottom - 30,
-            $"Window top ({brClampedBounds.Top}) must leave visible area within workspace bottom ({workspaceBounds.Bottom})");
-        Assert.True(brClampedBounds.Right > workspaceBounds.Left + 50,
-            "Window right boundary must remain within workspace");
-        Assert.True(brClampedBounds.Bottom > workspaceBounds.Top + 30,
-            "Window bottom boundary must remain within workspace");
+        // 验证 2.1：断言第二次拖拽切实发生了位移（排除前次居左上后二次拖动为空操作的假阳性）
+        Assert.True(brClampedBounds.Left > tlClampedBounds.Left + 100,
+            $"Window left ({brClampedBounds.Left}) must move significantly right from top-left clamped position ({tlClampedBounds.Left})");
+        Assert.True(brClampedBounds.Top > tlClampedBounds.Top + 100,
+            $"Window top ({brClampedBounds.Top}) must move significantly down from top-left clamped position ({tlClampedBounds.Top})");
+
+        // 验证 2.2：按照产品规则（Left 钳制于 canvas.Width - 60，Top 钳制于 canvas.Height - 40），
+        // 窗口左上角必须停留在 Canvas 右/下内侧约 60/40 像素处（留 15px 容差）
+        var expectedLeft = canvasBounds.Right - 60;
+        var expectedTop = canvasBounds.Bottom - 40;
+        Assert.True(Math.Abs(brClampedBounds.Left - expectedLeft) <= 15,
+            $"Window left ({brClampedBounds.Left}) should clamp near canvas.Right - 60 ({expectedLeft})");
+        Assert.True(Math.Abs(brClampedBounds.Top - expectedTop) <= 15,
+            $"Window top ({brClampedBounds.Top}) should clamp near canvas.Bottom - 40 ({expectedTop})");
+
+        // 验证 2.3：计算窗口与工作区 Canvas 的实际交集矩形，确认至少保留 50px 宽和 30px 高的可视交互区域（产品标称保留 60x40）
+        var intersection = System.Drawing.Rectangle.Intersect(brClampedBounds, canvasBounds);
+        Assert.False(intersection.IsEmpty, "Clamped window must intersect with canvas workspace");
+        Assert.True(intersection.Width >= 50,
+            $"Visible intersection width ({intersection.Width}) must be at least 50px (product target 60px)");
+        Assert.True(intersection.Height >= 30,
+            $"Visible intersection height ({intersection.Height}) must be at least 30px (product target 40px)");
     }
 
     [Fact]

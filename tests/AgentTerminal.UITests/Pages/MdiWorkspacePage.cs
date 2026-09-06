@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.Linq;
 using System.Collections.Generic;
 using FlaUI.Core.AutomationElements;
@@ -16,6 +17,11 @@ public class MdiWorkspacePage
     }
 
     public AutomationElement Container => _container;
+
+    public AutomationElement CanvasArea =>
+        _container.FindFirstDescendant(cf => cf.ByAutomationId("Workbench.MdiCanvasArea")) ?? _container;
+
+    public Rectangle CanvasBounds => CanvasArea.BoundingRectangle;
 
     public IReadOnlyList<MdiChildWindowPage> GetChildWindows()
     {

@@ -49,9 +49,9 @@ public class MdiChildWindowPage
         titleElem?.Click();
     }
 
-    public void DragBy(int deltaX, int deltaY)
+    public void DragBy(int deltaX, int deltaY, bool forceInputSimulator = false)
     {
-        if (_element.Patterns.Transform.IsSupported)
+        if (!forceInputSimulator && _element.Patterns.Transform.IsSupported)
         {
             var bounds = _element.BoundingRectangle;
             _element.Patterns.Transform.Pattern.Move(bounds.Left + deltaX, bounds.Top + deltaY);
@@ -62,9 +62,9 @@ public class MdiChildWindowPage
         InputSimulator.Drag(titleBar, deltaX, deltaY);
     }
 
-    public void DoubleClickTitleBar()
+    public void DoubleClickTitleBar(bool forceInputSimulator = false)
     {
-        if (_element.Patterns.Window.IsSupported)
+        if (!forceInputSimulator && _element.Patterns.Window.IsSupported)
         {
             var win = _element.Patterns.Window.Pattern;
             if (win.WindowVisualState.Value == FlaUI.Core.Definitions.WindowVisualState.Maximized)
@@ -84,9 +84,9 @@ public class MdiChildWindowPage
 
     public AutomationElement? BottomRightThumb => _element.FindFirstDescendant(cf => cf.ByAutomationId("MdiWindow.Thumb.BottomRight"));
 
-    public void ResizeBottomRight(int deltaX, int deltaY)
+    public void ResizeBottomRight(int deltaX, int deltaY, bool forceInputSimulator = false)
     {
-        if (_element.Patterns.Transform.IsSupported)
+        if (!forceInputSimulator && _element.Patterns.Transform.IsSupported)
         {
             var bounds = _element.BoundingRectangle;
             _element.Patterns.Transform.Pattern.Resize(bounds.Width + deltaX, bounds.Height + deltaY);

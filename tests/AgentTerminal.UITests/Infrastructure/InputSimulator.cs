@@ -52,25 +52,30 @@ public static class InputSimulator
         var startScreen = new Point(startX, startY);
         var endScreen = new Point(startScreen.X + deltaX, startScreen.Y + deltaY);
 
+        var initialBounds = targetElement.BoundingRectangle;
+
         try
         {
             FlaUI.Core.Input.Mouse.Position = startScreen;
-            var curPos = FlaUI.Core.Input.Mouse.Position;
-            if (Math.Abs(curPos.X - startScreen.X) <= 5 && Math.Abs(curPos.Y - startScreen.Y) <= 5)
+            Thread.Sleep(30);
+            FlaUI.Core.Input.Mouse.Down(FlaUI.Core.Input.MouseButton.Left);
+            Thread.Sleep(30);
+            FlaUI.Core.Input.Mouse.MoveTo(endScreen);
+            Thread.Sleep(30);
+            FlaUI.Core.Input.Mouse.Up(FlaUI.Core.Input.MouseButton.Left);
+            Thread.Sleep(80);
+
+            // 验证物理拖拽手势是否切实生效：检查目标元素位置是否发生位移
+            var currentBounds = targetElement.BoundingRectangle;
+            bool hasMoved = currentBounds.Left != initialBounds.Left || currentBounds.Top != initialBounds.Top;
+            if (hasMoved || (deltaX == 0 && deltaY == 0))
             {
-                Thread.Sleep(30);
-                FlaUI.Core.Input.Mouse.Down(FlaUI.Core.Input.MouseButton.Left);
-                Thread.Sleep(30);
-                FlaUI.Core.Input.Mouse.MoveTo(endScreen);
-                Thread.Sleep(30);
-                FlaUI.Core.Input.Mouse.Up(FlaUI.Core.Input.MouseButton.Left);
-                Thread.Sleep(50);
                 return;
             }
         }
         catch
         {
-            // 物理鼠标调用失败，回退至 Win32 消息模拟
+            // 物理鼠标调用抛出异常或系统不支持，回退至 Win32 消息模拟
         }
 
         var window = FindWindow(targetElement)
@@ -106,24 +111,34 @@ public static class InputSimulator
         var startY = rect.Top + rect.Height / 2;
         var screenPt = new Point(startX, startY);
 
+        var window = FindWindow(targetElement);
+        var initialBounds = window?.BoundingRectangle ?? targetElement.BoundingRectangle;
+
         try
         {
             FlaUI.Core.Input.Mouse.Position = screenPt;
-            var curPos = FlaUI.Core.Input.Mouse.Position;
-            if (Math.Abs(curPos.X - screenPt.X) <= 5 && Math.Abs(curPos.Y - screenPt.Y) <= 5)
+            Thread.Sleep(30);
+            FlaUI.Core.Input.Mouse.DoubleClick(screenPt);
+            Thread.Sleep(120);
+
+            // 验证物理双击手势是否切实生效：检查宿主窗口或目标元素尺寸/位置是否发生改变（如最大化/还原）
+            var currentBounds = window?.BoundingRectangle ?? targetElement.BoundingRectangle;
+            bool hasChanged = currentBounds.Width != initialBounds.Width
+                || currentBounds.Height != initialBounds.Height
+                || currentBounds.Left != initialBounds.Left
+                || currentBounds.Top != initialBounds.Top;
+            if (hasChanged)
             {
-                FlaUI.Core.Input.Mouse.DoubleClick(screenPt);
-                Thread.Sleep(100);
                 return;
             }
         }
         catch
         {
-            // 物理鼠标调用失败，回退至 Win32 消息模拟
+            // 物理鼠标调用抛出异常，回退至 Win32 消息模拟
         }
 
-        var window = FindWindow(targetElement)
-            ?? throw new InvalidOperationException("Could not find parent Window for target element");
+        if (window == null)
+            throw new InvalidOperationException("Could not find parent Window for target element");
 
         var hWnd = window.Properties.NativeWindowHandle.Value;
         var pt = new POINT { X = screenPt.X, Y = screenPt.Y };
