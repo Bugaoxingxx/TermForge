@@ -3,6 +3,8 @@
 > 终端之锻造台 / The Terminal Workspace & Agent CLI for Windows  
 > 视觉风格规范文档：Windows 7 Aero Glass + MMC MDI 多文档终端工作台
 
+> ⚠️ **方向变更（2026-09-07）**：外壳视觉已决定从「Win7 Aero 拟物模拟」迁移为「Windows 11 Fluent 原生风格」（框架升级至 .NET 10 LTS，引入 Mica/系统色/深浅色跟随）。本文档的**外壳部分**（主窗口 Chrome、玻璃材质、标题栏、颜色系统）由 [UI-Win11-Fluent-Migration.md](./UI-Win11-Fluent-Migration.md) 取代；MMC 3 栏布局与 MDI 工作区皮肤仍可参考本文档。
+
 ---
 
 ## 📸 1. 视觉效果设计稿 (UI Mockup)
