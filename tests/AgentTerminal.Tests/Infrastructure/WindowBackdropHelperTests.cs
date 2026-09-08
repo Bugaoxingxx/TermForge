@@ -33,37 +33,29 @@ public class WindowBackdropHelperTests
     }
 
     [Fact]
-    public void IsWindows11OrNewer_ShouldReturnBooleanWithoutException()
+    public void WindowsVersionChecks_ShouldFollowLogicalHierarchy()
     {
-        bool result = WindowBackdropHelper.IsWindows11OrNewer();
-        // Simply ensure execution succeeds without throwing
-        Assert.True(result || !result);
-    }
+        bool isWin11_22H2 = WindowBackdropHelper.IsWindows11_22H2OrNewer();
+        bool isWin11 = WindowBackdropHelper.IsWindows11OrNewer();
 
-    [Fact]
-    public void IsWindows11_22H2OrNewer_ShouldReturnBooleanWithoutException()
-    {
-        bool result = WindowBackdropHelper.IsWindows11_22H2OrNewer();
-        // If 22H2 is true, Win11OrNewer must also be true
-        if (result)
+        if (isWin11_22H2)
         {
-            Assert.True(WindowBackdropHelper.IsWindows11OrNewer());
+            Assert.True(isWin11, "Windows 11 22H2 or newer logically implies Windows 11 or newer.");
         }
     }
 
     [Fact]
-    public void IsDarkModePreferred_ShouldReturnBooleanWithoutException()
+    public void IsDarkModePreferred_ShouldExecuteWithoutThrowing()
     {
-        bool isDark = WindowBackdropHelper.IsDarkModePreferred();
-        Assert.True(isDark || !isDark);
+        var ex = Record.Exception(() => WindowBackdropHelper.IsDarkModePreferred());
+        Assert.Null(ex);
     }
 
     [Fact]
-    public void GetAccentColor_ShouldReturnValidRgbColor()
+    public void GetAccentColor_ShouldReturnValidOpaqueRgbColor()
     {
         Color accent = WindowBackdropHelper.GetAccentColor();
-        // Color should have an alpha value > 0 (opaque)
-        Assert.True(accent.A > 0);
+        Assert.Equal(255, accent.A);
     }
 
     [Fact]

@@ -19,15 +19,13 @@ public static class WindowBackdropHelper
     private const int DWMWA_SYSTEMBACKDROP_TYPE = 38;
 
     private const int DWMWCP_ROUND = 2;
-    private const int DWMSBT_NONE = 1;
     private const int DWMSBT_MAINWINDOW = 2; // Mica
-    private const int DWMSBT_TRANSIENTWINDOW = 3; // Acrylic
 
     private const int WM_SETTINGCHANGE = 0x001A;
     private const int WM_DWMCOLORIZATIONCOLORCHANGED = 0x0320;
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct MARGINS(int left, int right, int top, int bottom)
+    internal struct MARGINS(int left, int right, int top, int bottom)
     {
         public int cxLeftWidth = left;
         public int cxRightWidth = right;
@@ -68,25 +66,11 @@ public static class WindowBackdropHelper
 
     /// <summary>
     /// 获取当前 Windows 系统的强调色 (Accent Color)。
-    /// 优先从 DwmGetColorizationColor 获取，降级至注册表或系统高亮色，确保 NativeAOT 安全。
+    /// 优先从 Windows 10/11 注册表 AccentColor 获取，降级至 DwmGetColorizationColor 或默认 Fluent 蓝。
     /// </summary>
     public static Color GetAccentColor()
     {
-        try
-        {
-            if (DwmGetColorizationColor(out uint colorization, out _) == 0)
-            {
-                byte r = (byte)((colorization >> 16) & 0xFF);
-                byte g = (byte)((colorization >> 8) & 0xFF);
-                byte b = (byte)(colorization & 0xFF);
-                return Color.FromRgb(r, g, b);
-            }
-        }
-        catch
-        {
-            // DWM 调用失败时走注册表降级
-        }
-
+        // 1. 优先读取 Windows 10/11 个性化设置强调色 (注册表 DWM\AccentColor)
         try
         {
             using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM");
@@ -101,10 +85,26 @@ public static class WindowBackdropHelper
         }
         catch
         {
-            // 注册表访问受限降级
+            // 注册表访问受限时降级
         }
 
-        // 默认 Fluent 蓝
+        // 2. 降级读取 DWM 玻璃色彩
+        try
+        {
+            if (DwmGetColorizationColor(out uint colorization, out _) == 0)
+            {
+                byte r = (byte)((colorization >> 16) & 0xFF);
+                byte g = (byte)((colorization >> 8) & 0xFF);
+                byte b = (byte)(colorization & 0xFF);
+                return Color.FromRgb(r, g, b);
+            }
+        }
+        catch
+        {
+            // DWM 调用失败时降级
+        }
+
+        // 3. 默认 Fluent 蓝
         return Color.FromRgb(0x00, 0x78, 0xD4);
     }
 
@@ -257,6 +257,13 @@ public static class WindowBackdropHelper
         if (msg == WM_SETTINGCHANGE || msg == WM_DWMCOLORIZATIONCOLORCHANGED)
         {
             UpdateDarkModeAttribute(hwnd);
+            Application.Current?.Dispatcher?.BeginInvoke(() =>
+            {
+                if (Application.Current is App app)
+                {
+                    app.ApplyTheme();
+                }
+            });
         }
         return IntPtr.Zero;
     }

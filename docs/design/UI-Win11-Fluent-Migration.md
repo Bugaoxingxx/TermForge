@@ -213,3 +213,4 @@ private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int v
 6. [ ] 梳理 `Controls.xaml` 避免样式混搭；MDI 皮肤保留。
 7. [ ] Win10/高对比度降级与多环境验证。
 8. [ ] 更新 18 项 UI 测试与主题冒烟测试。
+9. [ ] 按 [菜单/工具栏命令面合并方案](./UI-Fluent-Command-Surface.md) 精简入口（排列 SplitButton、文件「新建」子菜单），不改 ViewModel 命令。

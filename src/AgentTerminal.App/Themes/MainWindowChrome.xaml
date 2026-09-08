@@ -1,6 +1,5 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- ================================================================= -->
     <!-- 5. Windows 11 Fluent 主窗口原生外壳样式 (Fluent Main Window Chrome)  -->
@@ -12,25 +11,6 @@
         <Setter Property="UseLayoutRounding" Value="True" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="Background" Value="{DynamicResource AeroGlassBrush}" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Window">
-                    <!-- 外层根容器与工作区呈现 -->
-                    <Border x:Name="WindowRootBorder"
-                            Background="{TemplateBinding Background}">
-                        <AdornerDecorator>
-                            <ContentPresenter />
-                        </AdornerDecorator>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <!-- 窗口失活时降低前景色 -->
-                        <Trigger Property="IsActive" Value="False">
-                            <Setter Property="Foreground" Value="{DynamicResource AeroTextInactiveTitleBrush}" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
     </Style>
 
 </ResourceDictionary>

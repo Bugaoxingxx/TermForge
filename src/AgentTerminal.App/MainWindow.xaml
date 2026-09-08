@@ -78,62 +78,69 @@
               Padding="6,2" BorderBrush="{DynamicResource AeroBorderEdgeBrush}" BorderThickness="0,0,0,1"
               FontFamily="Segoe UI, Tahoma" FontSize="11"
               AutomationProperties.AutomationId="MainMenu">
-                    <!-- 文件菜单 -->
-                    <MenuItem Header="文件(_F)" AutomationProperties.AutomationId="Menu.File">
-                        <MenuItem Header="新建终端(_N)" InputGestureText="Ctrl+N" Command="{Binding NewTerminalCommand}"
-                                  AutomationProperties.AutomationId="Menu.File.NewTerminal" />
-                        <MenuItem Header="新建指定 Shell" ItemsSource="{Binding AvailableProfiles}"
-                                  AutomationProperties.AutomationId="Menu.File.NewProfileTerminal">
-                            <MenuItem.ItemContainerStyle>
-                                <Style TargetType="MenuItem">
-                                    <Setter Property="Header" Value="{Binding Name}" />
-                                    <Setter Property="Command" Value="{Binding DataContext.NewTerminalCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
-                                    <Setter Property="CommandParameter" Value="{Binding}" />
-                                </Style>
-                            </MenuItem.ItemContainerStyle>
-                        </MenuItem>
-                        <Separator />
-                        <MenuItem Header="关闭当前文档(_C)" InputGestureText="Ctrl+F4" Command="{Binding CloseTerminalCommand}"
-                                  AutomationProperties.AutomationId="Menu.File.CloseTerminal" />
-                        <Separator />
-                        <MenuItem Header="退出(_X)" Click="OnMenuExitClick" InputGestureText="Alt+F4"
-                                  AutomationProperties.AutomationId="Menu.File.Exit" />
+            <!-- 文件菜单 -->
+            <MenuItem Header="文件(_F)" AutomationProperties.AutomationId="Menu.File">
+                <MenuItem Header="新建(_N)" AutomationProperties.AutomationId="Menu.File.New">
+                    <MenuItem Header="默认终端" InputGestureText="Ctrl+N" Command="{Binding NewTerminalCommand}"
+                              AutomationProperties.AutomationId="Menu.File.NewTerminal" />
+                    <Separator />
+                    <MenuItem Header="新建指定 Shell" ItemsSource="{Binding AvailableProfiles}"
+                              AutomationProperties.AutomationId="Menu.File.NewProfileTerminal">
+                        <MenuItem.ItemContainerStyle>
+                            <Style TargetType="MenuItem">
+                                <Setter Property="Header" Value="{Binding Name}" />
+                                <Setter Property="Command" Value="{Binding DataContext.NewTerminalCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                <Setter Property="CommandParameter" Value="{Binding}" />
+                            </Style>
+                        </MenuItem.ItemContainerStyle>
                     </MenuItem>
+                </MenuItem>
+                <MenuItem Header="停止会话(_S)" Command="{Binding ActiveDocument.StopCommand}"
+                          AutomationProperties.AutomationId="Menu.File.StopSession" />
+                <Separator />
+                <MenuItem Header="关闭当前文档(_C)" InputGestureText="Ctrl+F4" Command="{Binding CloseTerminalCommand}"
+                          AutomationProperties.AutomationId="Menu.File.CloseTerminal" />
+                <Separator />
+                <MenuItem Header="退出(_X)" Click="OnMenuExitClick" InputGestureText="Alt+F4"
+                          AutomationProperties.AutomationId="Menu.File.Exit" />
+            </MenuItem>
 
-                    <!-- 视图菜单 -->
-                    <MenuItem Header="视图(_V)" AutomationProperties.AutomationId="Menu.View">
-                        <MenuItem Header="左侧导航树" IsCheckable="True" IsChecked="{Binding IsNavigationPaneVisible}"
-                                  AutomationProperties.AutomationId="Menu.View.ToggleNav" />
-                        <MenuItem Header="右侧属性面板" IsCheckable="True" IsChecked="{Binding IsPropertiesPaneVisible}"
-                                  AutomationProperties.AutomationId="Menu.View.ToggleProps" />
-                        <MenuItem Header="底部诊断日志" IsCheckable="True" IsChecked="{Binding IsLogPaneVisible}"
-                                  AutomationProperties.AutomationId="Menu.View.ToggleLogs" />
-                        <Separator />
-                        <MenuItem Header="原始输出诊断模式" IsCheckable="True" IsChecked="{Binding ActiveDocument.IsDiagnosticMode}"
-                                  AutomationProperties.AutomationId="Menu.View.ToggleDiagnostic" />
-                    </MenuItem>
+            <!-- 视图菜单 -->
+            <MenuItem Header="视图(_V)" AutomationProperties.AutomationId="Menu.View">
+                <MenuItem Header="左侧导航树" IsCheckable="True" IsChecked="{Binding IsNavigationPaneVisible}"
+                          AutomationProperties.AutomationId="Menu.View.ToggleNav" />
+                <MenuItem Header="右侧属性面板" IsCheckable="True" IsChecked="{Binding IsPropertiesPaneVisible}"
+                          AutomationProperties.AutomationId="Menu.View.ToggleProps" />
+                <MenuItem Header="底部诊断日志" IsCheckable="True" IsChecked="{Binding IsLogPaneVisible}"
+                          AutomationProperties.AutomationId="Menu.View.ToggleLogs" />
+                <Separator />
+                <MenuItem Header="原始输出诊断模式" IsCheckable="True" IsChecked="{Binding ActiveDocument.IsDiagnosticMode}"
+                          AutomationProperties.AutomationId="Menu.View.ToggleDiagnostic" />
+                <Separator />
+                <MenuItem Header="清空输出(_K)" Command="{Binding ActiveDocument.ClearOutputCommand}"
+                          AutomationProperties.AutomationId="Menu.View.ClearOutput" />
+            </MenuItem>
 
-                    <!-- 窗口菜单 (Win32 MDI 核心：层叠、平铺、还原与动态文档列表) -->
-                    <MenuItem Header="窗口(_W)" SubmenuOpened="OnWindowMenuOpened" AutomationProperties.AutomationId="Menu.Window">
-                        <MenuItem Header="层叠(_C)" Command="{Binding CascadeCommand}" AutomationProperties.AutomationId="Menu.Window.Cascade" />
-                        <MenuItem Header="水平平铺 (上下)(_H)" Command="{Binding TileHorizontalCommand}" AutomationProperties.AutomationId="Menu.Window.TileHorizontal" />
-                        <MenuItem Header="垂直平铺 (左右)(_V)" Command="{Binding TileVerticalCommand}" AutomationProperties.AutomationId="Menu.Window.TileVertical" />
-                        <MenuItem Header="全部还原(_R)" Command="{Binding RestoreAllCommand}" AutomationProperties.AutomationId="Menu.Window.RestoreAll" />
-                        <Separator />
-                        <MenuItem Header="打开的文档列表" x:Name="WindowsListMenuItem" AutomationProperties.AutomationId="Menu.Window.WindowsList" />
-                    </MenuItem>
+            <!-- 窗口菜单 (Win32 MDI 核心：层叠、平铺、还原与动态文档列表) -->
+            <MenuItem Header="窗口(_W)" SubmenuOpened="OnWindowMenuOpened" AutomationProperties.AutomationId="Menu.Window">
+                <MenuItem Header="排列(_A)" AutomationProperties.AutomationId="Menu.Window.Arrange">
+                    <MenuItem Header="层叠(_C)" Command="{Binding CascadeCommand}" AutomationProperties.AutomationId="Menu.Window.Cascade" />
+                    <MenuItem Header="水平平铺 (上下)(_H)" Command="{Binding TileHorizontalCommand}" AutomationProperties.AutomationId="Menu.Window.TileHorizontal" />
+                    <MenuItem Header="垂直平铺 (左右)(_V)" Command="{Binding TileVerticalCommand}" AutomationProperties.AutomationId="Menu.Window.TileVertical" />
+                    <MenuItem Header="全部还原(_R)" Command="{Binding RestoreAllCommand}" AutomationProperties.AutomationId="Menu.Window.RestoreAll" />
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="打开的文档列表" x:Name="WindowsListMenuItem" AutomationProperties.AutomationId="Menu.Window.WindowsList" />
+            </MenuItem>
 
-                    <!-- 帮助菜单 -->
-                    <MenuItem Header="帮助(_H)" AutomationProperties.AutomationId="Menu.Help">
-                        <MenuItem Header="关于 TermForge" Click="OnMenuAboutClick" AutomationProperties.AutomationId="Menu.Help.About" />
-                    </MenuItem>
-                </Menu>
+            <!-- 帮助菜单 -->
+            <MenuItem Header="帮助(_H)" AutomationProperties.AutomationId="Menu.Help">
+                <MenuItem Header="关于 TermForge" Click="OnMenuAboutClick" AutomationProperties.AutomationId="Menu.Help.About" />
+            </MenuItem>
+        </Menu>
 
         <!-- ========================================================= -->
-        <!-- 1. Explorer 经典工具栏 (胶囊按钮 + 蚀刻分割线)               -->
-        <!-- ========================================================= -->
-        <!-- ========================================================= -->
-        <!-- 1. Explorer 经典工具栏 (胶囊按钮 + 矢量图标 + 蚀刻分割线)    -->
+        <!-- 1. Fluent 工具栏 (高频即时操作 + 排列 SplitButton)          -->
         <!-- ========================================================= -->
         <ToolBarTray Grid.Row="1" Background="{DynamicResource AeroToolBarBrush}">
             <ToolBar Background="{DynamicResource AeroToolBarBrush}" ToolBarTray.IsLocked="True" Padding="4,2"
@@ -156,38 +163,34 @@
                     </StackPanel>
                 </Button>
                 <Separator Style="{DynamicResource AeroToolBarSeparatorStyle}" />
-                <Button Style="{DynamicResource AeroToolBarButtonStyle}"
-                        Command="{Binding CascadeCommand}" ToolTip="层叠排布子窗口"
-                        AutomationProperties.AutomationId="Toolbar.BtnCascade" Margin="2,0">
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="{DynamicResource CascadeIcon}" Width="16" Height="16" Margin="0,0,4,0" />
-                        <TextBlock Text="层叠" VerticalAlignment="Center" Foreground="{DynamicResource AeroTextDarkBrush}" />
-                    </StackPanel>
-                </Button>
-                <Button Style="{DynamicResource AeroToolBarButtonStyle}"
-                        Command="{Binding TileHorizontalCommand}" ToolTip="水平平铺 (上下排列)"
-                        AutomationProperties.AutomationId="Toolbar.BtnTileHorizontal" Margin="2,0">
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="{DynamicResource TileHorizontalIcon}" Width="16" Height="16" Margin="0,0,4,0" />
-                        <TextBlock Text="水平平铺" VerticalAlignment="Center" Foreground="{DynamicResource AeroTextDarkBrush}" />
-                    </StackPanel>
-                </Button>
-                <Button Style="{DynamicResource AeroToolBarButtonStyle}"
-                        Command="{Binding TileVerticalCommand}" ToolTip="垂直平铺 (左右排列)"
-                        AutomationProperties.AutomationId="Toolbar.BtnTileVertical" Margin="2,0">
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="{DynamicResource TileVerticalIcon}" Width="16" Height="16" Margin="0,0,4,0" />
-                        <TextBlock Text="垂直平铺" VerticalAlignment="Center" Foreground="{DynamicResource AeroTextDarkBrush}" />
-                    </StackPanel>
-                </Button>
-                <Button Style="{DynamicResource AeroToolBarButtonStyle}"
-                        Command="{Binding RestoreAllCommand}" ToolTip="全部还原"
-                        AutomationProperties.AutomationId="Toolbar.BtnRestoreAll" Margin="2,0">
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="{DynamicResource RestoreAllIcon}" Width="16" Height="16" Margin="0,0,4,0" />
-                        <TextBlock Text="还原" VerticalAlignment="Center" Foreground="{DynamicResource AeroTextDarkBrush}" />
-                    </StackPanel>
-                </Button>
+                <StackPanel Orientation="Horizontal" Margin="2,0">
+                    <Button Style="{DynamicResource AeroToolBarButtonStyle}"
+                            Command="{Binding CascadeCommand}" ToolTip="排列子窗口 (默认层叠)"
+                            AutomationProperties.AutomationId="Toolbar.BtnArrange">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{DynamicResource CascadeIcon}" Width="16" Height="16" Margin="0,0,4,0" />
+                            <TextBlock Text="排列" VerticalAlignment="Center" Foreground="{DynamicResource AeroTextDarkBrush}" />
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{DynamicResource AeroToolBarButtonStyle}"
+                            Click="OnArrangeDropdownClick" ToolTip="更多排列方式"
+                            Padding="3,4" Margin="-1,0,0,0"
+                            AutomationProperties.AutomationId="Toolbar.BtnArrangeDropdown">
+                        <Path Data="M 0 0 L 3.5 3.5 L 7 0 Z" Fill="{DynamicResource AeroTextDarkBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2,0" />
+                        <Button.ContextMenu>
+                            <ContextMenu AutomationProperties.AutomationId="Toolbar.Arrange.Menu">
+                                <MenuItem Header="层叠(_C)" Command="{Binding CascadeCommand}"
+                                          AutomationProperties.AutomationId="Toolbar.Arrange.Cascade" />
+                                <MenuItem Header="水平平铺(_H)" Command="{Binding TileHorizontalCommand}"
+                                          AutomationProperties.AutomationId="Toolbar.Arrange.TileHorizontal" />
+                                <MenuItem Header="垂直平铺(_V)" Command="{Binding TileVerticalCommand}"
+                                          AutomationProperties.AutomationId="Toolbar.Arrange.TileVertical" />
+                                <MenuItem Header="全部还原(_R)" Command="{Binding RestoreAllCommand}"
+                                          AutomationProperties.AutomationId="Toolbar.Arrange.RestoreAll" />
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                </StackPanel>
                 <Separator Style="{DynamicResource AeroToolBarSeparatorStyle}" />
                 <Button Style="{DynamicResource AeroToolBarButtonStyle}"
                         Command="{Binding ActiveDocument.ClearOutputCommand}" ToolTip="清空当前调试窗口文本"

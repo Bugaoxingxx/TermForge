@@ -27,7 +27,11 @@ public class MainWindowPage
             int pid = _window.Properties.ProcessId.Value;
             var desktop = _window.Automation.GetDesktop();
             var appWindow = desktop.FindFirstDescendant(cf => cf.ByProcessId(pid).And(cf.ByAutomationId("MainWindow")));
-            return appWindow?.FindFirstDescendant(cf => cf.ByAutomationId(automationId));
+            var found = appWindow?.FindFirstDescendant(cf => cf.ByAutomationId(automationId));
+            if (found != null) return found;
+
+            // Also check popup/context menu windows within current process
+            return desktop.FindFirstDescendant(cf => cf.ByProcessId(pid).And(cf.ByAutomationId(automationId)));
         }
         catch (ElementNotAvailableException)
         {
@@ -44,11 +48,15 @@ public class MainWindowPage
 
     public Button? BtnNewTerminal => FindButton("Toolbar.BtnNewTerminal");
     public Button? BtnStopSession => FindButton("Toolbar.BtnStopSession");
-    public Button? BtnCascade => FindButton("Toolbar.BtnCascade");
-    public Button? BtnTileHorizontal => FindButton("Toolbar.BtnTileHorizontal");
-    public Button? BtnTileVertical => FindButton("Toolbar.BtnTileVertical");
-    public Button? BtnRestoreAll => FindButton("Toolbar.BtnRestoreAll");
+    public Button? BtnArrange => FindButton("Toolbar.BtnArrange");
+    public Button? BtnArrangeDropdown => FindButton("Toolbar.BtnArrangeDropdown");
     public Button? BtnClearOutput => FindButton("Toolbar.BtnClearOutput");
+
+    // Compatibility aliases
+    public Button? BtnCascade => BtnArrange;
+    public Button? BtnTileHorizontal => FindButton("Toolbar.BtnTileHorizontal") ?? FindButton("Toolbar.Arrange.TileHorizontal");
+    public Button? BtnTileVertical => FindButton("Toolbar.BtnTileVertical") ?? FindButton("Toolbar.Arrange.TileVertical");
+    public Button? BtnRestoreAll => FindButton("Toolbar.BtnRestoreAll") ?? FindButton("Toolbar.Arrange.RestoreAll");
 
     public MenuItem? MenuFile => FindMenuItem("Menu.File");
     public MenuItem? MenuWindow => FindMenuItem("Menu.Window");
@@ -110,21 +118,66 @@ public class MainWindowPage
 
     public void ClickCascade()
     {
-        UiaWait.Until(() => BtnCascade, timeout: TimeSpan.FromSeconds(15), message: "Toolbar Cascade button not found").Invoke();
+        UiaWait.Until(() => BtnArrange, timeout: TimeSpan.FromSeconds(15), message: "Toolbar Arrange button not found").Invoke();
     }
 
     public void ClickTileHorizontal()
     {
-        UiaWait.Until(() => BtnTileHorizontal, timeout: TimeSpan.FromSeconds(15), message: "Toolbar TileHorizontal button not found").Invoke();
+        var dropBtn = BtnArrangeDropdown;
+        if (dropBtn != null)
+        {
+            dropBtn.Invoke();
+            var item = UiaWait.Until(() => FindMenuItem("Toolbar.Arrange.TileHorizontal"), timeout: TimeSpan.FromSeconds(5));
+            if (item != null)
+            {
+                item.Invoke();
+                return;
+            }
+        }
+
+        // Fallback via Window menu
+        UiaWait.Until(() => MenuWindow, timeout: TimeSpan.FromSeconds(5)).Invoke();
+        UiaWait.Until(() => FindMenuItem("Menu.Window.Arrange"), timeout: TimeSpan.FromSeconds(5)).Invoke();
+        UiaWait.Until(() => FindMenuItem("Menu.Window.TileHorizontal"), timeout: TimeSpan.FromSeconds(5)).Invoke();
     }
 
     public void ClickTileVertical()
     {
-        UiaWait.Until(() => BtnTileVertical, timeout: TimeSpan.FromSeconds(15), message: "Toolbar TileVertical button not found").Invoke();
+        var dropBtn = BtnArrangeDropdown;
+        if (dropBtn != null)
+        {
+            dropBtn.Invoke();
+            var item = UiaWait.Until(() => FindMenuItem("Toolbar.Arrange.TileVertical"), timeout: TimeSpan.FromSeconds(5));
+            if (item != null)
+            {
+                item.Invoke();
+                return;
+            }
+        }
+
+        // Fallback via Window menu
+        UiaWait.Until(() => MenuWindow, timeout: TimeSpan.FromSeconds(5)).Invoke();
+        UiaWait.Until(() => FindMenuItem("Menu.Window.Arrange"), timeout: TimeSpan.FromSeconds(5)).Invoke();
+        UiaWait.Until(() => FindMenuItem("Menu.Window.TileVertical"), timeout: TimeSpan.FromSeconds(5)).Invoke();
     }
 
     public void ClickRestoreAll()
     {
-        UiaWait.Until(() => BtnRestoreAll, timeout: TimeSpan.FromSeconds(15), message: "Toolbar RestoreAll button not found").Invoke();
+        var dropBtn = BtnArrangeDropdown;
+        if (dropBtn != null)
+        {
+            dropBtn.Invoke();
+            var item = UiaWait.Until(() => FindMenuItem("Toolbar.Arrange.RestoreAll"), timeout: TimeSpan.FromSeconds(5));
+            if (item != null)
+            {
+                item.Invoke();
+                return;
+            }
+        }
+
+        // Fallback via Window menu
+        UiaWait.Until(() => MenuWindow, timeout: TimeSpan.FromSeconds(5)).Invoke();
+        UiaWait.Until(() => FindMenuItem("Menu.Window.Arrange"), timeout: TimeSpan.FromSeconds(5)).Invoke();
+        UiaWait.Until(() => FindMenuItem("Menu.Window.RestoreAll"), timeout: TimeSpan.FromSeconds(5)).Invoke();
     }
 }

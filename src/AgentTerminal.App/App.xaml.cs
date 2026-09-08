@@ -88,13 +88,12 @@ public partial class App : Application
             Resources.MergedDictionaries.Remove(_darkThemeDictionary);
             _darkThemeDictionary = null;
         }
-    }
 
-    /// <summary>
-    /// 兼容旧版调用入口
-    /// </summary>
-    public void ApplyHighContrastThemeIfNeeded()
-    {
-        ApplyTheme();
+        // 动态覆盖系统强调色画刷，与 Windows 任务栏/设置 AccentColor 联动
+        var accentColor = WindowBackdropHelper.GetAccentColor();
+        var accentBrush = new SolidColorBrush(accentColor);
+        accentBrush.Freeze();
+        Resources["FluentAccentBrush"] = accentBrush;
+        Resources["AeroFocusBorderBrush"] = accentBrush;
     }
 }

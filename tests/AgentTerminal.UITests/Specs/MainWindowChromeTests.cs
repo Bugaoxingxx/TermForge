@@ -50,15 +50,20 @@ public class MainWindowChromeTests
         Assert.NotNull(mainPage.MainToolBar);
         Assert.NotNull(mainPage.BtnNewTerminal);
         Assert.NotNull(mainPage.BtnStopSession);
-        Assert.NotNull(mainPage.BtnCascade);
-        Assert.NotNull(mainPage.BtnTileHorizontal);
-        Assert.NotNull(mainPage.BtnTileVertical);
-        Assert.NotNull(mainPage.BtnRestoreAll);
+        Assert.NotNull(mainPage.BtnArrange);
+        Assert.NotNull(mainPage.BtnArrangeDropdown);
+        Assert.NotNull(mainPage.BtnClearOutput);
+        Assert.NotNull(mainPage.BtnToggleDiagnostic);
         Assert.NotNull(mainPage.NavigationPane);
         Assert.NotNull(mainPage.PropertiesPane);
         Assert.NotNull(mainPage.DiagnosticsPane);
         Assert.NotNull(mainPage.StatusBar);
         Assert.NotNull(mainPage.GetMdiWorkspace().Container);
+
+        // Verify menu surface items
+        Assert.NotNull(mainPage.MenuFile);
+        Assert.NotNull(mainPage.MenuView);
+        Assert.NotNull(mainPage.MenuWindow);
 
         // Verify native window provider capabilities (native OS caption)
         var winPattern = window.Patterns.Window.Pattern;

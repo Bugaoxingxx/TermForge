@@ -31,6 +31,6 @@ AgentTerminal.App (WPF Executable)
 | `src/AgentTerminal.Infrastructure` | 操作系统基础设施与通用服务：`Win32/`（Job Object 等）、`Logging/`（Serilog）、`Configuration/`（JSON） |
 | `src/AgentTerminal.App` | WPF 应用程序宿主与主界面：`App.xaml`、`MainWindow.xaml`、DI 配置 |
 | `tests/AgentTerminal.Tests` | xUnit 自动化测试套件：VT 解析器测试、Buffer 测试、Profile 测试 |
-| `docs/` | 架构、API 与开发文档（含 [Fluent 外壳迁移](design/UI-Win11-Fluent-Migration.md)、[Win7 Aero / MMC 布局](design/UI-Win7-Aero-Design.md)） |
+| `docs/` | 架构、API 与开发文档（含 [Fluent 外壳迁移](design/UI-Win11-Fluent-Migration.md)、[菜单/工具栏命令面](design/UI-Fluent-Command-Surface.md)、[Win7 Aero / MMC 布局](design/UI-Win7-Aero-Design.md)） |
 | `docs/design/` | 界面视觉规范、交互原型（HTML）与设计原稿资源 |
 | `build/` | 自动化编译与打包脚本 |
