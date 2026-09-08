@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TermForge - Windows 11 Fluent 原生设计稿交互原型</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Segoe+UI+Variable+Static+Text:wght@400;500;600;700&family=Cascadia+Code:wght@400;600&display=swap');
+
+    :root {
+      --accent-color: #0078D4;
+      --accent-color-hover: #1084D9;
+      --accent-color-active: #006CBE;
+      --accent-text: #FFFFFF;
+      
+      /* Dark theme default tokens (Windows 11 Mica) */
+      --window-bg: rgba(32, 32, 32, 0.78);
+      --window-backdrop-blur: 24px;
+      --window-border: rgba(255, 255, 255, 0.08);
+      --window-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 4px 12px rgba(0, 0, 0, 0.4);
+      
+      --chrome-bg: rgba(28, 28, 28, 0.55);
+      --chrome-border-b: rgba(255, 255, 255, 0.06);
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --card-bg-hover: rgba(255, 255, 255, 0.09);
+      --card-border: rgba(255, 255, 255, 0.07);
+      
+      --nav-bg: rgba(24, 24, 24, 0.65);
+      --nav-border-r: rgba(255, 255, 255, 0.06);
+      
+      --mdi-bg: rgba(18, 18, 18, 0.72);
+      --mdi-subwin-bg: rgba(36, 36, 36, 0.95);
+      --mdi-subwin-border: rgba(255, 255, 255, 0.12);
+      --mdi-subwin-header: rgba(44, 44, 44, 0.9);
+      
+      --text-primary: #FFFFFF;
+      --text-secondary: rgba(255, 255, 255, 0.72);
+      --text-tertiary: rgba(255, 255, 255, 0.45);
+      
+      --caption-btn-hover: rgba(255, 255, 255, 0.08);
+      --caption-btn-active: rgba(255, 255, 255, 0.04);
+      --caption-btn-close-hover: #C42B1C;
+      --caption-btn-close-text: #FFFFFF;
+      
+      --status-bg: rgba(24, 24, 24, 0.85);
+      --status-border-t: rgba(255, 255, 255, 0.06);
+      
+      --terminal-bg: #0C0F14;
+      --terminal-fg: #CCCCCC;
+    }
+
+    /* Light theme tokens */
+    .light-theme {
+      --window-bg: rgba(243, 243, 243, 0.82);
+      --window-backdrop-blur: 24px;
+      --window-border: rgba(0, 0, 0, 0.12);
+      --window-shadow: 0 16px 36px rgba(0, 0, 0, 0.22), 0 2px 8px rgba(0, 0, 0, 0.1);
+      
+      --chrome-bg: rgba(248, 248, 248, 0.65);
+      --chrome-border-b: rgba(0, 0, 0, 0.08);
+      --card-bg: rgba(255, 255, 255, 0.7);
+      --card-bg-hover: rgba(255, 255, 255, 0.95);
+      --card-border: rgba(0, 0, 0, 0.08);
+      
+      --nav-bg: rgba(240, 240, 240, 0.72);
+      --nav-border-r: rgba(0, 0, 0, 0.08);
+      
+      --mdi-bg: rgba(228, 228, 228, 0.6);
+      --mdi-subwin-bg: rgba(255, 255, 255, 0.96);
+      --mdi-subwin-border: rgba(0, 0, 0, 0.14);
+      --mdi-subwin-header: rgba(245, 245, 245, 0.92);
+      
+      --text-primary: #1F1F1F;
+      --text-secondary: rgba(0, 0, 0, 0.64);
+      --text-tertiary: rgba(0, 0, 0, 0.42);
+      
+      --caption-btn-hover: rgba(0, 0, 0, 0.06);
+      --caption-btn-active: rgba(0, 0, 0, 0.03);
+      --caption-btn-close-hover: #C42B1C;
+      --caption-btn-close-text: #FFFFFF;
+      
+      --status-bg: rgba(242, 242, 242, 0.9);
+      --status-border-t: rgba(0, 0, 0, 0.08);
+    }
+
+    /* High Contrast tokens */
+    .high-contrast {
+      --window-bg: #000000 !important;
+      --window-backdrop-blur: 0px !important;
+      --window-border: #00FF00 !important;
+      --window-shadow: none !important;
+      
+      --chrome-bg: #000000 !important;
+      --chrome-border-b: #00FF00 !important;
+      --card-bg: #000000 !important;
+      --card-bg-hover: #1A1A1A !important;
+      --card-border: #FFFFFF !important;
+      
+      --nav-bg: #000000 !important;
+      --nav-border-r: #FFFFFF !important;
+      
+      --mdi-bg: #000000 !important;
+      --mdi-subwin-bg: #000000 !important;
+      --mdi-subwin-border: #FFFFFF !important;
+      --mdi-subwin-header: #1A1A1A !important;
+      
+      --text-primary: #FFFFFF !important;
+      --text-secondary: #00FF00 !important;
+      --text-tertiary: #FFFF00 !important;
+      
+      --status-bg: #000000 !important;
+      --status-border-t: #00FF00 !important;
+      --accent-color: #00FF00 !important;
+    }
+
+    /* Backdrop types */
+    .backdrop-mica {
+      backdrop-filter: blur(var(--window-backdrop-blur)) saturate(140%);
+      -webkit-backdrop-filter: blur(var(--window-backdrop-blur)) saturate(140%);
+    }
+    .backdrop-acrylic {
+      backdrop-filter: blur(40px) saturate(180%) contrast(110%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%) contrast(110%);
+    }
+    .backdrop-solid {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      background: var(--window-bg) !important;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: 'Segoe UI Variable Static Text', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      padding: 24px;
+      min-height: 100vh;
+      background: #0d131a url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2400&auto=format&fit=crop') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+    }
+
+    /* Windows 11 Fluent Window Frame */
+    .fluent-window {
+      width: 1180px;
+      max-width: 98vw;
+      height: 720px;
+      max-height: 94vh;
+      border-radius: 12px;
+      border: 1px solid var(--window-border);
+      box-shadow: var(--window-shadow);
+      background: var(--window-bg);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.25s ease, border 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    /* Windows 11 Caption Controls */
+    .fluent-caption-btn {
+      width: 46px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s ease, color 0.15s ease;
+      cursor: default;
+      color: var(--text-primary);
+    }
+    .fluent-caption-btn:hover {
+      background: var(--caption-btn-hover);
+    }
+    .fluent-caption-btn:active {
+      background: var(--caption-btn-active);
+    }
+    .fluent-caption-btn.btn-close:hover {
+      background: var(--caption-btn-close-hover);
+      color: var(--caption-btn-close-text);
+    }
+
+    /* Snap Layouts Flyout */
+    .snap-flyout {
+      position: absolute;
+      top: 34px;
+      right: 46px;
+      background: rgba(38, 38, 38, 0.94);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      display: none;
+      width: 240px;
+      animation: fadeIn 0.15s ease-out forwards;
+    }
+    .light-theme .snap-flyout {
+      background: rgba(250, 250, 250, 0.94);
+      border: 1px solid rgba(0, 0, 0, 0.14);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .snap-grid-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      padding: 4px;
+      cursor: pointer;
+      display: flex;
+      gap: 3px;
+      height: 48px;
+      transition: all 0.15s ease;
+    }
+    .light-theme .snap-grid-card {
+      background: rgba(0, 0, 0, 0.04);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    .snap-grid-card:hover {
+      border-color: var(--accent-color);
+      background: rgba(0, 120, 212, 0.1);
+    }
+    .snap-zone {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 2px;
+      flex: 1;
+      height: 100%;
+      transition: background 0.15s ease;
+    }
+    .light-theme .snap-zone {
+      background: rgba(0, 0, 0, 0.12);
+    }
+    .snap-grid-card:hover .snap-zone {
+      background: var(--accent-color);
+      opacity: 0.85;
+    }
+
+    /* Segoe Fluent Icons helper */
+    .f-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    /* MDI subwindow styling */
+    .mdi-subwin {
+      position: absolute;
+      border-radius: 8px;
+      border: 1px solid var(--mdi-subwin-border);
+      background: var(--mdi-subwin-bg);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .mdi-subwin.active {
+      border-color: var(--accent-color);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--accent-color);
+      z-index: 10;
+    }
+
+    /* Terminal Viewport Isolation: #0C0F14, no blur, no rounded corners */
+    .terminal-viewport {
+      background-color: var(--terminal-bg) !important;
+      color: var(--terminal-fg);
+      font-family: 'Cascadia Code', Consolas, 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.45;
+      letter-spacing: 0.2px;
+      border-radius: 0 !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      filter: none !important;
+      overflow-y: auto;
+      flex: 1;
+      padding: 10px 14px;
+      position: relative;
+    }
+    .terminal-viewport::-webkit-scrollbar {
+      width: 8px;
+    }
+    .terminal-viewport::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 4px;
+    }
+
+    /* Cursor blink */
+    .term-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 16px;
+      background: var(--text-primary);
+      vertical-align: middle;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* Control bar toggle pills */
+    .mode-pill {
+      padding: 4px 12px;
+      font-size: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.15s ease;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #FFF;
+    }
+    .mode-pill:hover {
+      background: rgba(255, 255, 255, 0.16);
+    }
+    .mode-pill.active {
+      background: var(--accent-color);
+      border-color: var(--accent-color);
+      color: var(--accent-text);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="backdrop-mica">
+
+  <!-- Top Prototype Switcher / Spec Toolbar -->
+  <header class="w-[1180px] max-w-[98vw] mb-3 flex flex-wrap items-center justify-between gap-3 bg-black/60 backdrop-blur-md px-4 py-2.5 rounded-xl border border-white/10 text-xs">
+    <div class="flex items-center gap-2">
+      <div class="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>
+      <span class="font-semibold text-white tracking-wide">TermForge Fluent UI 原型</span>
+      <span class="text-zinc-400">| .NET 10 & Win11 Mica 规范</span>
+      <span class="bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded border border-blue-500/30 text-[11px]">openspec: modernize-win11-fluent-ui</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex flex-wrap items-center gap-3">
+      <!-- Theme Switcher -->
+      <div class="flex items-center gap-1 bg-white/5 p-1 rounded-lg border border-white/10">
+        <span class="text-zinc-400 px-1 text-[11px]">主题:</span>
+        <button onclick="setTheme('dark')" id="theme-dark" class="mode-pill active">深色 Dark</button>
+        <button onclick="setTheme('light')" id="theme-light" class="mode-pill">浅色 Light</button>
+        <button onclick="setTheme('hc')" id="theme-hc" class="mode-pill">高对比度 HC</button>
+      </div>
+
+      <!-- Backdrop Switcher -->
+      <div class="flex items-center gap-1 bg-white/5 p-1 rounded-lg border border-white/10">
+        <span class="text-zinc-400 px-1 text-[11px]">材质:</span>
+        <button onclick="setBackdrop('mica')" id="bd-mica" class="mode-pill active">Mica</button>
+        <button onclick="setBackdrop('acrylic')" id="bd-acrylic" class="mode-pill">Acrylic</button>
+        <button onclick="setBackdrop('solid')" id="bd-solid" class="mode-pill">纯色降级</button>
+      </div>
+
+      <!-- Accent Color Switcher -->
+      <div class="flex items-center gap-1.5 bg-white/5 px-2 py-1.5 rounded-lg border border-white/10">
+        <span class="text-zinc-400 text-[11px]">系统强调色:</span>
+        <button onclick="setAccent('#0078D4')" class="w-4 h-4 rounded-full bg-[#0078D4] border border-white/40 shadow-sm" title="Default Blue"></button>
+        <button onclick="setAccent('#8764B8')" class="w-4 h-4 rounded-full bg-[#8764B8] border border-white/40 shadow-sm" title="Iris Purple"></button>
+        <button onclick="setAccent('#107C41')" class="w-4 h-4 rounded-full bg-[#107C41] border border-white/40 shadow-sm" title="Xbox Emerald"></button>
+        <button onclick="setAccent('#D13438')" class="w-4 h-4 rounded-full bg-[#D13438] border border-white/40 shadow-sm" title="Coral Crimson"></button>
+        <button onclick="setAccent('#FF8C00')" class="w-4 h-4 rounded-full bg-[#FF8C00] border border-white/40 shadow-sm" title="Amber Orange"></button>
+      </div>
+
+      <!-- Layout Arranger -->
+      <div class="flex items-center gap-1 bg-white/5 p-1 rounded-lg border border-white/10">
+        <span class="text-zinc-400 px-1 text-[11px]">MDI布局:</span>
+        <button onclick="layoutMDI('tileH')" class="mode-pill">水平平铺</button>
+        <button onclick="layoutMDI('tileV')" class="mode-pill active" id="layout-tileV">并排平铺</button>
+        <button onclick="layoutMDI('cascade')" class="mode-pill">层叠</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN FLUENT WINDOW ================= -->
+  <main id="mainWindow" class="fluent-window backdrop-mica">
+    
+    <!-- Top System Titlebar / Chrome -->
+    <div id="windowChrome" class="h-9 flex items-center justify-between pl-3 pr-0 select-none border-b border-[var(--chrome-border-b)] bg-[var(--chrome-bg)] z-30">
+      <!-- Window Icon & Title -->
+      <div class="flex items-center gap-2.5">
+        <!-- TermForge Modern Fluent Logo Mark -->
+        <svg class="w-4 h-4" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="6" fill="var(--accent-color)"/>
+          <path d="M7 11L14 16L7 21" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M16 22H25" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <span class="text-xs font-medium text-[var(--text-primary)] tracking-tight">TermForge — Studio Workbench (.NET 10 Preview)</span>
+        <span class="text-[10px] px-1.5 py-0.2 rounded bg-white/10 text-[var(--text-tertiary)] ml-1 border border-white/5">Mica 22621+</span>
+      </div>
+
+      <!-- Native Windows 11 Caption Buttons -->
+      <div class="flex items-center">
+        <!-- Minimize -->
+        <button class="fluent-caption-btn" title="最小化" aria-label="Minimize">
+          <svg class="w-2.5 h-2.5" viewBox="0 0 10 1" fill="currentColor">
+            <rect width="10" height="1"/>
+          </svg>
+        </button>
+
+        <!-- Maximize / Restore with Snap Layouts Hover -->
+        <div class="relative" id="maxBtnContainer">
+          <button class="fluent-caption-btn" id="maxBtn" title="最大化" aria-label="Maximize">
+            <svg class="w-2.5 h-2.5" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1">
+              <rect x="0.5" y="0.5" width="9" height="9" rx="1"/>
+            </svg>
+          </button>
+
+          <!-- Windows 11 Snap Layouts Flyout -->
+          <div id="snapFlyout" class="snap-flyout">
+            <div class="text-[11px] font-semibold text-[var(--text-secondary)] mb-2 flex items-center justify-between">
+              <span>对齐布局 (Snap Layouts)</span>
+              <span class="text-[10px] text-[var(--text-tertiary)]">Win+Z</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <!-- 50/50 Split -->
+              <div class="snap-grid-card" onclick="layoutMDI('tileV'); hideSnap();" title="左右 50/50 并排">
+                <div class="snap-zone"></div>
+                <div class="snap-zone"></div>
+              </div>
+              <!-- 70/30 Split -->
+              <div class="snap-grid-card" onclick="layoutMDI('tileV'); hideSnap();" title="主从 70/30">
+                <div class="snap-zone" style="flex: 2;"></div>
+                <div class="snap-zone" style="flex: 1;"></div>
+              </div>
+              <!-- 3-Column Split -->
+              <div class="snap-grid-card" onclick="layoutMDI('tileV'); hideSnap();" title="三栏并排">
+                <div class="snap-zone"></div>
+                <div class="snap-zone"></div>
+                <div class="snap-zone"></div>
+              </div>
+              <!-- 4-Grid Quad -->
+              <div class="snap-grid-card flex-col" onclick="layoutMDI('quad'); hideSnap();" title="四格网格">
+                <div class="flex gap-1 h-1/2">
+                  <div class="snap-zone"></div>
+                  <div class="snap-zone"></div>
+                </div>
+                <div class="flex gap-1 h-1/2">
+                  <div class="snap-zone"></div>
+                  <div class="snap-zone"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Close -->
+        <button class="fluent-caption-btn btn-close" title="关闭" aria-label="Close">
+          <svg class="w-2.5 h-2.5" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+            <path d="M1 1L9 9M9 1L1 9"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Fluent Command Bar / Ribbon Toolbar -->
+    <div class="h-11 px-3 flex items-center justify-between border-b border-[var(--chrome-border-b)] bg-[var(--chrome-bg)] z-20 text-xs">
+      <!-- Action Pills & Segoe Fluent Icons -->
+      <div class="flex items-center gap-1.5">
+        <!-- New Session Button (Accent Filled) -->
+        <button class="h-7 px-2.5 rounded-md flex items-center gap-1.5 text-xs font-medium text-white shadow-sm transition-all" style="background: var(--accent-color);" onclick="addTerminalSession()">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 2a.75.75 0 0 1 .75.75v4.5h4.5a.75.75 0 0 1 0 1.5h-4.5v4.5a.75.75 0 0 1-1.5 0v-4.5h-4.5a.75.75 0 0 1 0-1.5h4.5v-4.5A.75.75 0 0 1 8 2z"/>
+          </svg>
+          <span>新建会话</span>
+        </button>
+
+        <div class="w-[1px] h-4 bg-white/10 mx-1"></div>
+
+        <!-- Layout Dropdown -->
+        <button class="h-7 px-2.5 rounded-md flex items-center gap-1.5 text-xs text-[var(--text-secondary)] hover:bg-[var(--card-bg-hover)] border border-[var(--card-border)] transition-colors" onclick="layoutMDI('tileV')">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2">
+            <rect x="2" y="2" width="5" height="12" rx="1"/>
+            <rect x="9" y="2" width="5" height="12" rx="1"/>
+          </svg>
+          <span>平铺视图</span>
+        </button>
+
+        <!-- Split View -->
+        <button class="h-7 px-2.5 rounded-md flex items-center gap-1.5 text-xs text-[var(--text-secondary)] hover:bg-[var(--card-bg-hover)] border border-[var(--card-border)] transition-colors" onclick="layoutMDI('tileH')">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2">
+            <rect x="2" y="2" width="12" height="5" rx="1"/>
+            <rect x="2" y="9" width="12" height="5" rx="1"/>
+          </svg>
+          <span>水平分割</span>
+        </button>
+
+        <!-- Cascade View -->
+        <button class="h-7 px-2.5 rounded-md flex items-center gap-1.5 text-xs text-[var(--text-secondary)] hover:bg-[var(--card-bg-hover)] border border-[var(--card-border)] transition-colors" onclick="layoutMDI('cascade')">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2">
+            <rect x="2" y="2" width="8" height="8" rx="1"/>
+            <rect x="6" y="6" width="8" height="8" rx="1"/>
+          </svg>
+          <span>层叠视图</span>
+        </button>
+
+        <div class="w-[1px] h-4 bg-white/10 mx-1"></div>
+
+        <!-- Fast Command Input -->
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[var(--card-bg)] border border-[var(--card-border)] text-[var(--text-secondary)]">
+          <svg class="w-3 h-3 text-[var(--text-tertiary)]" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="7" cy="7" r="4.5"/>
+            <path d="M10.5 10.5L14 14"/>
+          </svg>
+          <input type="text" id="quickCommandInput" placeholder="输入广播指令或搜索..." class="bg-transparent border-none outline-none text-xs text-[var(--text-primary)] placeholder-[var(--text-tertiary)] w-48" onkeydown="handleQuickCommand(event)">
+        </div>
+      </div>
+
+      <!-- Right Toolbar Tools -->
+      <div class="flex items-center gap-2">
+        <span class="text-[11px] text-[var(--text-tertiary)]">ConPTY 引擎: <strong>v1.22</strong></span>
+        <button class="p-1.5 rounded-md text-[var(--text-secondary)] hover:bg-[var(--card-bg-hover)]" title="诊断面板">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 1.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11zm0 2.5a.75.75 0 0 0-.75.75v3.5a.75.75 0 0 0 1.5 0v-3.5A.75.75 0 0 0 8 5zm0 6a.875.875 0 1 0 0 1.75.875.875 0 0 0 0-1.75z"/>
+          </svg>
+        </button>
+        <button class="p-1.5 rounded-md text-[var(--text-secondary)] hover:bg-[var(--card-bg-hover)]" title="配置">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Central Body: Navigation Sidebar + MDI Workspace -->
+    <div class="flex-1 flex overflow-hidden relative">
+      
+      <!-- Left Navigation Pane (MMC Console Tree / Sessions) with Acrylic styling -->
+      <aside class="w-56 flex flex-col border-r border-[var(--nav-border-r)] bg-[var(--nav-bg)] text-xs z-10 select-none">
+        <div class="p-3 pb-2 flex items-center justify-between text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider">
+          <span>终端会话 (Sessions)</span>
+          <button onclick="addTerminalSession()" class="text-[var(--text-secondary)] hover:text-white" title="添加新会话">+</button>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto px-2 space-y-1">
+          <!-- Session Item 1: Active -->
+          <div class="group flex items-center justify-between px-2.5 py-1.5 rounded-md bg-[var(--card-bg)] border border-[var(--card-border)] cursor-pointer text-[var(--text-primary)] hover:bg-[var(--card-bg-hover)] transition-all" onclick="focusSubwin('subwin-1')">
+            <div class="flex items-center gap-2 overflow-hidden">
+              <span class="w-2 h-2 rounded-full" style="background: var(--accent-color);"></span>
+              <span class="font-medium truncate">PowerShell 7.4</span>
+            </div>
+            <span class="text-[10px] text-[var(--text-tertiary)] font-mono">PID:8954</span>
+          </div>
+
+          <!-- Session Item 2 -->
+          <div class="group flex items-center justify-between px-2.5 py-1.5 rounded-md cursor-pointer text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--card-bg-hover)] transition-all" onclick="focusSubwin('subwin-2')">
+            <div class="flex items-center gap-2 overflow-hidden">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span class="font-medium truncate">WSL2 (Ubuntu 24.04)</span>
+            </div>
+            <span class="text-[10px] text-[var(--text-tertiary)] font-mono">PID:12480</span>
+          </div>
+
+          <!-- Session Item 3 -->
+          <div class="group flex items-center justify-between px-2.5 py-1.5 rounded-md cursor-pointer text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--card-bg-hover)] transition-all" onclick="focusSubwin('subwin-3')">
+            <div class="flex items-center gap-2 overflow-hidden">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <span class="font-medium truncate">DevServer Node.js</span>
+            </div>
+            <span class="text-[10px] text-[var(--text-tertiary)] font-mono">PID:18204</span>
+          </div>
+
+          <div class="pt-3 pb-1 px-1 text-[11px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider">
+            <span>环境分类 (Profiles)</span>
+          </div>
+
+          <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[var(--text-secondary)] hover:bg-[var(--card-bg-hover)] cursor-pointer">
+            <svg class="w-3.5 h-3.5 text-blue-400" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H2z"/>
+              <path d="M4.5 4a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.5-.5h-7z"/>
+            </svg>
+            <span>本地环境 (Local)</span>
+          </div>
+
+          <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[var(--text-secondary)] hover:bg-[var(--card-bg-hover)] cursor-pointer">
+            <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zM4.5 7.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5z"/>
+            </svg>
+            <span>SSH 远端节点 (Remote)</span>
+          </div>
+
+          <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[var(--text-secondary)] hover:bg-[var(--card-bg-hover)] cursor-pointer">
+            <svg class="w-3.5 h-3.5 text-purple-400" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M11 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V2zM1 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4zm5-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V1z"/>
+            </svg>
+            <span>Docker 容器集群</span>
+          </div>
+        </nav>
+
+        <!-- Sidebar Footer Status -->
+        <div class="p-2.5 border-t border-[var(--nav-border-r)] flex items-center justify-between text-[11px] text-[var(--text-tertiary)]">
+          <span>总活跃: <strong class="text-[var(--text-secondary)] font-mono">3 会话</strong></span>
+          <span class="text-emerald-400">● 良好</span>
+        </div>
+      </aside>
+
+      <!-- Center MDI Workspace Area -->
+      <section id="mdiWorkspace" class="flex-1 relative overflow-hidden bg-[var(--mdi-bg)] p-3">
+        
+        <!-- ============ MDI SUB-WINDOW 1 (PowerShell) ============ -->
+        <article id="subwin-1" class="mdi-subwin active" style="left: 16px; top: 16px; width: 440px; height: 380px;" onclick="focusSubwin('subwin-1')">
+          <!-- Subwindow Caption / Tab Bar -->
+          <div class="h-8 px-2 flex items-center justify-between bg-[var(--mdi-subwin-header)] border-b border-[var(--mdi-subwin-border)] select-none cursor-move" onmousedown="startDrag(event, 'subwin-1')">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
+                <rect width="16" height="16" rx="3" fill="#012456"/>
+                <path d="M4 5L7.5 8L4 11" stroke="#00D7FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8.5 12H12" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <span class="text-xs font-medium text-[var(--text-primary)]">PowerShell 7.4.5</span>
+              <span class="text-[10px] text-[var(--text-tertiary)] font-mono">[80x24]</span>
+            </div>
+            <!-- Subwindow control buttons -->
+            <div class="flex items-center gap-1">
+              <button class="w-5 h-5 flex items-center justify-center rounded hover:bg-white/10 text-[var(--text-secondary)]" title="最小化">
+                <svg class="w-2 h-2" viewBox="0 0 8 1" fill="currentColor"><rect width="8" height="1"/></svg>
+              </button>
+              <button class="w-5 h-5 flex items-center justify-center rounded hover:bg-white/10 text-[var(--text-secondary)]" title="最大化" onclick="toggleMaximize('subwin-1')">
+                <svg class="w-2 h-2" viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1"><rect x="0.5" y="0.5" width="7" height="7"/></svg>
+              </button>
+              <button class="w-5 h-5 flex items-center justify-center rounded hover:bg-red-600 hover:text-white text-[var(--text-secondary)]" title="关闭会话">
+                <svg class="w-2 h-2" viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M1 1L7 7M7 1L1 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Strict Isolated Viewport Contract: #0C0F14, no blur, no rounded corners -->
+          <div class="terminal-viewport" id="viewport-1">
+            <div class="text-zinc-400">PowerShell 7.4.5 [ConPTY Client Attached]</div>
+            <div class="text-zinc-500 text-xs mb-2">Copyright (C) Microsoft Corporation. All rights reserved.</div>
+            <div class="mb-1">
+              <span class="text-blue-400 font-semibold">PS C:\Users\Dev\TermForge></span>
+              <span class="text-yellow-300 font-mono">git status</span>
+            </div>
+            <div class="text-zinc-300">On branch <span class="text-cyan-300">main</span></div>
+            <div class="text-zinc-300">Your branch is up to date with 'origin/main'.</div>
+            <div class="mt-1 text-zinc-400">Changes not staged for commit:</div>
+            <div class="text-red-400 pl-4">modified:   openspec/changes/modernize-win11-fluent-ui/design.md</div>
+            <div class="text-red-400 pl-4">modified:   src/AgentTerminal.App/Themes/MainWindowChrome.xaml</div>
+            <div class="text-green-400 pl-4">new file:   docs/design/win11_fluent_preview.html</div>
+            <div class="mt-2">
+              <span class="text-blue-400 font-semibold">PS C:\Users\Dev\TermForge></span>
+              <span class="text-white font-mono">dotnet build -c Release</span><span class="term-cursor"></span>
+            </div>
+          </div>
+        </article>
+
+        <!-- ============ MDI SUB-WINDOW 2 (WSL2 Ubuntu) ============ -->
+        <article id="subwin-2" class="mdi-subwin" style="left: 476px; top: 16px; width: 440px; height: 380px;" onclick="focusSubwin('subwin-2')">
+          <!-- Subwindow Caption / Tab Bar -->
+          <div class="h-8 px-2 flex items-center justify-between bg-[var(--mdi-subwin-header)] border-b border-[var(--mdi-subwin-border)] select-none cursor-move" onmousedown="startDrag(event, 'subwin-2')">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="7" fill="#E95420"/>
+                <circle cx="8" cy="8" r="3" fill="#FFFFFF"/>
+              </svg>
+              <span class="text-xs font-medium text-[var(--text-primary)]">WSL2 — Ubuntu 24.04 LTS</span>
+              <span class="text-[10px] text-[var(--text-tertiary)] font-mono">[80x24]</span>
+            </div>
+            <!-- Subwindow control buttons -->
+            <div class="flex items-center gap-1">
+              <button class="w-5 h-5 flex items-center justify-center rounded hover:bg-white/10 text-[var(--text-secondary)]" title="最小化">
+                <svg class="w-2 h-2" viewBox="0 0 8 1" fill="currentColor"><rect width="8" height="1"/></svg>
+              </button>
+              <button class="w-5 h-5 flex items-center justify-center rounded hover:bg-white/10 text-[var(--text-secondary)]" title="最大化" onclick="toggleMaximize('subwin-2')">
+                <svg class="w-2 h-2" viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1"><rect x="0.5" y="0.5" width="7" height="7"/></svg>
+              </button>
+              <button class="w-5 h-5 flex items-center justify-center rounded hover:bg-red-600 hover:text-white text-[var(--text-secondary)]" title="关闭会话">
+                <svg class="w-2 h-2" viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M1 1L7 7M7 1L1 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Strict Isolated Viewport Contract: #0C0F14, no blur, no rounded corners -->
+          <div class="terminal-viewport" id="viewport-2">
+            <div class="text-zinc-400">Welcome to Ubuntu 24.04 LTS (GNU/Linux 6.6.36.3-microsoft-standard-WSL2)</div>
+            <div class="text-zinc-500 text-xs mb-2">Documentation: https://help.ubuntu.com</div>
+            <div class="mb-1">
+              <span class="text-emerald-400 font-semibold">dev@termforge-core</span>:<span class="text-blue-400 font-semibold">~/workspace</span>$ <span class="text-yellow-300 font-mono">htop</span>
+            </div>
+            <!-- Mock htop visual output in VT colors -->
+            <div class="text-xs font-mono space-y-0.5 border border-zinc-800 p-2 rounded bg-black/40">
+              <div class="flex items-center gap-2">
+                <span class="text-cyan-400 w-6">CPU[</span>
+                <div class="flex-1 bg-zinc-800 h-2 rounded overflow-hidden flex">
+                  <div class="bg-emerald-500 h-full w-[24%]"></div>
+                  <div class="bg-blue-500 h-full w-[12%]"></div>
+                </div>
+                <span class="text-zinc-400 text-[10px]">36.0%] Tasks: 42</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-cyan-400 w-6">MEM[</span>
+                <div class="flex-1 bg-zinc-800 h-2 rounded overflow-hidden flex">
+                  <div class="bg-emerald-500 h-full w-[45%]"></div>
+                </div>
+                <span class="text-zinc-400 text-[10px]">724M/1.8G]</span>
+              </div>
+            </div>
+            <div class="mt-2 text-zinc-300 text-xs">
+              [PID 12480] conpty.exe --headless --cols=80 --rows=24 --pipe-in=termforge_in
+            </div>
+            <div class="mt-2">
+              <span class="text-emerald-400 font-semibold">dev@termforge-core</span>:<span class="text-blue-400 font-semibold">~/workspace</span>$ <span class="text-white font-mono">cargo check --workspace</span><span class="term-cursor"></span>
+            </div>
+          </div>
+        </article>
+
+        <!-- ============ MDI SUB-WINDOW 3 (DevServer Node) ============ -->
+        <article id="subwin-3" class="mdi-subwin" style="left: 120px; top: 220px; width: 440px; height: 320px;" onclick="focusSubwin('subwin-3')">
+          <!-- Subwindow Caption / Tab Bar -->
+          <div class="h-8 px-2 flex items-center justify-between bg-[var(--mdi-subwin-header)] border-b border-[var(--mdi-subwin-border)] select-none cursor-move" onmousedown="startDrag(event, 'subwin-3')">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none">
+                <rect width="16" height="16" rx="3" fill="#339933"/>
+                <path d="M8 3L13 6V11L8 14L3 11V6L8 3Z" stroke="#FFFFFF" stroke-width="1.2"/>
+              </svg>
+              <span class="text-xs font-medium text-[var(--text-primary)]">Node.js API Server</span>
+              <span class="text-[10px] text-[var(--text-tertiary)] font-mono">[80x24]</span>
+            </div>
+            <!-- Subwindow control buttons -->
+            <div class="flex items-center gap-1">
+              <button class="w-5 h-5 flex items-center justify-center rounded hover:bg-white/10 text-[var(--text-secondary)]" title="最小化">
+                <svg class="w-2 h-2" viewBox="0 0 8 1" fill="currentColor"><rect width="8" height="1"/></svg>
+              </button>
+              <button class="w-5 h-5 flex items-center justify-center rounded hover:bg-white/10 text-[var(--text-secondary)]" title="最大化" onclick="toggleMaximize('subwin-3')">
+                <svg class="w-2 h-2" viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1"><rect x="0.5" y="0.5" width="7" height="7"/></svg>
+              </button>
+              <button class="w-5 h-5 flex items-center justify-center rounded hover:bg-red-600 hover:text-white text-[var(--text-secondary)]" title="关闭会话">
+                <svg class="w-2 h-2" viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M1 1L7 7M7 1L1 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Strict Isolated Viewport Contract: #0C0F14, no blur, no rounded corners -->
+          <div class="terminal-viewport" id="viewport-3">
+            <div class="text-zinc-400">> api-gateway@1.0.0 start</div>
+            <div class="text-zinc-400">> node ./dist/server.js</div>
+            <div class="mt-1 text-emerald-400">[INFO] Fastify HTTP server listening on http://127.0.0.1:8080</div>
+            <div class="text-emerald-400">[INFO] WebSocket telemetry attached to /ws/termforge</div>
+            <div class="text-cyan-400">[2026-09-07 10:12:04] 200 GET /api/v1/sessions (2ms)</div>
+            <div class="text-cyan-400">[2026-09-07 10:12:09] 101 UPGRADE /ws/termforge</div>
+            <div class="mt-2 text-zinc-500">Press Ctrl+C to terminate server...</div>
+            <div class="mt-1"><span class="term-cursor"></span></div>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- Right Properties & Diagnostics Docking Pane (Collapsible) -->
+      <aside class="w-64 border-l border-[var(--nav-border-r)] bg-[var(--nav-bg)] p-3 text-xs flex flex-col justify-between select-none">
+        <div>
+          <div class="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
+            <span class="font-semibold text-[var(--text-primary)]">活动窗格属性 (Inspector)</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono">DWM SYNC</span>
+          </div>
+
+          <div class="space-y-2.5 text-[11px]">
+            <div>
+              <div class="text-[var(--text-tertiary)]">DWM Backdrop Type:</div>
+              <div class="font-mono text-[var(--text-secondary)] font-medium">DWMSBT_MAINWINDOW (2)</div>
+            </div>
+
+            <div>
+              <div class="text-[var(--text-tertiary)]">窗口圆角偏好 (Corner Preference):</div>
+              <div class="font-mono text-[var(--text-secondary)] font-medium">DWMWCP_ROUND (12px)</div>
+            </div>
+
+            <div>
+              <div class="text-[var(--text-tertiary)]">WPF 主题模式 (ThemeMode):</div>
+              <div class="font-mono text-[var(--text-secondary)] font-medium">ThemeMode.System [Follows OS]</div>
+            </div>
+
+            <div>
+              <div class="text-[var(--text-tertiary)]">目标框架基线 (TFM):</div>
+              <div class="font-mono text-cyan-400 font-medium">net10.0-windows (LTS 2028)</div>
+            </div>
+
+            <div class="pt-2 border-t border-white/10">
+              <div class="text-[var(--text-tertiary)] mb-1">终端视口隔离契约 (Viewport Contract):</div>
+              <div class="p-2 rounded bg-black/60 border border-white/10 font-mono text-[10px] space-y-1">
+                <div>● Background: <span class="text-white font-bold">#0C0F14</span> (Opaque)</div>
+                <div>● BackdropFilter: <span class="text-red-400">None (0ms overhead)</span></div>
+                <div>● CornerRadius: <span class="text-zinc-400">0px (No clipping)</span></div>
+                <div>● Font: <span class="text-emerald-400">Cascadia Code 13pt</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-2.5 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-[10px] text-[var(--text-tertiary)] space-y-1">
+          <div class="text-[var(--text-secondary)] font-semibold flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full" style="background: var(--accent-color);"></span>
+            <span>OpenSpec 验收准则 AC:</span>
+          </div>
+          <div>✓ 系统级 Snap Layouts 贴靠菜单</div>
+          <div>✓ 浅色 / 深色 / 高对比度语义 Token</div>
+          <div>✓ MDI 锻造台视口与系统 Mica 外壳解耦</div>
+        </div>
+      </aside>
+
+    </div>
+
+    <!-- Bottom Status Bar -->
+    <footer id="statusBar" class="h-6 px-3 flex items-center justify-between border-t border-[var(--status-border-t)] bg-[var(--status-bg)] text-[11px] text-[var(--text-secondary)] z-20 select-none">
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span class="font-medium text-[var(--text-primary)]">ConPTY: 就绪</span>
+        </div>
+        <span class="text-[var(--text-tertiary)]">|</span>
+        <span>活跃文档: <strong class="text-[var(--text-primary)] font-mono">3</strong></span>
+        <span class="text-[var(--text-tertiary)]">|</span>
+        <span>活动 PID: <strong class="text-[var(--text-primary)] font-mono">8954 (pwsh)</strong></span>
+        <span class="text-[var(--text-tertiary)]">|</span>
+        <span>视口编码: <strong class="text-[var(--text-primary)]">UTF-8</strong></span>
+      </div>
+
+      <div class="flex items-center gap-3 font-mono text-[10px]">
+        <span>CPU: <strong class="text-emerald-400">1.2%</strong></span>
+        <span>RAM: <strong class="text-zinc-300">142MB</strong></span>
+        <span>列行: <strong class="text-zinc-300">80x24</strong></span>
+        <span class="text-[var(--text-tertiary)]">TermForge v1.2 (.NET 10)</span>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- Spec Metrics Banner Below Window -->
+  <section class="w-[1180px] max-w-[98vw] mt-4 grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+    <div class="bg-black/50 backdrop-blur-md p-3 rounded-xl border border-white/10">
+      <div class="text-zinc-400 text-[11px] font-semibold mb-1 flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+        1. 外壳原生化 (Fluent Shell)
+      </div>
+      <p class="text-zinc-300 text-[11px] leading-relaxed">
+        废弃原有自绘写死 <code>AeroGlassBrush</code> 标题栏，改用 Windows 11 原生 Mica / 系统 Caption，恢复系统窗口阴影与 12px 圆角。
+      </p>
+    </div>
+
+    <div class="bg-black/50 backdrop-blur-md p-3 rounded-xl border border-white/10">
+      <div class="text-zinc-400 text-[11px] font-semibold mb-1 flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        2. 贴靠布局 (Snap Layouts)
+      </div>
+      <p class="text-zinc-300 text-[11px] leading-relaxed">
+        鼠标悬停最大化按钮唤出 Win11 原生 Snap 飞窗，支持 50/50 分割、70/30 主从、四格象限，完整保留系统操控手感。
+      </p>
+    </div>
+
+    <div class="bg-black/50 backdrop-blur-md p-3 rounded-xl border border-white/10">
+      <div class="text-zinc-400 text-[11px] font-semibold mb-1 flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+        3. 视口绝对隔离 (Viewport Guard)
+      </div>
+      <p class="text-zinc-300 text-[11px] leading-relaxed">
+        严格维持 <code>#0C0F14</code> 高对比度视口规范，坚决不加任何材质模糊与圆角裁剪，确保 ConPTY / VT 零渲染损耗。
+      </p>
+    </div>
+
+    <div class="bg-black/50 backdrop-blur-md p-3 rounded-xl border border-white/10">
+      <div class="text-zinc-400 text-[11px] font-semibold mb-1 flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+        4. .NET 10 LTS 契约
+      </div>
+      <p class="text-zinc-300 text-[11px] leading-relaxed">
+        7 个项目全面对齐 <code>net10.0-windows</code>，利用官方 <code>ThemeMode=System</code> 与 Segoe Fluent Icons 体系。
+      </p>
+    </div>
+  </section>
+
+  <!-- Interactive JavaScript Logic -->
+  <script>
+    const mainWindow = document.getElementById('mainWindow');
+    const maxBtn = document.getElementById('maxBtn');
+    const snapFlyout = document.getElementById('snapFlyout');
+    let snapTimeout;
+
+    // Hover logic for Snap Layouts Flyout
+    maxBtn.parentElement.addEventListener('mouseenter', () => {
+      clearTimeout(snapTimeout);
+      snapFlyout.style.display = 'block';
+    });
+    maxBtn.parentElement.addEventListener('mouseleave', () => {
+      snapTimeout = setTimeout(() => {
+        snapFlyout.style.display = 'none';
+      }, 300);
+    });
+    function hideSnap() {
+      snapFlyout.style.display = 'none';
+    }
+
+    // Theme Switcher
+    function setTheme(mode) {
+      mainWindow.classList.remove('light-theme', 'high-contrast');
+      document.querySelectorAll('#theme-dark, #theme-light, #theme-hc').forEach(b => b.classList.remove('active'));
+      
+      if (mode === 'light') {
+        mainWindow.classList.add('light-theme');
+        document.getElementById('theme-light').classList.add('active');
+      } else if (mode === 'hc') {
+        mainWindow.classList.add('high-contrast');
+        document.getElementById('theme-hc').classList.add('active');
+      } else {
+        document.getElementById('theme-dark').classList.add('active');
+      }
+    }
+
+    // Backdrop Switcher
+    function setBackdrop(type) {
+      mainWindow.classList.remove('backdrop-mica', 'backdrop-acrylic', 'backdrop-solid');
+      document.querySelectorAll('#bd-mica, #bd-acrylic, #bd-solid').forEach(b => b.classList.remove('active'));
+
+      if (type === 'acrylic') {
+        mainWindow.classList.add('backdrop-acrylic');
+        document.getElementById('bd-acrylic').classList.add('active');
+      } else if (type === 'solid') {
+        mainWindow.classList.add('backdrop-solid');
+        document.getElementById('bd-solid').classList.add('active');
+      } else {
+        mainWindow.classList.add('backdrop-mica');
+        document.getElementById('bd-mica').classList.add('active');
+      }
+    }
+
+    // Accent Color Switcher
+    function setAccent(color) {
+      document.documentElement.style.setProperty('--accent-color', color);
+    }
+
+    // MDI Layout Functions
+    function layoutMDI(type) {
+      const w1 = document.getElementById('subwin-1');
+      const w2 = document.getElementById('subwin-2');
+      const w3 = document.getElementById('subwin-3');
+      const container = document.getElementById('mdiWorkspace');
+      const cWidth = container.clientWidth - 24;
+      const cHeight = container.clientHeight - 24;
+
+      if (type === 'tileV') {
+        // Two columns
+        const halfWidth = Math.floor(cWidth / 2) - 8;
+        w1.style.left = '12px';
+        w1.style.top = '12px';
+        w1.style.width = halfWidth + 'px';
+        w1.style.height = cHeight + 'px';
+
+        w2.style.left = (halfWidth + 24) + 'px';
+        w2.style.top = '12px';
+        w2.style.width = halfWidth + 'px';
+        w2.style.height = cHeight + 'px';
+
+        w3.style.display = 'none'; // minimized / tucked
+      } else if (type === 'tileH') {
+        // Stacked horizontal
+        const halfHeight = Math.floor(cHeight / 2) - 8;
+        w1.style.left = '12px';
+        w1.style.top = '12px';
+        w1.style.width = cWidth + 'px';
+        w1.style.height = halfHeight + 'px';
+
+        w2.style.left = '12px';
+        w2.style.top = (halfHeight + 24) + 'px';
+        w2.style.width = cWidth + 'px';
+        w2.style.height = halfHeight + 'px';
+
+        w3.style.display = 'none';
+      } else if (type === 'quad') {
+        // Quad 4-pane layout
+        const halfW = Math.floor(cWidth / 2) - 8;
+        const halfH = Math.floor(cHeight / 2) - 8;
+        w1.style.display = 'flex';
+        w2.style.display = 'flex';
+        w3.style.display = 'flex';
+
+        w1.style.left = '12px'; w1.style.top = '12px';
+        w1.style.width = halfW + 'px'; w1.style.height = halfH + 'px';
+
+        w2.style.left = (halfW + 24) + 'px'; w2.style.top = '12px';
+        w2.style.width = halfW + 'px'; w2.style.height = halfH + 'px';
+
+        w3.style.left = '12px'; w3.style.top = (halfH + 24) + 'px';
+        w3.style.width = halfW + 'px'; w3.style.height = halfH + 'px';
+      } else if (type === 'cascade') {
+        w1.style.display = 'flex';
+        w2.style.display = 'flex';
+        w3.style.display = 'flex';
+
+        w1.style.left = '20px'; w1.style.top = '20px';
+        w1.style.width = '460px'; w1.style.height = '340px';
+
+        w2.style.left = '70px'; w2.style.top = '60px';
+        w2.style.width = '460px'; w2.style.height = '340px';
+
+        w3.style.left = '120px'; w3.style.top = '100px';
+        w3.style.width = '460px'; w3.style.height = '340px';
+      }
+    }
+
+    // Window Activation / Focus
+    function focusSubwin(id) {
+      document.querySelectorAll('.mdi-subwin').forEach(w => w.classList.remove('active'));
+      const target = document.getElementById(id);
+      if (target) {
+        target.style.display = 'flex';
+        target.classList.add('active');
+        // bring to top
+        let highestZ = 10;
+        document.querySelectorAll('.mdi-subwin').forEach(w => {
+          const z = parseInt(w.style.zIndex || 10);
+          if (z > highestZ) highestZ = z;
+        });
+        target.style.zIndex = highestZ + 1;
+      }
+    }
+
+    // Toggle Maximize Subwindow
+    let maxStates = {};
+    function toggleMaximize(id) {
+      const win = document.getElementById(id);
+      const container = document.getElementById('mdiWorkspace');
+      if (!maxStates[id]) {
+        maxStates[id] = {
+          left: win.style.left,
+          top: win.style.top,
+          width: win.style.width,
+          height: win.style.height
+        };
+        win.style.left = '0px';
+        win.style.top = '0px';
+        win.style.width = '100%';
+        win.style.height = '100%';
+        win.style.borderRadius = '0px';
+      } else {
+        win.style.left = maxStates[id].left;
+        win.style.top = maxStates[id].top;
+        win.style.width = maxStates[id].width;
+        win.style.height = maxStates[id].height;
+        win.style.borderRadius = '8px';
+        maxStates[id] = null;
+      }
+    }
+
+    // Simple Dragging of Subwindows
+    let draggedWin = null;
+    let dragOffsetX = 0, dragOffsetY = 0;
+
+    function startDrag(e, id) {
+      if (e.target.tagName.toLowerCase() === 'button' || e.target.closest('button')) return;
+      focusSubwin(id);
+      draggedWin = document.getElementById(id);
+      const rect = draggedWin.getBoundingClientRect();
+      dragOffsetX = e.clientX - rect.left;
+      dragOffsetY = e.clientY - rect.top;
+      document.addEventListener('mousemove', onDrag);
+      document.addEventListener('mouseup', stopDrag);
+    }
+
+    function onDrag(e) {
+      if (!draggedWin) return;
+      const containerRect = document.getElementById('mdiWorkspace').getBoundingClientRect();
+      let newLeft = e.clientX - containerRect.left - dragOffsetX;
+      let newTop = e.clientY - containerRect.top - dragOffsetY;
+      draggedWin.style.left = Math.max(0, newLeft) + 'px';
+      draggedWin.style.top = Math.max(0, newTop) + 'px';
+    }
+
+    function stopDrag() {
+      draggedWin = null;
+      document.removeEventListener('mousemove', onDrag);
+      document.removeEventListener('mouseup', stopDrag);
+    }
+
+    // Quick Command Bar Dispatcher
+    function handleQuickCommand(e) {
+      if (e.key === 'Enter') {
+        const cmd = e.target.value.trim();
+        if (!cmd) return;
+        const activeTerm = document.querySelector('.mdi-subwin.active .terminal-viewport');
+        if (activeTerm) {
+          const div = document.createElement('div');
+          div.className = 'mt-1 text-white font-mono';
+          div.innerHTML = `<span class="text-blue-400">broadcast></span> ${cmd}`;
+          activeTerm.appendChild(div);
+          activeTerm.scrollTop = activeTerm.scrollHeight;
+        }
+        e.target.value = '';
+      }
+    }
+
+    function addTerminalSession() {
+      alert("已触发 ConPTY 创建会话：Session 4 (bash/wsl) 分配至 MDI 工作区。");
+    }
+
+    // Initialize layout
+    window.addEventListener('load', () => {
+      layoutMDI('tileV');
+    });
+  </script>
+</body>
+</html>

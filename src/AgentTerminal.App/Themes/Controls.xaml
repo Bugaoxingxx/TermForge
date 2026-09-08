@@ -1,86 +1,67 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework">
 
     <!-- ================================================================= -->
-    <!-- 4. Aero 标准控件与语义部件样式 (Control Styles & Templates)       -->
+    <!-- 4. Windows 11 Fluent 控件与语义部件样式 (Fluent Control Styles)      -->
+    <!-- 消除拟物高光与混搭边框，符合 Fluent Design 几何度量与交互状态规范       -->
     <!-- ================================================================= -->
 
-    <!-- Aero 标题文字样式 -->
+    <!-- Fluent 标题栏文字样式 ( crisp 排版，去除拟物发光 ) -->
     <Style x:Key="AeroTitleTextBlockStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{DynamicResource AeroFontFamily}" />
-        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="FontSize" Value="{DynamicResource AeroFontSizeTitle}" />
         <Setter Property="Foreground" Value="{DynamicResource AeroTextNormalBrush}" />
         <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="Effect" Value="{DynamicResource AeroTitleGlowEffect}" />
+        <Setter Property="Effect" Value="{x:Null}" />
     </Style>
 
     <Style x:Key="AeroInactiveTitleTextBlockStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{DynamicResource AeroFontFamily}" />
-        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontWeight" Value="Normal" />
         <Setter Property="FontSize" Value="{DynamicResource AeroFontSizeTitle}" />
         <Setter Property="Foreground" Value="{DynamicResource AeroTextInactiveTitleBrush}" />
         <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="Effect" Value="{DynamicResource AeroInactiveTitleGlowEffect}" />
+        <Setter Property="Effect" Value="{x:Null}" />
     </Style>
 
-    <!-- Aero 胶囊式工具栏按钮 (高度 24 DIP，微圆角 3px，天蓝描边) -->
+    <!-- Fluent 微扁平工具栏按钮 (高度 28 DIP，圆角 4px，去渐变高光) -->
     <Style x:Key="AeroToolBarButtonStyle" TargetType="Button">
-        <Setter Property="Height" Value="{DynamicResource AeroCommandButtonHeight}" />
-        <Setter Property="Padding" Value="{DynamicResource AeroPaddingCommand}" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Padding" Value="8,4" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="BorderBrush" Value="{DynamicResource AeroBorderEdgeBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource AeroTextDarkBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource AeroTextNormalBrush}" />
         <Setter Property="FontSize" Value="{DynamicResource AeroFontSizeSmall}" />
         <Setter Property="FontFamily" Value="{DynamicResource AeroFontFamily}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="bd" CornerRadius="{DynamicResource AeroCornerRadiusSmall}"
-                            Background="#EBF2FA"
+                    <Border x:Name="bd"
+                            CornerRadius="4"
+                            Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="1"
+                            BorderThickness="{TemplateBinding BorderThickness}"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="bd" Property="Background">
-                                <Setter.Value>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="#F2F8FE" Offset="0.0" />
-                                        <GradientStop Color="#D5E8F9" Offset="0.48" />
-                                        <GradientStop Color="#B5D7F5" Offset="0.52" />
-                                        <GradientStop Color="#D7EBFB" Offset="1.0" />
-                                    </LinearGradientBrush>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter TargetName="bd" Property="BorderBrush" Value="#5C8FC2" />
-                            <Setter TargetName="bd" Property="Effect">
-                                <Setter.Value>
-                                    <DropShadowEffect Color="#0090FF" BlurRadius="5" ShadowDepth="0" Opacity="0.4" />
-                                </Setter.Value>
-                            </Setter>
+                            <Setter TargetName="bd" Property="Background" Value="#12000000" />
+                            <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource AeroBorderEdgeBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="bd" Property="Background">
-                                <Setter.Value>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="#C7DFF3" Offset="0.0" />
-                                        <GradientStop Color="#A8CCED" Offset="0.5" />
-                                        <GradientStop Color="#8DBBE5" Offset="0.52" />
-                                        <GradientStop Color="#BFE0F8" Offset="1.0" />
-                                    </LinearGradientBrush>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter TargetName="bd" Property="BorderBrush" Value="#386A9E" />
+                            <Setter TargetName="bd" Property="Background" Value="#1E000000" />
+                            <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource AeroBorderDarkEdgeBrush}" />
                         </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="True">
                             <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource AeroFocusBorderBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Opacity" Value="0.55" />
+                            <Setter Property="Opacity" Value="0.4" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -88,55 +69,44 @@
         </Setter>
     </Style>
 
-    <!-- Aero 金属蚀刻工具栏分割线 -->
+    <!-- Fluent 极简单像素垂直分割线 -->
     <Style x:Key="AeroToolBarSeparatorStyle" TargetType="Separator">
-        <Setter Property="Margin" Value="4,2" />
-        <Setter Property="Width" Value="2" />
+        <Setter Property="Margin" Value="4,4" />
+        <Setter Property="Width" Value="1" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Separator">
-                    <Grid Width="2" HorizontalAlignment="Center">
-                        <Line X1="0" Y1="0" X2="0" Y2="18" Stroke="#B6BEC8" StrokeThickness="1" />
-                        <Line X1="1" Y1="0" X2="1" Y2="18" Stroke="#FFFFFF" StrokeThickness="1" />
-                    </Grid>
+                    <Rectangle Width="1" Fill="{DynamicResource AeroBorderEdgeBrush}" HorizontalAlignment="Center" VerticalAlignment="Stretch" />
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
 
-    <!-- Aero 最小化/最大化通用玻璃控制按钮 (尺寸 29x20 DIP) -->
+    <!-- Fluent 标题栏最小化/最大化控制按钮 (宽 46 DIP，高 32 DIP，直角贴靠) -->
     <Style x:Key="AeroCaptionButtonStyle" TargetType="Button">
-        <Setter Property="Width" Value="{DynamicResource AeroCaptionButtonWidth}" />
-        <Setter Property="Height" Value="{DynamicResource AeroCaptionButtonHeight}" />
+        <Setter Property="Width" Value="46" />
+        <Setter Property="Height" Value="32" />
         <Setter Property="Background" Value="{DynamicResource AeroCapButtonBrush}" />
-        <Setter Property="BorderBrush" Value="#80FFFFFF" />
-        <Setter Property="BorderThickness" Value="1,0,1,1" />
-        <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="shell:WindowChrome.IsHitTestVisibleInChrome" Value="True" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="bd" CornerRadius="0,0,2,2"
+                    <Border x:Name="bd"
                             Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}">
+                            BorderThickness="0">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="bd" Property="Background" Value="{DynamicResource AeroCapButtonHoverBrush}" />
-                            <Setter TargetName="bd" Property="BorderBrush" Value="#8000B4FF" />
-                            <Setter TargetName="bd" Property="Effect">
-                                <Setter.Value>
-                                    <DropShadowEffect Color="#00B4FF" BlurRadius="8" ShadowDepth="0" Opacity="0.75" />
-                                </Setter.Value>
-                            </Setter>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="bd" Property="Background" Value="{DynamicResource AeroCapButtonPressedBrush}" />
-                            <Setter TargetName="bd" Property="BorderBrush" Value="#4070A0" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Opacity" Value="0.4" />
+                            <Setter Property="Opacity" Value="0.3" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -144,39 +114,31 @@
         </Setter>
     </Style>
 
-    <!-- Aero 红宝石关闭按钮 (尺寸 48x20 DIP) -->
+    <!-- Fluent 标题栏关闭按钮 (红底高亮，白交叉线) -->
     <Style x:Key="AeroCloseButtonStyle" TargetType="Button">
-        <Setter Property="Width" Value="{DynamicResource AeroCloseButtonWidth}" />
-        <Setter Property="Height" Value="{DynamicResource AeroCaptionButtonHeight}" />
+        <Setter Property="Width" Value="46" />
+        <Setter Property="Height" Value="32" />
         <Setter Property="Background" Value="{DynamicResource AeroCloseButtonBrush}" />
-        <Setter Property="BorderBrush" Value="#80B43C3C" />
-        <Setter Property="BorderThickness" Value="1,0,1,1" />
-        <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="shell:WindowChrome.IsHitTestVisibleInChrome" Value="True" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="bd" CornerRadius="0,0,4,0"
+                    <Border x:Name="bd"
                             Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            BorderThickness="0">
+                        <ContentPresenter x:Name="cp" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="bd" Property="Background" Value="{DynamicResource AeroCloseButtonHoverBrush}" />
-                            <Setter TargetName="bd" Property="BorderBrush" Value="#A01005" />
-                            <Setter TargetName="bd" Property="Effect">
-                                <Setter.Value>
-                                    <DropShadowEffect Color="#FF3228" BlurRadius="10" ShadowDepth="0" Opacity="0.95" />
-                                </Setter.Value>
-                            </Setter>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="bd" Property="Background" Value="{DynamicResource AeroCloseButtonPressedBrush}" />
-                            <Setter TargetName="bd" Property="BorderBrush" Value="#660A04" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Opacity" Value="0.4" />
+                            <Setter Property="Opacity" Value="0.3" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -184,25 +146,24 @@
         </Setter>
     </Style>
 
-    <!-- Aero 经典 Explorer 树节点样式 -->
+    <!-- Fluent 导航树节点样式 -->
     <Style x:Key="AeroTreeViewItemStyle" TargetType="TreeViewItem">
-        <Setter Property="Foreground" Value="{DynamicResource AeroTextDarkBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource AeroTextNormalBrush}" />
         <Setter Property="FontFamily" Value="{DynamicResource AeroFontFamily}" />
         <Setter Property="FontSize" Value="{DynamicResource AeroFontSizeSmall}" />
-        <Setter Property="Padding" Value="3,2" />
+        <Setter Property="Padding" Value="4,3" />
         <Style.Resources>
-            <!-- 覆盖默认高亮颜色为 Win7 天蓝高光条 -->
-            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#CDE5FA" />
-            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#0B2240" />
-            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#E4EFF8" />
-            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#2B3D52" />
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{x:Static SystemColors.HighlightColor}" />
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="{x:Static SystemColors.HighlightTextColor}" />
+            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#EAEAEA" />
+            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#333333" />
         </Style.Resources>
     </Style>
 
     <!-- MMC 面板卡片与外框样式 -->
     <Style x:Key="AeroPanelBorderStyle" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource AeroPanelBackgroundBrush}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource AeroSplitterBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AeroBorderEdgeBrush}" />
         <Setter Property="BorderThickness" Value="1" />
     </Style>
 

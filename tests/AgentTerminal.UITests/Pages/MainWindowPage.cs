@@ -14,76 +14,113 @@ public class MainWindowPage
 
     public Window Window => _window;
 
-    public Button? BtnNewTerminal => _window.FindFirstDescendant(cf => cf.ByAutomationId("Toolbar.BtnNewTerminal"))?.AsButton();
-    public Button? BtnStopSession => _window.FindFirstDescendant(cf => cf.ByAutomationId("Toolbar.BtnStopSession"))?.AsButton();
-    public Button? BtnCascade => _window.FindFirstDescendant(cf => cf.ByAutomationId("Toolbar.BtnCascade"))?.AsButton();
-    public Button? BtnTileHorizontal => _window.FindFirstDescendant(cf => cf.ByAutomationId("Toolbar.BtnTileHorizontal"))?.AsButton();
-    public Button? BtnTileVertical => _window.FindFirstDescendant(cf => cf.ByAutomationId("Toolbar.BtnTileVertical"))?.AsButton();
-    public Button? BtnRestoreAll => _window.FindFirstDescendant(cf => cf.ByAutomationId("Toolbar.BtnRestoreAll"))?.AsButton();
-    public Button? BtnClearOutput => _window.FindFirstDescendant(cf => cf.ByAutomationId("Toolbar.BtnClearOutput"))?.AsButton();
+    private AutomationElement? Find(string automationId)
+    {
+        try
+        {
+            var elem = _window.FindFirstDescendant(cf => cf.ByAutomationId(automationId));
+            if (elem != null) return elem;
 
-    public MenuItem? MenuFile => _window.FindFirstDescendant(cf => cf.ByAutomationId("Menu.File"))?.AsMenuItem();
-    public MenuItem? MenuWindow => _window.FindFirstDescendant(cf => cf.ByAutomationId("Menu.Window"))?.AsMenuItem();
-    public MenuItem? MenuView => _window.FindFirstDescendant(cf => cf.ByAutomationId("Menu.View"))?.AsMenuItem();
+            var desktop = _window.Automation.GetDesktop();
+            var freshWindow = desktop.FindFirstDescendant(cf => cf.ByAutomationId("MainWindow"));
+            return freshWindow?.FindFirstDescendant(cf => cf.ByAutomationId(automationId));
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
-    public AutomationElement? MainMenu => _window.FindFirstDescendant(cf => cf.ByAutomationId("MainMenu"));
-    public AutomationElement? MainToolBar => _window.FindFirstDescendant(cf => cf.ByAutomationId("MainToolBar"));
-    public AutomationElement? StatusBar => _window.FindFirstDescendant(cf => cf.ByAutomationId("Workbench.StatusBar"));
-    public Button? BtnToggleDiagnostic => _window.FindFirstDescendant(cf => cf.ByAutomationId("Toolbar.BtnToggleDiagnostic"))?.AsButton();
+    private Button? FindButton(string automationId) => Find(automationId)?.AsButton();
+    private MenuItem? FindMenuItem(string automationId) => Find(automationId)?.AsMenuItem();
 
-    public Button? BtnWindowMinimize => _window.FindFirstDescendant(cf => cf.ByAutomationId("MainWindow.BtnMinimize"))?.AsButton();
-    public Button? BtnWindowMaxRestore => _window.FindFirstDescendant(cf => cf.ByAutomationId("MainWindow.BtnMaxRestore"))?.AsButton();
-    public Button? BtnWindowClose => _window.FindFirstDescendant(cf => cf.ByAutomationId("MainWindow.BtnClose"))?.AsButton();
-    public AutomationElement? TitleBar => _window.FindFirstDescendant(cf => cf.ByAutomationId("MainWindow.TitleBar"));
+    public Button? BtnNewTerminal => FindButton("Toolbar.BtnNewTerminal");
+    public Button? BtnStopSession => FindButton("Toolbar.BtnStopSession");
+    public Button? BtnCascade => FindButton("Toolbar.BtnCascade");
+    public Button? BtnTileHorizontal => FindButton("Toolbar.BtnTileHorizontal");
+    public Button? BtnTileVertical => FindButton("Toolbar.BtnTileVertical");
+    public Button? BtnRestoreAll => FindButton("Toolbar.BtnRestoreAll");
+    public Button? BtnClearOutput => FindButton("Toolbar.BtnClearOutput");
 
-    public AutomationElement? NavigationPane => _window.FindFirstDescendant(cf => cf.ByAutomationId("Pane.Navigation"));
-    public AutomationElement? PropertiesPane => _window.FindFirstDescendant(cf => cf.ByAutomationId("Pane.Properties"));
-    public AutomationElement? DiagnosticsPane => _window.FindFirstDescendant(cf => cf.ByAutomationId("Pane.Diagnostics"));
+    public MenuItem? MenuFile => FindMenuItem("Menu.File");
+    public MenuItem? MenuWindow => FindMenuItem("Menu.Window");
+    public MenuItem? MenuView => FindMenuItem("Menu.View");
+
+    public AutomationElement? MainMenu => Find("MainMenu");
+    public AutomationElement? MainToolBar => Find("MainToolBar");
+    public AutomationElement? StatusBar => Find("Workbench.StatusBar");
+    public Button? BtnToggleDiagnostic => FindButton("Toolbar.BtnToggleDiagnostic");
+
+    public Button? BtnWindowMinimize => FindButton("MainWindow.BtnMinimize");
+    public Button? BtnWindowMaxRestore => FindButton("MainWindow.BtnMaxRestore");
+    public Button? BtnWindowClose => FindButton("MainWindow.BtnClose");
+    public AutomationElement? TitleBar => Find("MainWindow.TitleBar");
+
+    public AutomationElement? NavigationPane => Find("Pane.Navigation");
+    public AutomationElement? PropertiesPane => Find("Pane.Properties");
+    public AutomationElement? DiagnosticsPane => Find("Pane.Diagnostics");
 
     public string GetStatusBarMessage()
     {
-        var elem = _window.FindFirstDescendant(cf => cf.ByAutomationId("Workbench.StatusBar.StatusMessage"));
+        var elem = Find("Workbench.StatusBar.StatusMessage");
         return elem?.Name ?? elem?.AsLabel()?.Text ?? string.Empty;
     }
 
     public string GetStatusBarActiveDocTitle()
     {
-        var elem = _window.FindFirstDescendant(cf => cf.ByAutomationId("Workbench.StatusBar.ActiveDocTitle"));
+        var elem = Find("Workbench.StatusBar.ActiveDocTitle");
         return elem?.Name ?? elem?.AsLabel()?.Text ?? string.Empty;
     }
 
     public MdiWorkspacePage GetMdiWorkspace()
     {
-        var container = UiaWait.Until(() => 
-            _window.FindFirstDescendant(cf => cf.ByAutomationId("Workbench.MdiContainer")) 
-            ?? _window.FindFirstDescendant(cf => cf.ByAutomationId("Workbench.MdiCanvasArea")),
-            timeout: TimeSpan.FromSeconds(30),
-            message: "MdiContainer not found in MainWindow");
+        var container = UiaWait.Until(() =>
+        {
+            var elem = _window.FindFirstDescendant(cf => cf.ByAutomationId("Workbench.MdiContainer"))
+                    ?? _window.FindFirstDescendant(cf => cf.ByAutomationId("Workbench.MdiCanvasArea"));
+            if (elem != null) return elem;
+
+            try
+            {
+                var desktop = _window.Automation.GetDesktop();
+                var freshWindow = desktop.FindFirstDescendant(cf => cf.ByAutomationId("MainWindow"));
+                if (freshWindow != null)
+                {
+                    return freshWindow.FindFirstDescendant(cf => cf.ByAutomationId("Workbench.MdiContainer"))
+                        ?? freshWindow.FindFirstDescendant(cf => cf.ByAutomationId("Workbench.MdiCanvasArea"));
+                }
+            }
+            catch { }
+            return null;
+        },
+        timeout: TimeSpan.FromSeconds(30),
+        message: "MdiContainer not found in MainWindow");
+
         return new MdiWorkspacePage(container);
     }
 
     public void ClickNewTerminal()
     {
-        UiaWait.Until(() => BtnNewTerminal, message: "Toolbar NewTerminal button not found").Invoke();
+        UiaWait.Until(() => BtnNewTerminal, timeout: TimeSpan.FromSeconds(15), message: "Toolbar NewTerminal button not found").Invoke();
     }
 
     public void ClickCascade()
     {
-        UiaWait.Until(() => BtnCascade, message: "Toolbar Cascade button not found").Invoke();
+        UiaWait.Until(() => BtnCascade, timeout: TimeSpan.FromSeconds(15), message: "Toolbar Cascade button not found").Invoke();
     }
 
     public void ClickTileHorizontal()
     {
-        UiaWait.Until(() => BtnTileHorizontal, message: "Toolbar TileHorizontal button not found").Invoke();
+        UiaWait.Until(() => BtnTileHorizontal, timeout: TimeSpan.FromSeconds(15), message: "Toolbar TileHorizontal button not found").Invoke();
     }
 
     public void ClickTileVertical()
     {
-        UiaWait.Until(() => BtnTileVertical, message: "Toolbar TileVertical button not found").Invoke();
+        UiaWait.Until(() => BtnTileVertical, timeout: TimeSpan.FromSeconds(15), message: "Toolbar TileVertical button not found").Invoke();
     }
 
     public void ClickRestoreAll()
     {
-        UiaWait.Until(() => BtnRestoreAll, message: "Toolbar RestoreAll button not found").Invoke();
+        UiaWait.Until(() => BtnRestoreAll, timeout: TimeSpan.FromSeconds(15), message: "Toolbar RestoreAll button not found").Invoke();
     }
 }

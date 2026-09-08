@@ -6,8 +6,17 @@
     <!-- 遵循 WCAG 2.1 AA 与 Windows 高对比度辅助功能规范                      -->
     <!-- ================================================================= -->
 
+    <!-- Fluent 语义 Token 高对比度映射 -->
+    <SolidColorBrush x:Key="FluentAccentBrush" Color="{x:Static SystemColors.HighlightColor}" />
+    <SolidColorBrush x:Key="FluentWindowBackgroundBrush" Color="{x:Static SystemColors.WindowColor}" />
+    <SolidColorBrush x:Key="FluentSubtleBrush" Color="{x:Static SystemColors.WindowColor}" />
+    <SolidColorBrush x:Key="FluentCardBackgroundBrush" Color="{x:Static SystemColors.WindowColor}" />
+    <SolidColorBrush x:Key="FluentTextPrimaryBrush" Color="{x:Static SystemColors.WindowTextColor}" />
+    <SolidColorBrush x:Key="FluentTextSecondaryBrush" Color="{x:Static SystemColors.GrayTextColor}" />
+    <SolidColorBrush x:Key="FluentBorderBrush" Color="{x:Static SystemColors.WindowFrameColor}" />
+
     <!-- 主窗口与 MDI 标题栏画刷 -->
-    <SolidColorBrush x:Key="AeroGlassBrush" Color="{x:Static SystemColors.ActiveCaptionColor}" />
+    <SolidColorBrush x:Key="AeroGlassBrush" Color="{x:Static SystemColors.WindowColor}" />
     <SolidColorBrush x:Key="AeroActiveGlassBrush" Color="{x:Static SystemColors.ActiveCaptionColor}" />
     <SolidColorBrush x:Key="AeroInactiveGlassBrush" Color="{x:Static SystemColors.InactiveCaptionColor}" />
     <SolidColorBrush x:Key="AeroGlassSheenBrush" Color="Transparent" />
@@ -32,7 +41,7 @@
     <SolidColorBrush x:Key="AeroSplitterBrush" Color="{x:Static SystemColors.ControlDarkColor}" />
     <SolidColorBrush x:Key="AeroSplitterGripBrush" Color="{x:Static SystemColors.ControlTextColor}" />
 
-    <!-- 文字前景色 -->
+    <!-- 文字前景色 (成功与危险使用不同系统色及非颜色辅助提示) -->
     <SolidColorBrush x:Key="AeroTextDarkBrush" Color="{x:Static SystemColors.WindowTextColor}" />
     <SolidColorBrush x:Key="AeroTextNormalBrush" Color="{x:Static SystemColors.WindowTextColor}" />
     <SolidColorBrush x:Key="AeroTextMutedBrush" Color="{x:Static SystemColors.GrayTextColor}" />
@@ -58,7 +67,7 @@
     <SolidColorBrush x:Key="AeroDangerBorderBrush" Color="{x:Static SystemColors.HotTrackColor}" />
     <SolidColorBrush x:Key="AeroDangerBackgroundBrush" Color="{x:Static SystemColors.WindowColor}" />
 
-    <!-- 阴影与光晕特效 (高对比度模式下关闭虚化与阴影) -->
+    <!-- 阴影与光晕特效 (高对比度模式下全面关闭虚化与阴影) -->
     <DropShadowEffect x:Key="AeroTitleGlowEffect" BlurRadius="0" ShadowDepth="0" Opacity="0" />
     <DropShadowEffect x:Key="AeroInactiveTitleGlowEffect" BlurRadius="0" ShadowDepth="0" Opacity="0" />
     <DropShadowEffect x:Key="AeroWindowShadowEffect" BlurRadius="0" ShadowDepth="0" Opacity="0" />

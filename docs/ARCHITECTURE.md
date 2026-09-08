@@ -2,7 +2,7 @@
 
 本文档基于 [Windows 原生 Agent Terminal 工作台 详细开发计划](../Windows原生Agent_Terminal开发计划.md) 编写，指导系统设计与模块演进。
 
-界面目标已明确为 Windows MMC 风格的 MDI 多文档工作台，交互要求以 [统一 PRD](PRD-Phase1-ConPTY.md) 为准。文档区需支持内部子窗口重叠、层叠、平铺和窗口状态控制；AvalonDock 作为现有候选方案，须经原型验证后确定它与 MDI 容器的分工，不能将标签停靠视为完整 MDI 验收。
+界面目标已明确为 Windows MMC 风格的 MDI 多文档工作台，交互要求以 [统一 PRD](PRD-Phase1-ConPTY.md) 为准。外壳视觉已从 Win7 Aero 拟物改为 [Windows 11 Fluent 原生](design/UI-Win11-Fluent-Migration.md)（.NET 10 LTS + Mica/系统色）；MMC 三栏与 MDI 行为不变。文档区需支持内部子窗口重叠、层叠、平铺和窗口状态控制；AvalonDock 作为现有候选方案，须经原型验证后确定它与 MDI 容器的分工，不能将标签停靠视为完整 MDI 验收。
 
 ## 1. 核心架构原则
 
@@ -31,6 +31,6 @@ AgentTerminal.App (WPF Executable)
 | `src/AgentTerminal.Infrastructure` | 操作系统基础设施与通用服务：`Win32/`（Job Object 等）、`Logging/`（Serilog）、`Configuration/`（JSON） |
 | `src/AgentTerminal.App` | WPF 应用程序宿主与主界面：`App.xaml`、`MainWindow.xaml`、DI 配置 |
 | `tests/AgentTerminal.Tests` | xUnit 自动化测试套件：VT 解析器测试、Buffer 测试、Profile 测试 |
-| `docs/` | 架构、API 与开发文档（含 [Windows 7 Aero UI 设计规范](design/UI-Win7-Aero-Design.md)） |
+| `docs/` | 架构、API 与开发文档（含 [Fluent 外壳迁移](design/UI-Win11-Fluent-Migration.md)、[Win7 Aero / MMC 布局](design/UI-Win7-Aero-Design.md)） |
 | `docs/design/` | 界面视觉规范、交互原型（HTML）与设计原稿资源 |
 | `build/` | 自动化编译与打包脚本 |

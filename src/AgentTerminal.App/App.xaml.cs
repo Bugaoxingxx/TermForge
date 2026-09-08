@@ -15,6 +15,9 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+#pragma warning disable WPF0001
+        ThemeMode = ThemeMode.System;
+#pragma warning restore WPF0001
         LoggingService.Initialize();
 
         ApplyHighContrastThemeIfNeeded();

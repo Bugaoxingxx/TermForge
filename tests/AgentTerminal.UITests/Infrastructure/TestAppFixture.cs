@@ -19,9 +19,9 @@ public class TestAppFixture : IDisposable
         var baseDir = AppDomain.CurrentDomain.BaseDirectory;
         var candidatePaths = new[]
         {
-            Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\..\src\AgentTerminal.App\bin\Debug\net8.0-windows\AgentTerminal.App.exe")),
-            Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\src\AgentTerminal.App\bin\Debug\net8.0-windows\AgentTerminal.App.exe")),
-            Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\src\AgentTerminal.App\bin\Debug\net8.0-windows\AgentTerminal.App.exe")),
+            Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\..\src\AgentTerminal.App\bin\Debug\net10.0-windows\AgentTerminal.App.exe")),
+            Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\..\src\AgentTerminal.App\bin\Debug\net10.0-windows\AgentTerminal.App.exe")),
+            Path.GetFullPath(Path.Combine(baseDir, @"..\..\..\src\AgentTerminal.App\bin\Debug\net10.0-windows\AgentTerminal.App.exe")),
             Path.GetFullPath(Path.Combine(baseDir, "AgentTerminal.App.exe"))
         };
 
@@ -133,6 +133,7 @@ public class TestAppFixture : IDisposable
                     if (!proc.WaitForExit(3000))
                     {
                         proc.Kill(entireProcessTree: true);
+                        proc.WaitForExit(3000);
                     }
                 }
                 catch { }
@@ -144,7 +145,7 @@ public class TestAppFixture : IDisposable
             Automation?.Dispose();
             Automation = null;
             App = null;
-            System.Threading.Thread.Sleep(300);
+            System.Threading.Thread.Sleep(500);
         }
     }
 }

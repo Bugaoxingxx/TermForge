@@ -26,6 +26,12 @@ public partial class MainWindow : Window
         CommandBindings.Add(new CommandBinding(SystemCommands.ShowSystemMenuCommand, OnShowSystemMenu));
     }
 
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        AgentTerminal.App.Infrastructure.WindowBackdropHelper.ApplyBackdrop(this);
+    }
+
     private void OnShowSystemMenu(object sender, ExecutedRoutedEventArgs e)
     {
         double captionHeight = System.Windows.Shell.WindowChrome.GetWindowChrome(this)?.CaptionHeight ?? 30.0;

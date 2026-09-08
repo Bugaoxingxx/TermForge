@@ -2,11 +2,11 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:AgentTerminal.App"
+             ThemeMode="System"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/PresentationFramework.Aero;component/themes/Aero.NormalColor.xaml" />
                 <ResourceDictionary Source="Themes/AeroTheme.xaml" />
                 <ResourceDictionary Source="/AgentTerminal.Docking;component/Themes/AeroDockingTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>

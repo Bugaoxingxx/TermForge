@@ -2,48 +2,43 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- ================================================================= -->
-    <!-- 3. Aero 窗口控制几何图元与工具栏图标 (Icons & Geometries)           -->
+    <!-- 3. Windows 11 Fluent 矢量图标与窗口控制图元 (Icons & Geometries)    -->
+    <!-- 遵循 Segoe Fluent Icons 视觉设计语言 (1px 精细轮廓、去拟物阴影)         -->
     <!-- ================================================================= -->
 
-    <!-- 标题栏最小化图元 (10x8 视口) -->
-    <Geometry x:Key="AeroMinimizeGeometry">M 1,6 L 9,6</Geometry>
-
-    <!-- 标题栏最大化图元 -->
-    <Geometry x:Key="AeroMaximizeGeometry">M 1,1 L 9,1 L 9,8 L 1,8 Z M 2,2 L 8,2 L 8,3 L 2,3 Z</Geometry>
-
-    <!-- 标题栏还原图元 -->
-    <Geometry x:Key="AeroRestoreGeometry">M 3,1 L 9,1 L 9,6 L 7,6 L 7,8 L 1,8 L 1,3 L 3,3 Z M 3,3 L 7,3 L 7,4 L 3,4 Z M 2,4 L 6,4 L 6,5 L 2,5 Z</Geometry>
-
-    <!-- 标题栏关闭图元 (X) -->
-    <Geometry x:Key="AeroCloseGeometry">M 1,1 L 9,9 M 9,1 L 1,9</Geometry>
+    <!-- Fluent 标题栏控制图元 (10x10 视口) -->
+    <Geometry x:Key="AeroMinimizeGeometry">M 0,5 L 10,5</Geometry>
+    <Geometry x:Key="AeroMaximizeGeometry">M 0.5,0.5 L 9.5,0.5 L 9.5,9.5 L 0.5,9.5 Z</Geometry>
+    <Geometry x:Key="AeroRestoreGeometry">M 2.5,0.5 L 9.5,0.5 L 9.5,7.5 L 7.5,7.5 L 7.5,9.5 L 0.5,9.5 L 0.5,2.5 L 2.5,2.5 Z M 2.5,2.5 L 7.5,2.5 L 7.5,7.5</Geometry>
+    <Geometry x:Key="AeroCloseGeometry">M 0.5,0.5 L 9.5,9.5 M 9.5,0.5 L 0.5,9.5</Geometry>
 
     <!-- ================================================================= -->
-    <!-- 16x16 矢量工具栏与状态栏图标 (DrawingImage)                         -->
+    <!-- 16x16 矢量工具栏与状态栏图标 (DrawingImage - Fluent 现代线性风格)  -->
     <!-- ================================================================= -->
 
-    <!-- 新建终端图标 (绿色终端窗口 + 加号) -->
+    <!-- 新建终端图标 (Fluent Command Prompt + Plus) -->
     <DrawingImage x:Key="NewTerminalIcon">
         <DrawingImage.Drawing>
             <DrawingGroup>
                 <!-- 终端外框 -->
-                <GeometryDrawing Brush="#1E395B">
-                    <GeometryDrawing.Pen>
-                        <Pen Brush="#2E7D32" Thickness="1.2" />
-                    </GeometryDrawing.Pen>
-                    <GeometryDrawing.Geometry>
-                        <RectangleGeometry Rect="1,2,14,12" RadiusX="1" RadiusY="1" />
-                    </GeometryDrawing.Geometry>
-                </GeometryDrawing>
-                <!-- 内部命令符 >_ -->
                 <GeometryDrawing>
                     <GeometryDrawing.Pen>
-                        <Pen Brush="#81C784" Thickness="1.2" StartLineCap="Round" EndLineCap="Round" />
+                        <Pen Brush="{DynamicResource AeroTextNormalBrush}" Thickness="1" />
+                    </GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="1,2,14,11" RadiusX="2" RadiusY="2" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <!-- 命令行符号 >_ (强调色提示) -->
+                <GeometryDrawing>
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="{DynamicResource AeroTextSuccessBrush}" Thickness="1.2" StartLineCap="Round" EndLineCap="Round" />
                     </GeometryDrawing.Pen>
                     <GeometryDrawing.Geometry>
                         <GeometryGroup>
-                            <LineGeometry StartPoint="4,6" EndPoint="7,8" />
-                            <LineGeometry StartPoint="7,8" EndPoint="4,10" />
-                            <LineGeometry StartPoint="8,10" EndPoint="12,10" />
+                            <LineGeometry StartPoint="3.5,6" EndPoint="5.5,7.5" />
+                            <LineGeometry StartPoint="5.5,7.5" EndPoint="3.5,9" />
+                            <LineGeometry StartPoint="7,9" EndPoint="10,9" />
                         </GeometryGroup>
                     </GeometryDrawing.Geometry>
                 </GeometryDrawing>
@@ -51,54 +46,66 @@
         </DrawingImage.Drawing>
     </DrawingImage>
 
-    <!-- 停止会话图标 (红色正方形停止块) -->
+    <!-- 停止会话图标 (Fluent Stop Glyph) -->
     <DrawingImage x:Key="StopSessionIcon">
         <DrawingImage.Drawing>
             <DrawingGroup>
-                <GeometryDrawing Brush="#E53935">
-                    <GeometryDrawing.Pen>
-                        <Pen Brush="#B71C1C" Thickness="1" />
-                    </GeometryDrawing.Pen>
+                <GeometryDrawing Brush="{DynamicResource AeroTextDangerBrush}">
                     <GeometryDrawing.Geometry>
-                        <RectangleGeometry Rect="3,3,10,10" RadiusX="1" RadiusY="1" />
+                        <RectangleGeometry Rect="3,3,10,10" RadiusX="2" RadiusY="2" />
                     </GeometryDrawing.Geometry>
                 </GeometryDrawing>
             </DrawingGroup>
         </DrawingImage.Drawing>
     </DrawingImage>
 
-    <!-- 层叠窗口图标 -->
+    <!-- 层叠窗口图标 (Fluent Cascade Windows) -->
     <DrawingImage x:Key="CascadeIcon">
         <DrawingImage.Drawing>
             <DrawingGroup>
-                <GeometryDrawing Brush="#FFFFFF">
+                <!-- 底层窗口 -->
+                <GeometryDrawing>
                     <GeometryDrawing.Pen>
-                        <Pen Brush="#3B5978" Thickness="1" />
+                        <Pen Brush="{DynamicResource AeroTextMutedBrush}" Thickness="1" />
                     </GeometryDrawing.Pen>
                     <GeometryDrawing.Geometry>
-                        <GeometryGroup>
-                            <RectangleGeometry Rect="1,1,9,8" RadiusX="1" RadiusY="1" />
-                            <RectangleGeometry Rect="4,4,9,8" RadiusX="1" RadiusY="1" />
-                            <RectangleGeometry Rect="7,7,8,8" RadiusX="1" RadiusY="1" />
-                        </GeometryGroup>
+                        <RectangleGeometry Rect="1,1,9,8" RadiusX="1" RadiusY="1" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <!-- 中层窗口 -->
+                <GeometryDrawing>
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="{DynamicResource AeroTextMutedBrush}" Thickness="1" />
+                    </GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="4,4,8,8" RadiusX="1" RadiusY="1" />
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <!-- 顶层活动窗口 -->
+                <GeometryDrawing>
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="{DynamicResource AeroTextNormalBrush}" Thickness="1.1" />
+                    </GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="6,6,9,9" RadiusX="1" RadiusY="1" />
                     </GeometryDrawing.Geometry>
                 </GeometryDrawing>
             </DrawingGroup>
         </DrawingImage.Drawing>
     </DrawingImage>
 
-    <!-- 水平平铺图标 -->
+    <!-- 水平平铺图标 (Fluent Split Horizontal) -->
     <DrawingImage x:Key="TileHorizontalIcon">
         <DrawingImage.Drawing>
             <DrawingGroup>
-                <GeometryDrawing Brush="#FFFFFF">
+                <GeometryDrawing>
                     <GeometryDrawing.Pen>
-                        <Pen Brush="#3B5978" Thickness="1" />
+                        <Pen Brush="{DynamicResource AeroTextNormalBrush}" Thickness="1" />
                     </GeometryDrawing.Pen>
                     <GeometryDrawing.Geometry>
                         <GeometryGroup>
-                            <RectangleGeometry Rect="1,2,14,5" RadiusX="1" RadiusY="1" />
-                            <RectangleGeometry Rect="1,9,14,5" RadiusX="1" RadiusY="1" />
+                            <RectangleGeometry Rect="1,1.5,14,5.5" RadiusX="1.5" RadiusY="1.5" />
+                            <RectangleGeometry Rect="1,9,14,5.5" RadiusX="1.5" RadiusY="1.5" />
                         </GeometryGroup>
                     </GeometryDrawing.Geometry>
                 </GeometryDrawing>
@@ -106,18 +113,18 @@
         </DrawingImage.Drawing>
     </DrawingImage>
 
-    <!-- 垂直平铺图标 -->
+    <!-- 垂直平铺图标 (Fluent Split Vertical) -->
     <DrawingImage x:Key="TileVerticalIcon">
         <DrawingImage.Drawing>
             <DrawingGroup>
-                <GeometryDrawing Brush="#FFFFFF">
+                <GeometryDrawing>
                     <GeometryDrawing.Pen>
-                        <Pen Brush="#3B5978" Thickness="1" />
+                        <Pen Brush="{DynamicResource AeroTextNormalBrush}" Thickness="1" />
                     </GeometryDrawing.Pen>
                     <GeometryDrawing.Geometry>
                         <GeometryGroup>
-                            <RectangleGeometry Rect="2,1,5,14" RadiusX="1" RadiusY="1" />
-                            <RectangleGeometry Rect="9,1,5,14" RadiusX="1" RadiusY="1" />
+                            <RectangleGeometry Rect="1.5,1,5.5,14" RadiusX="1.5" RadiusY="1.5" />
+                            <RectangleGeometry Rect="9,1,5.5,14" RadiusX="1.5" RadiusY="1.5" />
                         </GeometryGroup>
                     </GeometryDrawing.Geometry>
                 </GeometryDrawing>
@@ -125,90 +132,85 @@
         </DrawingImage.Drawing>
     </DrawingImage>
 
-    <!-- 全部还原图标 -->
+    <!-- 全部还原图标 (Fluent Restore / Window Multiple) -->
     <DrawingImage x:Key="RestoreAllIcon">
         <DrawingImage.Drawing>
             <DrawingGroup>
-                <GeometryDrawing Brush="#EBF3FB">
+                <GeometryDrawing>
                     <GeometryDrawing.Pen>
-                        <Pen Brush="#1565C0" Thickness="1" />
+                        <Pen Brush="{DynamicResource AeroTextNormalBrush}" Thickness="1" />
                     </GeometryDrawing.Pen>
                     <GeometryDrawing.Geometry>
-                        <RectangleGeometry Rect="2,2,12,12" RadiusX="1" RadiusY="1" />
+                        <GeometryGroup>
+                            <RectangleGeometry Rect="1.5,3.5,11,11" RadiusX="1.5" RadiusY="1.5" />
+                            <PathGeometry Figures="M 4.5,3.5 L 4.5,1.5 L 14.5,1.5 L 14.5,11.5 L 12.5,11.5" />
+                        </GeometryGroup>
                     </GeometryDrawing.Geometry>
                 </GeometryDrawing>
             </DrawingGroup>
         </DrawingImage.Drawing>
     </DrawingImage>
 
-    <!-- 清空终端输出图标 -->
+    <!-- 清空终端输出图标 (Fluent Eraser / Trash) -->
     <DrawingImage x:Key="ClearOutputIcon">
         <DrawingImage.Drawing>
             <DrawingGroup>
-                <GeometryDrawing Brush="#FFFFFF">
-                    <GeometryDrawing.Pen>
-                        <Pen Brush="#5A6D80" Thickness="1" />
-                    </GeometryDrawing.Pen>
-                    <GeometryDrawing.Geometry>
-                        <RectangleGeometry Rect="2,1,12,14" RadiusX="1" RadiusY="1" />
-                    </GeometryDrawing.Geometry>
-                </GeometryDrawing>
                 <GeometryDrawing>
                     <GeometryDrawing.Pen>
-                        <Pen Brush="#E53935" Thickness="1.2" />
+                        <Pen Brush="{DynamicResource AeroTextNormalBrush}" Thickness="1" />
                     </GeometryDrawing.Pen>
                     <GeometryDrawing.Geometry>
-                        <LineGeometry StartPoint="5,5" EndPoint="11,11" />
+                        <GeometryGroup>
+                            <LineGeometry StartPoint="2,3" EndPoint="14,3" />
+                            <RectangleGeometry Rect="3.5,3,9,11" RadiusX="1" RadiusY="1" />
+                            <LineGeometry StartPoint="6.5,5.5" EndPoint="6.5,11.5" />
+                            <LineGeometry StartPoint="9.5,5.5" EndPoint="9.5,11.5" />
+                        </GeometryGroup>
                     </GeometryDrawing.Geometry>
                 </GeometryDrawing>
             </DrawingGroup>
         </DrawingImage.Drawing>
     </DrawingImage>
 
-    <!-- 诊断模式图标 -->
+    <!-- 诊断模式图标 (Fluent Stethoscope / Diagnostics) -->
     <DrawingImage x:Key="DiagnosticIcon">
         <DrawingImage.Drawing>
             <DrawingGroup>
-                <GeometryDrawing Brush="#FFA000">
+                <GeometryDrawing>
                     <GeometryDrawing.Pen>
-                        <Pen Brush="#E65100" Thickness="1" />
+                        <Pen Brush="#D87B00" Thickness="1.2" StartLineCap="Round" EndLineCap="Round" />
                     </GeometryDrawing.Pen>
                     <GeometryDrawing.Geometry>
-                        <EllipseGeometry Center="8,8" RadiusX="6" RadiusY="6" />
-                    </GeometryDrawing.Geometry>
-                </GeometryDrawing>
-                <GeometryDrawing Brush="#FFFFFF">
-                    <GeometryDrawing.Geometry>
-                        <EllipseGeometry Center="8,8" RadiusX="2" RadiusY="2" />
+                        <PathGeometry Figures="M 1,8.5 L 4,8.5 L 6,3 L 8.5,13 L 11,6.5 L 12.5,8.5 L 15,8.5" />
                     </GeometryDrawing.Geometry>
                 </GeometryDrawing>
             </DrawingGroup>
         </DrawingImage.Drawing>
     </DrawingImage>
 
-    <!-- 会话指示灯图标 (Session) -->
+    <!-- 会话指示图标 (Fluent Session Dot) -->
     <DrawingImage x:Key="SessionIcon">
         <DrawingImage.Drawing>
             <DrawingGroup>
-                <GeometryDrawing Brush="#007ACC">
-                    <GeometryDrawing.Pen>
-                        <Pen Brush="#005A9E" Thickness="0.8" />
-                    </GeometryDrawing.Pen>
+                <GeometryDrawing Brush="{DynamicResource AeroTextSuccessBrush}">
                     <GeometryDrawing.Geometry>
-                        <EllipseGeometry Center="8,8" RadiusX="5" RadiusY="5" />
+                        <EllipseGeometry Center="8,8" RadiusX="4" RadiusY="4" />
                     </GeometryDrawing.Geometry>
                 </GeometryDrawing>
             </DrawingGroup>
         </DrawingImage.Drawing>
     </DrawingImage>
 
-    <!-- 配置入口图标 (Profile Arrow) -->
+    <!-- 配置入口图标 (Fluent Profile Chevron) -->
     <DrawingImage x:Key="ProfileIcon">
         <DrawingImage.Drawing>
             <DrawingGroup>
-                <GeometryDrawing Brush="#2E7D32">
+                <GeometryDrawing>
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="{DynamicResource AeroTextNormalBrush}" Thickness="1.2" StartLineCap="Round" EndLineCap="Round" />
+                    </GeometryDrawing.Pen>
                     <GeometryDrawing.Geometry>
-                        <PathGeometry Figures="M 5,3 L 13,8 L 5,13 Z" />
+                        <PathGeometry Figures="M 5.5,4 L 9.5,8 L 5.5,12" />
                     </GeometryDrawing.Geometry>
                 </GeometryDrawing>
             </DrawingGroup>

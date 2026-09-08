@@ -414,18 +414,7 @@
             </StatusBarItem>
             <Separator Style="{DynamicResource AeroToolBarSeparatorStyle}" />
             <StatusBarItem HorizontalAlignment="Right">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="就绪" FontSize="{DynamicResource AeroFontSizeSmall}" Foreground="{DynamicResource AeroTextMutedBrush}" Margin="0,0,8,0" />
-                    <!-- Win7 点阵式缩放把手 -->
-                    <Canvas Width="10" Height="10" VerticalAlignment="Bottom" Margin="0,0,2,0">
-                        <Ellipse Canvas.Left="7" Canvas.Top="7" Width="2" Height="2" Fill="{DynamicResource AeroSplitterGripBrush}" />
-                        <Ellipse Canvas.Left="4" Canvas.Top="7" Width="2" Height="2" Fill="{DynamicResource AeroSplitterGripBrush}" />
-                        <Ellipse Canvas.Left="1" Canvas.Top="7" Width="2" Height="2" Fill="{DynamicResource AeroSplitterGripBrush}" />
-                        <Ellipse Canvas.Left="7" Canvas.Top="4" Width="2" Height="2" Fill="{DynamicResource AeroSplitterGripBrush}" />
-                        <Ellipse Canvas.Left="4" Canvas.Top="4" Width="2" Height="2" Fill="{DynamicResource AeroSplitterGripBrush}" />
-                        <Ellipse Canvas.Left="7" Canvas.Top="1" Width="2" Height="2" Fill="{DynamicResource AeroSplitterGripBrush}" />
-                    </Canvas>
-                </StackPanel>
+                <TextBlock Text="就绪" FontSize="{DynamicResource AeroFontSizeSmall}" Foreground="{DynamicResource AeroTextMutedBrush}" Margin="0,0,12,0" />
             </StatusBarItem>
         </StatusBar>
     </Grid>

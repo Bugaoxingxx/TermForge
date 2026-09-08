@@ -1,10 +1,20 @@
 # TermForge PRD：MMC 风格 MDI 工作台与 PowerShell 会话
 
-版本：0.3 | 日期：2026-09-05 | 状态：待实现
+版本：0.4 | 日期：2026-09-07 | 状态：Phase 1 会话/MDI 需求仍有效；运行时与外壳基线已更新
 
 配套任务：[开发 TODO](TODO-Phase1-ConPTY.md)。背景：[总体开发计划](../Windows原生Agent_Terminal开发计划.md)、[架构设计](ARCHITECTURE.md)。
 
 本文统一管理底层会话与 MDI 工作台：第 1～9 节定义首轮会话闭环，第 10～14 节定义多文档交互、验收和后续交付。FR/AC 为会话需求与验收编号，MDI 为工作台需求与验收编号。
+
+### 后续基线（2026-09-07，不改写下方历史 FR/AC）
+
+第 6 节「复用 .NET 8、不在本轮变更运行时」只约束 **Phase 1 ConPTY/MDI 闭环当时** 的工程边界，不是产品永久基线。自 OpenSpec 变更 [`modernize-win11-fluent-ui`](../openspec/changes/modernize-win11-fluent-ui/proposal.md) 起：
+
+- 运行时目标改为 **.NET 10 LTS**（不用已 EOL 的 .NET 9）。
+- 主窗口外壳从 Win7 Aero 拟物改为 **Windows 11 Fluent 原生**（Mica、系统强调色、深浅色跟随）。
+- Phase 1 的会话语义、FR/AC、MDI-01～08 **不变**；终端视口仍隔离，不套材质。
+
+详细方案：[UI-Win11-Fluent-Migration.md](design/UI-Win11-Fluent-Migration.md)。
 
 ## 1. 背景与当前基础
 
@@ -73,7 +83,7 @@ TermForge 的产品目标是 Windows MMC 风格的 MDI 多文档 Shell 与 Agent
 
 ## 6. 工程边界
 
-- 复用 .NET 8、WPF 和现有分层，不在本轮变更运行时或发布模式。
+- 复用 .NET 8、WPF 和现有分层，不在本轮变更运行时或发布模式。（历史范围：仅 Phase 1 当时。后续运行时与外壳见文首「后续基线」。）
 - Core 保留会话抽象与模型；Terminal 实现 ConPTY 会话与读写；Infrastructure 提供 Job Object 等系统资源封装；App 通过 ViewModel 连接调试交互。若新增项目引用，应保持无循环依赖。
 - 创建进程、加入 Job Object 与开始执行之间不得留下未受管理子进程的窗口；Job 绑定失败时停止启动并回收。
 - 所有原生句柄明确归属；退出和停止时保持输出排空、管道关闭与 ConPTY 关闭的协调，避免等待读取或关闭永久挂起。

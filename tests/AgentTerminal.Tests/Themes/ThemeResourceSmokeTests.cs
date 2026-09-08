@@ -48,6 +48,13 @@ public class ThemeResourceSmokeTests
             string[] requiredKeys =
             [
                 // Colors & Brushes
+                "FluentAccentBrush",
+                "FluentWindowBackgroundBrush",
+                "FluentSubtleBrush",
+                "FluentCardBackgroundBrush",
+                "FluentTextPrimaryBrush",
+                "FluentTextSecondaryBrush",
+                "FluentBorderBrush",
                 "AeroGlassBrush",
                 "AeroActiveGlassBrush",
                 "AeroInactiveGlassBrush",
@@ -185,6 +192,11 @@ public class ThemeResourceSmokeTests
 
             string[] requiredKeys =
             [
+                "FluentAccentBrush",
+                "FluentWindowBackgroundBrush",
+                "FluentCardBackgroundBrush",
+                "FluentTextPrimaryBrush",
+                "FluentBorderBrush",
                 "AeroGlassBrush",
                 "AeroActiveGlassBrush",
                 "AeroInactiveGlassBrush",
@@ -213,6 +225,40 @@ public class ThemeResourceSmokeTests
             Assert.NotNull(mdiShadow);
             Assert.Equal(0, mdiShadow.Opacity);
 
+            var aeroGlow = dict["AeroTitleGlowEffect"] as System.Windows.Media.Effects.DropShadowEffect;
+            Assert.NotNull(aeroGlow);
+            Assert.Equal(0, aeroGlow.Opacity);
+
+            // Verify success and danger are distinct colors in high contrast mode
+            var successBrush = dict["AeroTextSuccessBrush"] as System.Windows.Media.SolidColorBrush;
+            var dangerBrush = dict["AeroTextDangerBrush"] as System.Windows.Media.SolidColorBrush;
+            Assert.NotNull(successBrush);
+            Assert.NotNull(dangerBrush);
+            Assert.NotEqual(successBrush.Color, dangerBrush.Color);
+        });
+    }
+
+    [Fact]
+    public void FluentThemeTokens_ShouldSupportLightAndDarkSemantics()
+    {
+        RunInSta(() =>
+        {
+            if (Application.Current == null)
+            {
+                _ = new Application();
+            }
+
+            var dict = new ResourceDictionary
+            {
+                Source = new Uri("pack://application:,,,/AgentTerminal.App;component/Themes/Colors.xaml", UriKind.Absolute)
+            };
+
+            Assert.NotNull(dict["FluentAccentBrush"]);
+            Assert.NotNull(dict["FluentCardBackgroundBrush"]);
+            Assert.NotNull(dict["FluentTextPrimaryBrush"]);
+            Assert.NotNull(dict["FluentBorderBrush"]);
+
+            // Verify title glow effect is zeroed out for clean Fluent typography
             var aeroGlow = dict["AeroTitleGlowEffect"] as System.Windows.Media.Effects.DropShadowEffect;
             Assert.NotNull(aeroGlow);
             Assert.Equal(0, aeroGlow.Opacity);

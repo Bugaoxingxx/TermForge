@@ -9,7 +9,7 @@
 ## 🌟 1. 设计核心理念 (Design Philosophy)
 
 **TermForge** 的定位是为 Windows 平台打造的原生级 Shell 与 AI Agent 深度集成的终端工作台。  
-项目的视觉风格传承了 **Windows 7 Aero Glass** 的经典晶莹透光质感，同时承载高强度的现代字符终端交互。
+品牌标识仍可用 **Windows 7 Aero Glass** 作为锻造台意象；**产品外壳**已决定迁到 [Windows 11 Fluent 原生](./UI-Win11-Fluent-Migration.md)（.NET 10 LTS、Mica、系统色）。LOGO 不必改成 Fluent 图标字体，但应用窗口不再以假玻璃标题栏作为主视觉。
 
 因此，LOGO 的设计紧扣三大核心意象的深度融合：
 
