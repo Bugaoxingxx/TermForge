@@ -74,7 +74,7 @@ public static class WindowBackdropHelper
         try
         {
             using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM");
-            if (key?.GetValue("AccentColor") is int accent && accent != 0)
+            if (TryReadAccentDword(key?.GetValue("AccentColor"), out int accent) && accent != 0)
             {
                 // 注册表 AccentColor 格式通常为 0xAABBGGRR
                 byte r = (byte)(accent & 0xFF);
@@ -106,6 +106,50 @@ public static class WindowBackdropHelper
 
         // 3. 默认 Fluent 蓝
         return Color.FromRgb(0x00, 0x78, 0xD4);
+    }
+
+    /// <summary>
+    /// 用系统强调色覆盖根字典中的 Fluent 强调色与焦点边框画刷。
+    /// 两个键使用独立 Frozen 实例，避免以后分色时互相牵连。
+    /// </summary>
+    public static void OverlayAccentBrushes(ResourceDictionary resources, Color accentColor)
+    {
+        ArgumentNullException.ThrowIfNull(resources);
+        resources["FluentAccentBrush"] = CreateFrozenBrush(accentColor);
+        resources["AeroFocusBorderBrush"] = CreateFrozenBrush(accentColor);
+    }
+
+    /// <summary>
+    /// 移除根字典上的强调色覆盖，让 MergedDictionaries（如高对比度）中的同名键重新生效。
+    /// </summary>
+    public static void ClearAccentBrushOverrides(ResourceDictionary resources)
+    {
+        ArgumentNullException.ThrowIfNull(resources);
+        resources.Remove("FluentAccentBrush");
+        resources.Remove("AeroFocusBorderBrush");
+    }
+
+    private static SolidColorBrush CreateFrozenBrush(Color color)
+    {
+        var brush = new SolidColorBrush(color);
+        brush.Freeze();
+        return brush;
+    }
+
+    private static bool TryReadAccentDword(object? raw, out int accent)
+    {
+        switch (raw)
+        {
+            case int value:
+                accent = value;
+                return true;
+            case uint value:
+                accent = unchecked((int)value);
+                return true;
+            default:
+                accent = 0;
+                return false;
+        }
     }
 
     /// <summary>

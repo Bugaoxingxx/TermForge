@@ -1,6 +1,5 @@
 using System;
 using System.Windows;
-using System.Windows.Media;
 using AgentTerminal.App.Infrastructure;
 using AgentTerminal.Infrastructure.Logging;
 using Microsoft.Win32;
@@ -62,6 +61,9 @@ public partial class App : Application
                 Resources.MergedDictionaries.Remove(_darkThemeDictionary);
                 _darkThemeDictionary = null;
             }
+
+            // 根字典上的强调色覆盖优先级高于 MergedDictionaries，切到高对比度时必须撤掉
+            WindowBackdropHelper.ClearAccentBrushOverrides(Resources);
             return;
         }
 
@@ -90,10 +92,6 @@ public partial class App : Application
         }
 
         // 动态覆盖系统强调色画刷，与 Windows 任务栏/设置 AccentColor 联动
-        var accentColor = WindowBackdropHelper.GetAccentColor();
-        var accentBrush = new SolidColorBrush(accentColor);
-        accentBrush.Freeze();
-        Resources["FluentAccentBrush"] = accentBrush;
-        Resources["AeroFocusBorderBrush"] = accentBrush;
+        WindowBackdropHelper.OverlayAccentBrushes(Resources, WindowBackdropHelper.GetAccentColor());
     }
 }

@@ -1,7 +1,7 @@
 # TermForge — 菜单栏与工具栏命令面合并方案
 
 > 日期：2026-09-08  
-> 状态：待实施（不改 ViewModel 命令，只改 XAML 入口与 UI 测试定位）  
+> 状态：已实施（[33c9f10](../review/2026-09-08-33c9f10.md)）  
 > 背景审阅：[2026-09-08-b3fbc1c.md](../review/2026-09-08-b3fbc1c.md)  
 > 外壳方向：[UI-Win11-Fluent-Migration.md](./UI-Win11-Fluent-Migration.md)
 

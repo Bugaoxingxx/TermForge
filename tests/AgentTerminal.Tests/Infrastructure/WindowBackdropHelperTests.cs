@@ -59,6 +59,37 @@ public class WindowBackdropHelperTests
     }
 
     [Fact]
+    public void OverlayAccentBrushes_ShouldOverrideMergedDictionaryUntilCleared()
+    {
+        RunInSta(() =>
+        {
+            var resources = new ResourceDictionary();
+            var merged = new ResourceDictionary
+            {
+                ["FluentAccentBrush"] = new SolidColorBrush(Colors.Yellow),
+                ["AeroFocusBorderBrush"] = new SolidColorBrush(Colors.Yellow)
+            };
+            resources.MergedDictionaries.Add(merged);
+
+            var accent = Color.FromRgb(0x00, 0x78, 0xD4);
+            WindowBackdropHelper.OverlayAccentBrushes(resources, accent);
+
+            var overlayAccent = Assert.IsType<SolidColorBrush>(resources["FluentAccentBrush"]);
+            var overlayFocus = Assert.IsType<SolidColorBrush>(resources["AeroFocusBorderBrush"]);
+            Assert.Equal(accent, overlayAccent.Color);
+            Assert.Equal(accent, overlayFocus.Color);
+            Assert.NotSame(overlayAccent, overlayFocus);
+            Assert.True(overlayAccent.IsFrozen);
+            Assert.True(overlayFocus.IsFrozen);
+
+            WindowBackdropHelper.ClearAccentBrushOverrides(resources);
+
+            var restored = Assert.IsType<SolidColorBrush>(resources["FluentAccentBrush"]);
+            Assert.Equal(Colors.Yellow, restored.Color);
+        });
+    }
+
+    [Fact]
     public void GetFallbackSolidBackgroundBrush_ShouldReturnDistinctBrushesForDarkAndLight()
     {
         var darkBrush = WindowBackdropHelper.GetFallbackSolidBackgroundBrush(true);

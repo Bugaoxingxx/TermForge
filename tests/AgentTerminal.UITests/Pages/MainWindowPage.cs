@@ -122,62 +122,36 @@ public class MainWindowPage
     }
 
     public void ClickTileHorizontal()
-    {
-        var dropBtn = BtnArrangeDropdown;
-        if (dropBtn != null)
-        {
-            dropBtn.Invoke();
-            var item = UiaWait.Until(() => FindMenuItem("Toolbar.Arrange.TileHorizontal"), timeout: TimeSpan.FromSeconds(5));
-            if (item != null)
-            {
-                item.Invoke();
-                return;
-            }
-        }
-
-        // Fallback via Window menu
-        UiaWait.Until(() => MenuWindow, timeout: TimeSpan.FromSeconds(5)).Invoke();
-        UiaWait.Until(() => FindMenuItem("Menu.Window.Arrange"), timeout: TimeSpan.FromSeconds(5)).Invoke();
-        UiaWait.Until(() => FindMenuItem("Menu.Window.TileHorizontal"), timeout: TimeSpan.FromSeconds(5)).Invoke();
-    }
+        => ClickArrangeVariant("Toolbar.Arrange.TileHorizontal", "Menu.Window.TileHorizontal");
 
     public void ClickTileVertical()
-    {
-        var dropBtn = BtnArrangeDropdown;
-        if (dropBtn != null)
-        {
-            dropBtn.Invoke();
-            var item = UiaWait.Until(() => FindMenuItem("Toolbar.Arrange.TileVertical"), timeout: TimeSpan.FromSeconds(5));
-            if (item != null)
-            {
-                item.Invoke();
-                return;
-            }
-        }
-
-        // Fallback via Window menu
-        UiaWait.Until(() => MenuWindow, timeout: TimeSpan.FromSeconds(5)).Invoke();
-        UiaWait.Until(() => FindMenuItem("Menu.Window.Arrange"), timeout: TimeSpan.FromSeconds(5)).Invoke();
-        UiaWait.Until(() => FindMenuItem("Menu.Window.TileVertical"), timeout: TimeSpan.FromSeconds(5)).Invoke();
-    }
+        => ClickArrangeVariant("Toolbar.Arrange.TileVertical", "Menu.Window.TileVertical");
 
     public void ClickRestoreAll()
+        => ClickArrangeVariant("Toolbar.Arrange.RestoreAll", "Menu.Window.RestoreAll");
+
+    private void ClickArrangeVariant(string toolbarItemId, string windowMenuItemId)
     {
-        var dropBtn = BtnArrangeDropdown;
-        if (dropBtn != null)
+        try
         {
-            dropBtn.Invoke();
-            var item = UiaWait.Until(() => FindMenuItem("Toolbar.Arrange.RestoreAll"), timeout: TimeSpan.FromSeconds(5));
-            if (item != null)
+            var dropBtn = BtnArrangeDropdown;
+            if (dropBtn != null)
             {
-                item.Invoke();
+                dropBtn.Invoke();
+                UiaWait.Until(
+                    () => FindMenuItem(toolbarItemId),
+                    timeout: TimeSpan.FromSeconds(5),
+                    message: $"Arrange dropdown item {toolbarItemId} not found").Invoke();
                 return;
             }
         }
+        catch (TimeoutException)
+        {
+            // 下拉 Popup 未出现时改走窗口菜单
+        }
 
-        // Fallback via Window menu
-        UiaWait.Until(() => MenuWindow, timeout: TimeSpan.FromSeconds(5)).Invoke();
-        UiaWait.Until(() => FindMenuItem("Menu.Window.Arrange"), timeout: TimeSpan.FromSeconds(5)).Invoke();
-        UiaWait.Until(() => FindMenuItem("Menu.Window.RestoreAll"), timeout: TimeSpan.FromSeconds(5)).Invoke();
+        UiaWait.Until(() => MenuWindow, timeout: TimeSpan.FromSeconds(5), message: "Window menu not found").Invoke();
+        UiaWait.Until(() => FindMenuItem("Menu.Window.Arrange"), timeout: TimeSpan.FromSeconds(5), message: "Arrange submenu not found").Invoke();
+        UiaWait.Until(() => FindMenuItem(windowMenuItemId), timeout: TimeSpan.FromSeconds(5), message: $"{windowMenuItemId} not found").Invoke();
     }
 }

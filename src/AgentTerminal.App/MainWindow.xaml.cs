@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using AgentTerminal.App.ViewModels;
@@ -73,6 +74,32 @@ public partial class MainWindow : Window
         ViewModel.ContainerHeight = e.NewSize.Height;
     }
 
+    private void OnNewMenuOpened(object sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuItem newMenu)
+        {
+            return;
+        }
+
+        const int staticItemCount = 2; // 默认终端 + Separator
+        while (newMenu.Items.Count > staticItemCount)
+        {
+            newMenu.Items.RemoveAt(newMenu.Items.Count - 1);
+        }
+
+        foreach (var profile in ViewModel.AvailableProfiles)
+        {
+            var item = new MenuItem
+            {
+                Header = profile.Name,
+                Command = ViewModel.NewTerminalCommand,
+                CommandParameter = profile
+            };
+            AutomationProperties.SetAutomationId(item, $"Menu.File.NewProfile.{profile.Name}");
+            newMenu.Items.Add(item);
+        }
+    }
+
     private void OnWindowMenuOpened(object sender, RoutedEventArgs e)
     {
         WindowsListMenuItem.Items.Clear();
@@ -138,6 +165,7 @@ public partial class MainWindow : Window
         if (sender is Button btn && btn.ContextMenu != null)
         {
             btn.ContextMenu.PlacementTarget = btn;
+            btn.ContextMenu.DataContext = btn.DataContext ?? DataContext;
             btn.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
             btn.ContextMenu.IsOpen = true;
         }

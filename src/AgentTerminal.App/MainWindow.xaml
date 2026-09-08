@@ -80,20 +80,11 @@
               AutomationProperties.AutomationId="MainMenu">
             <!-- 文件菜单 -->
             <MenuItem Header="文件(_F)" AutomationProperties.AutomationId="Menu.File">
-                <MenuItem Header="新建(_N)" AutomationProperties.AutomationId="Menu.File.New">
+                <MenuItem Header="新建(_N)" AutomationProperties.AutomationId="Menu.File.New"
+                          SubmenuOpened="OnNewMenuOpened">
                     <MenuItem Header="默认终端" InputGestureText="Ctrl+N" Command="{Binding NewTerminalCommand}"
                               AutomationProperties.AutomationId="Menu.File.NewTerminal" />
                     <Separator />
-                    <MenuItem Header="新建指定 Shell" ItemsSource="{Binding AvailableProfiles}"
-                              AutomationProperties.AutomationId="Menu.File.NewProfileTerminal">
-                        <MenuItem.ItemContainerStyle>
-                            <Style TargetType="MenuItem">
-                                <Setter Property="Header" Value="{Binding Name}" />
-                                <Setter Property="Command" Value="{Binding DataContext.NewTerminalCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
-                                <Setter Property="CommandParameter" Value="{Binding}" />
-                            </Style>
-                        </MenuItem.ItemContainerStyle>
-                    </MenuItem>
                 </MenuItem>
                 <MenuItem Header="停止会话(_S)" Command="{Binding ActiveDocument.StopCommand}"
                           AutomationProperties.AutomationId="Menu.File.StopSession" />
@@ -178,7 +169,8 @@
                             AutomationProperties.AutomationId="Toolbar.BtnArrangeDropdown">
                         <Path Data="M 0 0 L 3.5 3.5 L 7 0 Z" Fill="{DynamicResource AeroTextDarkBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2,0" />
                         <Button.ContextMenu>
-                            <ContextMenu AutomationProperties.AutomationId="Toolbar.Arrange.Menu">
+                            <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
+                                         AutomationProperties.AutomationId="Toolbar.Arrange.Menu">
                                 <MenuItem Header="层叠(_C)" Command="{Binding CascadeCommand}"
                                           AutomationProperties.AutomationId="Toolbar.Arrange.Cascade" />
                                 <MenuItem Header="水平平铺(_H)" Command="{Binding TileHorizontalCommand}"
