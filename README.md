@@ -14,7 +14,7 @@
 ---
 
 **TermForge** 是一款 Windows 原生的专业级终端工作台，为开发者和运维工程师打造原生的 Shell + AI Agent 集成工作区。
-技术基线为 **.NET 10 LTS + WPF Fluent（Mica / 系统色）+ ConPTY + AvalonDock + Native Terminal Renderer**。解决方案目标框架已统一升级为 `net10.0[-windows]`，由 OpenSpec 变更 [`modernize-win11-fluent-ui`](openspec/changes/modernize-win11-fluent-ui/proposal.md) 推进并逐步替换自绘 Win7 Aero 外壳为原生 Fluent 外壳。已落地的 MMC/MDI 布局说明见 [Win7 Aero 设计文档](docs/design/UI-Win7-Aero-Design.md)（外壳部分已被 Fluent 方案取代）。
+技术基线为 **.NET 10 LTS + WPF Fluent（Mica / 系统色）+ ConPTY + AvalonDock + Native Terminal Renderer**。解决方案目标框架已统一升级为 `net10.0[-windows]`，由 OpenSpec 变更 [`modernize-win11-fluent-ui`](openspec/changes/modernize-win11-fluent-ui/proposal.md) 推进，外壳为原生 Fluent。MMC/MDI 布局与命令面见 [Win11 Fluent 设计规范](docs/design/UI-Win11-Fluent-Design-Spec.md) 与 [细菜单栏方案](docs/design/UI-Fluent-Command-Surface.md)。
 
 ---
 
@@ -95,7 +95,7 @@ dotnet test
 
 ## 🗺️ 开发阶段与路线规划
 
-详细技术设计与阶段规范请参阅：[Windows 原生 Agent Terminal 工作台 详细开发计划](Windows原生Agent_Terminal开发计划.md)、[架构设计文档](docs/ARCHITECTURE.md)、[Win11 Fluent 外壳迁移方案](docs/design/UI-Win11-Fluent-Migration.md)、[菜单/工具栏命令面](docs/design/UI-Fluent-Command-Surface.md) 与 [Win7 Aero / MMC 布局说明](docs/design/UI-Win7-Aero-Design.md)。
+详细技术设计与阶段规范请参阅：[Windows 原生 Agent Terminal 工作台 详细开发计划](Windows原生Agent_Terminal开发计划.md)、[架构设计文档](docs/ARCHITECTURE.md)、[Win11 Fluent 外壳迁移方案](docs/design/UI-Win11-Fluent-Migration.md)、[Win11 Fluent 设计规范](docs/design/UI-Win11-Fluent-Design-Spec.md) 与 [细菜单栏命令面](docs/design/UI-Fluent-Command-Surface.md)。
 
 产品目标：Windows MMC 风格的 MDI 多文档工作台，支持主窗口内的子窗口移动、缩放、层叠、平铺及最大化/还原。当前已完成 PowerShell 7 ConPTY 会话闭环与 MMC 风格 MDI 原型，验证报告详见 [ConPTY 验证报告](docs/validation/phase1-conpty.md) 与 [MDI 工作台验证报告](docs/validation/mdi-workbench.md)。
 

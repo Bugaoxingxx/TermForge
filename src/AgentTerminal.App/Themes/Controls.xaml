@@ -26,6 +26,86 @@
         <Setter Property="Effect" Value="{x:Null}" />
     </Style>
 
+    <!-- 细菜单栏：顶层项 22 DIP，覆盖 Fluent 默认高大 MenuItem -->
+    <ControlTemplate x:Key="AeroCompactTopLevelMenuItemTemplate" TargetType="MenuItem">
+        <Border x:Name="templateRoot"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Padding="{TemplateBinding Padding}"
+                SnapsToDevicePixels="True">
+            <Grid>
+                <ContentPresenter ContentSource="Header"
+                                  Margin="6,0"
+                                  VerticalAlignment="Center"
+                                  RecognizesAccessKey="True"
+                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                <Popup x:Name="PART_Popup"
+                       AllowsTransparency="True"
+                       Focusable="False"
+                       HorizontalOffset="0"
+                       VerticalOffset="0"
+                       IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                       Placement="Bottom"
+                       PlacementTarget="{Binding ElementName=templateRoot}"
+                       PopupAnimation="{DynamicResource {x:Static SystemParameters.MenuPopupAnimationKey}}">
+                    <Border Background="{DynamicResource {x:Static SystemColors.MenuBrushKey}}"
+                            BorderBrush="{DynamicResource AeroBorderEdgeBrush}"
+                            BorderThickness="1">
+                        <ScrollViewer CanContentScroll="True">
+                            <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Cycle" />
+                        </ScrollViewer>
+                    </Border>
+                </Popup>
+            </Grid>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsSuspendingPopupAnimation" Value="True">
+                <Setter TargetName="PART_Popup" Property="PopupAnimation" Value="None" />
+            </Trigger>
+            <Trigger Property="IsHighlighted" Value="True">
+                <Setter TargetName="templateRoot" Property="Background" Value="{DynamicResource AeroSelectionHighlightBrush}" />
+            </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter TargetName="templateRoot" Property="Background" Value="{DynamicResource AeroSelectionHighlightBrush}" />
+            </Trigger>
+            <Trigger Property="IsSubmenuOpen" Value="True">
+                <Setter TargetName="templateRoot" Property="Background" Value="{DynamicResource AeroSelectionHighlightBrush}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Foreground" Value="{DynamicResource AeroTextMutedBrush}" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style x:Key="AeroCompactMenuItemStyle" TargetType="MenuItem">
+        <Setter Property="Padding" Value="2,0" />
+        <Setter Property="Height" Value="{DynamicResource AeroMenuBarHeight}" />
+        <Setter Property="MinHeight" Value="{DynamicResource AeroMenuBarHeight}" />
+        <Setter Property="MaxHeight" Value="{DynamicResource AeroMenuBarHeight}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground" Value="{DynamicResource AeroTextNormalBrush}" />
+        <Setter Property="FontFamily" Value="{DynamicResource AeroFontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource AeroFontSizeSmall}" />
+        <Setter Property="Template" Value="{StaticResource AeroCompactTopLevelMenuItemTemplate}" />
+    </Style>
+
+    <Style x:Key="AeroCompactMenuBarStyle" TargetType="Menu">
+        <Setter Property="Height" Value="{DynamicResource AeroMenuBarHeight}" />
+        <Setter Property="MinHeight" Value="{DynamicResource AeroMenuBarHeight}" />
+        <Setter Property="MaxHeight" Value="{DynamicResource AeroMenuBarHeight}" />
+        <Setter Property="Padding" Value="2,0" />
+        <Setter Property="FontFamily" Value="{DynamicResource AeroFontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource AeroFontSizeSmall}" />
+        <Setter Property="Background" Value="{DynamicResource AeroMenuBarBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource AeroTextNormalBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AeroBorderEdgeBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="ItemContainerStyle" Value="{StaticResource AeroCompactMenuItemStyle}" />
+    </Style>
+
     <!-- Fluent 微扁平工具栏按钮 (高度 28 DIP，圆角 4px，去渐变高光) -->
     <Style x:Key="AeroToolBarButtonStyle" TargetType="Button">
         <Setter Property="Height" Value="28" />

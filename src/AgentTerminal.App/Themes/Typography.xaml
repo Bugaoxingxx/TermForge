@@ -22,6 +22,7 @@
     <sys:Double x:Key="AeroCaptionButtonWidth">29.0</sys:Double>
     <sys:Double x:Key="AeroCloseButtonWidth">48.0</sys:Double>
     <sys:Double x:Key="AeroWindowCaptionHeight">30.0</sys:Double>
+    <sys:Double x:Key="AeroMenuBarHeight">22.0</sys:Double>
     <sys:Double x:Key="AeroToolBarHeight">28.0</sys:Double>
     <sys:Double x:Key="AeroStatusBarHeight">24.0</sys:Double>
 

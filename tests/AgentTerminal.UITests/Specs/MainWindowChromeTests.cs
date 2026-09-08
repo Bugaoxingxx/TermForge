@@ -47,23 +47,15 @@ public class MainWindowChromeTests
         var mainPage = new MainWindowPage(window);
 
         Assert.NotNull(mainPage.MainMenu);
-        Assert.NotNull(mainPage.MainToolBar);
-        Assert.NotNull(mainPage.BtnNewTerminal);
-        Assert.NotNull(mainPage.BtnStopSession);
-        Assert.NotNull(mainPage.BtnArrange);
-        Assert.NotNull(mainPage.BtnArrangeDropdown);
-        Assert.NotNull(mainPage.BtnClearOutput);
-        Assert.NotNull(mainPage.BtnToggleDiagnostic);
+        Assert.NotNull(mainPage.MenuFile);
+        Assert.NotNull(mainPage.MenuView);
+        Assert.NotNull(mainPage.MenuWindow);
+        Assert.NotNull(mainPage.MenuHelp);
         Assert.NotNull(mainPage.NavigationPane);
         Assert.NotNull(mainPage.PropertiesPane);
         Assert.NotNull(mainPage.DiagnosticsPane);
         Assert.NotNull(mainPage.StatusBar);
         Assert.NotNull(mainPage.GetMdiWorkspace().Container);
-
-        // Verify menu surface items
-        Assert.NotNull(mainPage.MenuFile);
-        Assert.NotNull(mainPage.MenuView);
-        Assert.NotNull(mainPage.MenuWindow);
 
         // Verify native window provider capabilities (native OS caption)
         var winPattern = window.Patterns.Window.Pattern;
@@ -125,7 +117,7 @@ public class MainWindowChromeTests
 
         int initialCount = workspace.GetChildWindows().Count;
 
-        // 1. Create new terminal document via Toolbar
+        // 1. Create new terminal document via File menu
         mainPage.ClickNewTerminal();
         workspace.WaitForWindowCount(initialCount + 1, TimeSpan.FromSeconds(5));
         Assert.Equal(initialCount + 1, workspace.GetChildWindows().Count);

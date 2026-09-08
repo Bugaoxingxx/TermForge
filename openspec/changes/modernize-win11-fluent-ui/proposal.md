@@ -1,6 +1,6 @@
 ## Why
 
-现方案（见 `docs/design/UI-Win7-Aero-Design.md` §5.1）刻意用「非透明 WindowChrome + 纯 XAML 渐变」模拟 Win7 Aero，导致「玻璃是画出来的、颜色全硬编码、自绘标题栏丢失系统手感」，整体不够原生。Windows 11 Fluent 原生能力（Mica 材质、系统强调色、深浅色跟随、`ThemeMode`）自 .NET 9 引入、.NET 10 延续强化，且当前基线 .NET 8 亦需升级到受支持的 LTS（.NET 9 已于 2026-05 EOL），因此以「升级 .NET 10 + Fluent 原生化」一并推进。
+现方案此前刻意用「非透明 WindowChrome + 纯 XAML 渐变」模拟 Win7 Aero，导致「玻璃是画出来的、颜色全硬编码、自绘标题栏丢失系统手感」，整体不够原生。Windows 11 Fluent 原生能力（Mica 材质、系统强调色、深浅色跟随、`ThemeMode`）自 .NET 9 引入、.NET 10 延续强化，且当前基线 .NET 8 亦需升级到受支持的 LTS（.NET 9 已于 2026-05 EOL），因此以「升级 .NET 10 + Fluent 原生化」一并推进。
 
 ## What Changes
 

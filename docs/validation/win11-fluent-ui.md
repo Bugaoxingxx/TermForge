@@ -79,7 +79,7 @@ dotnet test tests\AgentTerminal.UITests\AgentTerminal.UITests.csproj
 - 测试用例总数: **18**
 - **通过: 18，失败: 0，已跳过: 0**
 - 覆盖场景:
-  - `MainWindow_RetainedAutomationIds_MustExist`: 验证所有外壳和控制台 `AutomationId`（菜单、工具栏、导航树、诊断区、属性面板、状态栏、标题栏与 Fluent 控制按钮）在真实 UIA 树中全部就绪且唯一。
+  - `MainWindow_RetainedAutomationIds_MustExist`: 验证所有外壳和控制台 `AutomationId`（细菜单栏、导航树、诊断区、属性面板、状态栏、标题栏与 Fluent 控制按钮）在真实 UIA 树中全部就绪且唯一。
   - `MainWindow_MaximizeAndRestore_ShouldRespectWorkingArea`: 验证主窗口最大化在屏幕 WorkingArea 限制下无黑边无溢出，任务栏安全。
   - `MainWindow_DocumentLifecycle_NewAndClose_ShouldMaintainWorkspace`: 验证多文档会话创建与关闭生命周期。
   - `MainWindow_CaptureBaselines_AndEnvironmentInfo`: 验证 MDI 布局基线与环境信息。

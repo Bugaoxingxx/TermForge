@@ -83,6 +83,7 @@ public class ThemeResourceSmokeTests
                 "AeroCaptionButtonHeight",
                 "AeroCaptionButtonWidth",
                 "AeroCloseButtonWidth",
+                "AeroMenuBarHeight",
                 "AeroMarginTight",
                 "AeroMarginMedium",
                 "AeroMarginLarge",
@@ -108,6 +109,8 @@ public class ThemeResourceSmokeTests
                 // Control Styles
                 "AeroTitleTextBlockStyle",
                 "AeroInactiveTitleTextBlockStyle",
+                "AeroCompactMenuBarStyle",
+                "AeroCompactMenuItemStyle",
                 "AeroToolBarButtonStyle",
                 "AeroToolBarSeparatorStyle",
                 "AeroCaptionButtonStyle",

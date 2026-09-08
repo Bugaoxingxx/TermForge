@@ -149,10 +149,34 @@ public class MdiChildWindowPage
             Activate();
             System.Threading.Thread.Sleep(300);
 
-            var btnToggle = _element.Automation.GetDesktop().FindFirstDescendant(cf => cf.ByAutomationId("Toolbar.BtnToggleDiagnostic"))?.AsButton();
-            if (btnToggle != null && btnToggle.Patterns.Invoke.IsSupported)
+            var menuView = _element.Automation.GetDesktop().FindFirstDescendant(cf => cf.ByAutomationId("Menu.View"))?.AsMenuItem();
+            if (menuView != null)
             {
-                btnToggle.Invoke();
+                if (menuView.Patterns.ExpandCollapse.IsSupported)
+                {
+                    menuView.Patterns.ExpandCollapse.Pattern.Expand();
+                }
+                else if (menuView.Patterns.Invoke.IsSupported)
+                {
+                    menuView.Invoke();
+                }
+
+                var toggle = _element.Automation.GetDesktop().FindFirstDescendant(cf => cf.ByAutomationId("Menu.View.ToggleDiagnostic"))?.AsMenuItem();
+                if (toggle != null)
+                {
+                    if (toggle.Patterns.Invoke.IsSupported)
+                    {
+                        toggle.Invoke();
+                    }
+                    else if (toggle.Patterns.Toggle.IsSupported)
+                    {
+                        toggle.Patterns.Toggle.Pattern.Toggle();
+                    }
+                    else
+                    {
+                        toggle.Click();
+                    }
+                }
             }
             System.Threading.Thread.Sleep(500);
         }

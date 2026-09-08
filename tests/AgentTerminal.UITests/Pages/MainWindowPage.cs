@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using FlaUI.Core.AutomationElements;
+using FlaUI.Core.Definitions;
 using FlaUI.Core.Exceptions;
 using AgentTerminal.UITests.Infrastructure;
 
@@ -30,7 +31,6 @@ public class MainWindowPage
             var found = appWindow?.FindFirstDescendant(cf => cf.ByAutomationId(automationId));
             if (found != null) return found;
 
-            // Also check popup/context menu windows within current process
             return desktop.FindFirstDescendant(cf => cf.ByProcessId(pid).And(cf.ByAutomationId(automationId)));
         }
         catch (ElementNotAvailableException)
@@ -43,29 +43,15 @@ public class MainWindowPage
         }
     }
 
-    private Button? FindButton(string automationId) => Find(automationId)?.AsButton();
     private MenuItem? FindMenuItem(string automationId) => Find(automationId)?.AsMenuItem();
-
-    public Button? BtnNewTerminal => FindButton("Toolbar.BtnNewTerminal");
-    public Button? BtnStopSession => FindButton("Toolbar.BtnStopSession");
-    public Button? BtnArrange => FindButton("Toolbar.BtnArrange");
-    public Button? BtnArrangeDropdown => FindButton("Toolbar.BtnArrangeDropdown");
-    public Button? BtnClearOutput => FindButton("Toolbar.BtnClearOutput");
-
-    // Compatibility aliases
-    public Button? BtnCascade => BtnArrange;
-    public Button? BtnTileHorizontal => FindButton("Toolbar.BtnTileHorizontal") ?? FindButton("Toolbar.Arrange.TileHorizontal");
-    public Button? BtnTileVertical => FindButton("Toolbar.BtnTileVertical") ?? FindButton("Toolbar.Arrange.TileVertical");
-    public Button? BtnRestoreAll => FindButton("Toolbar.BtnRestoreAll") ?? FindButton("Toolbar.Arrange.RestoreAll");
 
     public MenuItem? MenuFile => FindMenuItem("Menu.File");
     public MenuItem? MenuWindow => FindMenuItem("Menu.Window");
     public MenuItem? MenuView => FindMenuItem("Menu.View");
+    public MenuItem? MenuHelp => FindMenuItem("Menu.Help");
 
     public AutomationElement? MainMenu => Find("MainMenu");
-    public AutomationElement? MainToolBar => Find("MainToolBar");
     public AutomationElement? StatusBar => Find("Workbench.StatusBar");
-    public Button? BtnToggleDiagnostic => FindButton("Toolbar.BtnToggleDiagnostic");
 
     public AutomationElement? NavigationPane => Find("Pane.Navigation");
     public AutomationElement? PropertiesPane => Find("Pane.Properties");
@@ -112,46 +98,74 @@ public class MainWindowPage
     }
 
     public void ClickNewTerminal()
-    {
-        UiaWait.Until(() => BtnNewTerminal, timeout: TimeSpan.FromSeconds(15), message: "Toolbar NewTerminal button not found").Invoke();
-    }
+        => ClickMenuPath("Menu.File", "Menu.File.New", "Menu.File.NewTerminal");
 
     public void ClickCascade()
-    {
-        UiaWait.Until(() => BtnArrange, timeout: TimeSpan.FromSeconds(15), message: "Toolbar Arrange button not found").Invoke();
-    }
+        => ClickMenuPath("Menu.Window", "Menu.Window.Arrange", "Menu.Window.Cascade");
 
     public void ClickTileHorizontal()
-        => ClickArrangeVariant("Toolbar.Arrange.TileHorizontal", "Menu.Window.TileHorizontal");
+        => ClickMenuPath("Menu.Window", "Menu.Window.Arrange", "Menu.Window.TileHorizontal");
 
     public void ClickTileVertical()
-        => ClickArrangeVariant("Toolbar.Arrange.TileVertical", "Menu.Window.TileVertical");
+        => ClickMenuPath("Menu.Window", "Menu.Window.Arrange", "Menu.Window.TileVertical");
 
     public void ClickRestoreAll()
-        => ClickArrangeVariant("Toolbar.Arrange.RestoreAll", "Menu.Window.RestoreAll");
+        => ClickMenuPath("Menu.Window", "Menu.Window.Arrange", "Menu.Window.RestoreAll");
 
-    private void ClickArrangeVariant(string toolbarItemId, string windowMenuItemId)
+    public void ClickToggleDiagnostic()
+        => ClickMenuPath("Menu.View", "Menu.View.ToggleDiagnostic");
+
+    private void ClickMenuPath(params string[] automationIds)
     {
-        try
+        for (int i = 0; i < automationIds.Length; i++)
         {
-            var dropBtn = BtnArrangeDropdown;
-            if (dropBtn != null)
+            var id = automationIds[i];
+            var item = UiaWait.Until(
+                () => FindMenuItem(id),
+                timeout: TimeSpan.FromSeconds(8),
+                message: $"Menu item {id} not found");
+
+            bool isLeaf = i == automationIds.Length - 1;
+            if (isLeaf)
             {
-                dropBtn.Invoke();
-                UiaWait.Until(
-                    () => FindMenuItem(toolbarItemId),
-                    timeout: TimeSpan.FromSeconds(5),
-                    message: $"Arrange dropdown item {toolbarItemId} not found").Invoke();
-                return;
+                InvokeMenuItem(item);
+            }
+            else
+            {
+                ExpandMenuItem(item);
             }
         }
-        catch (TimeoutException)
+    }
+
+    private static void ExpandMenuItem(MenuItem item)
+    {
+        if (item.Patterns.ExpandCollapse.IsSupported)
         {
-            // 下拉 Popup 未出现时改走窗口菜单
+            var pattern = item.Patterns.ExpandCollapse.Pattern;
+            if (pattern.ExpandCollapseState.Value != ExpandCollapseState.Expanded)
+            {
+                pattern.Expand();
+            }
+            return;
         }
 
-        UiaWait.Until(() => MenuWindow, timeout: TimeSpan.FromSeconds(5), message: "Window menu not found").Invoke();
-        UiaWait.Until(() => FindMenuItem("Menu.Window.Arrange"), timeout: TimeSpan.FromSeconds(5), message: "Arrange submenu not found").Invoke();
-        UiaWait.Until(() => FindMenuItem(windowMenuItemId), timeout: TimeSpan.FromSeconds(5), message: $"{windowMenuItemId} not found").Invoke();
+        InvokeMenuItem(item);
+    }
+
+    private static void InvokeMenuItem(MenuItem item)
+    {
+        if (item.Patterns.Invoke.IsSupported)
+        {
+            item.Invoke();
+            return;
+        }
+
+        if (item.Patterns.Toggle.IsSupported)
+        {
+            item.Patterns.Toggle.Pattern.Toggle();
+            return;
+        }
+
+        item.Click();
     }
 }

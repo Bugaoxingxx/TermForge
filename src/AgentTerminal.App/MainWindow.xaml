@@ -65,18 +65,15 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" /> <!-- 0: Explorer 经典菜单栏 -->
-            <RowDefinition Height="Auto" /> <!-- 1: Explorer 经典工具栏 -->
-            <RowDefinition Height="*" />    <!-- 2: MMC 3 栏主工作区 -->
-            <RowDefinition Height="Auto" /> <!-- 3: Win7 底部状态栏 -->
+            <RowDefinition Height="Auto" /> <!-- 0: 细菜单栏 -->
+            <RowDefinition Height="*" />    <!-- 1: MMC 3 栏主工作区 -->
+            <RowDefinition Height="Auto" /> <!-- 2: 底部状态栏 -->
         </Grid.RowDefinitions>
 
         <!-- ========================================================= -->
-        <!-- 0. Fluent 经典菜单栏 (文件、视图、窗口、帮助)               -->
+        <!-- 0. 细菜单栏 (文件、视图、窗口、帮助)                         -->
         <!-- ========================================================= -->
-        <Menu Grid.Row="0" Background="{DynamicResource AeroMenuBarBrush}" Foreground="{DynamicResource AeroTextNormalBrush}"
-              Padding="6,2" BorderBrush="{DynamicResource AeroBorderEdgeBrush}" BorderThickness="0,0,0,1"
-              FontFamily="Segoe UI, Tahoma" FontSize="11"
+        <Menu Grid.Row="0" Style="{DynamicResource AeroCompactMenuBarStyle}"
               AutomationProperties.AutomationId="MainMenu">
             <!-- 文件菜单 -->
             <MenuItem Header="文件(_F)" AutomationProperties.AutomationId="Menu.File">
@@ -131,83 +128,9 @@
         </Menu>
 
         <!-- ========================================================= -->
-        <!-- 1. Fluent 工具栏 (高频即时操作 + 排列 SplitButton)          -->
+        <!-- 1. MMC 主工作区三栏布局 (左侧树 + 中央 MDI + 右侧属性)       -->
         <!-- ========================================================= -->
-        <ToolBarTray Grid.Row="1" Background="{DynamicResource AeroToolBarBrush}">
-            <ToolBar Background="{DynamicResource AeroToolBarBrush}" ToolBarTray.IsLocked="True" Padding="4,2"
-                     BorderThickness="0,0,0,1" BorderBrush="{DynamicResource AeroBorderEdgeBrush}"
-                     AutomationProperties.AutomationId="MainToolBar">
-                <Button Style="{DynamicResource AeroToolBarButtonStyle}"
-                        Command="{Binding NewTerminalCommand}" ToolTip="新建 PowerShell 终端 (Ctrl+N)"
-                        AutomationProperties.AutomationId="Toolbar.BtnNewTerminal">
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="{DynamicResource NewTerminalIcon}" Width="16" Height="16" Margin="0,0,4,0" />
-                        <TextBlock Text="新建终端" VerticalAlignment="Center" Foreground="{DynamicResource AeroTextDarkBrush}" />
-                    </StackPanel>
-                </Button>
-                <Button Style="{DynamicResource AeroToolBarButtonStyle}"
-                        Command="{Binding ActiveDocument.StopCommand}" ToolTip="停止当前活动会话"
-                        AutomationProperties.AutomationId="Toolbar.BtnStopSession" Margin="2,0">
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="{DynamicResource StopSessionIcon}" Width="16" Height="16" Margin="0,0,4,0" />
-                        <TextBlock Text="停止会话" VerticalAlignment="Center" Foreground="{DynamicResource AeroTextDarkBrush}" />
-                    </StackPanel>
-                </Button>
-                <Separator Style="{DynamicResource AeroToolBarSeparatorStyle}" />
-                <StackPanel Orientation="Horizontal" Margin="2,0">
-                    <Button Style="{DynamicResource AeroToolBarButtonStyle}"
-                            Command="{Binding CascadeCommand}" ToolTip="排列子窗口 (默认层叠)"
-                            AutomationProperties.AutomationId="Toolbar.BtnArrange">
-                        <StackPanel Orientation="Horizontal">
-                            <Image Source="{DynamicResource CascadeIcon}" Width="16" Height="16" Margin="0,0,4,0" />
-                            <TextBlock Text="排列" VerticalAlignment="Center" Foreground="{DynamicResource AeroTextDarkBrush}" />
-                        </StackPanel>
-                    </Button>
-                    <Button Style="{DynamicResource AeroToolBarButtonStyle}"
-                            Click="OnArrangeDropdownClick" ToolTip="更多排列方式"
-                            Padding="3,4" Margin="-1,0,0,0"
-                            AutomationProperties.AutomationId="Toolbar.BtnArrangeDropdown">
-                        <Path Data="M 0 0 L 3.5 3.5 L 7 0 Z" Fill="{DynamicResource AeroTextDarkBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2,0" />
-                        <Button.ContextMenu>
-                            <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
-                                         AutomationProperties.AutomationId="Toolbar.Arrange.Menu">
-                                <MenuItem Header="层叠(_C)" Command="{Binding CascadeCommand}"
-                                          AutomationProperties.AutomationId="Toolbar.Arrange.Cascade" />
-                                <MenuItem Header="水平平铺(_H)" Command="{Binding TileHorizontalCommand}"
-                                          AutomationProperties.AutomationId="Toolbar.Arrange.TileHorizontal" />
-                                <MenuItem Header="垂直平铺(_V)" Command="{Binding TileVerticalCommand}"
-                                          AutomationProperties.AutomationId="Toolbar.Arrange.TileVertical" />
-                                <MenuItem Header="全部还原(_R)" Command="{Binding RestoreAllCommand}"
-                                          AutomationProperties.AutomationId="Toolbar.Arrange.RestoreAll" />
-                            </ContextMenu>
-                        </Button.ContextMenu>
-                    </Button>
-                </StackPanel>
-                <Separator Style="{DynamicResource AeroToolBarSeparatorStyle}" />
-                <Button Style="{DynamicResource AeroToolBarButtonStyle}"
-                        Command="{Binding ActiveDocument.ClearOutputCommand}" ToolTip="清空当前调试窗口文本"
-                        AutomationProperties.AutomationId="Toolbar.BtnClearOutput" Margin="2,0">
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="{DynamicResource ClearOutputIcon}" Width="16" Height="16" Margin="0,0,4,0" />
-                        <TextBlock Text="清空输出" VerticalAlignment="Center" Foreground="{DynamicResource AeroTextDarkBrush}" />
-                    </StackPanel>
-                </Button>
-                <Separator Style="{DynamicResource AeroToolBarSeparatorStyle}" />
-                <Button Style="{DynamicResource AeroToolBarButtonStyle}"
-                        Command="{Binding ActiveDocument.ToggleDiagnosticModeCommand}" ToolTip="切换原生终端 / 原始输出诊断模式"
-                        AutomationProperties.AutomationId="Toolbar.BtnToggleDiagnostic" Margin="2,0">
-                    <StackPanel Orientation="Horizontal">
-                        <Image Source="{DynamicResource DiagnosticIcon}" Width="16" Height="16" Margin="0,0,4,0" />
-                        <TextBlock Text="诊断模式" VerticalAlignment="Center" Foreground="{DynamicResource AeroTextDarkBrush}" />
-                    </StackPanel>
-                </Button>
-            </ToolBar>
-        </ToolBarTray>
-
-        <!-- ========================================================= -->
-        <!-- 2. MMC 主工作区三栏布局 (左侧树 + 中央 MDI + 右侧属性)       -->
-        <!-- ========================================================= -->
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="1">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="220" MinWidth="140" MaxWidth="400" /> <!-- 左侧导航树 -->
                         <ColumnDefinition Width="Auto" />                               <!-- 分割条 -->
@@ -216,7 +139,7 @@
                         <ColumnDefinition Width="260" MinWidth="160" MaxWidth="450" /> <!-- 右侧属性区 -->
                     </Grid.ColumnDefinitions>
 
-                    <!-- 3.1 左侧 MMC 导航树 (Windows 7 Explorer 浅色淡雅风格) -->
+                    <!-- 1.1 左侧 MMC 导航树 -->
                     <dockingControls:WorkbenchPane Grid.Column="0"
                                     AutomationProperties.AutomationId="Pane.Navigation"
                                     AutomationProperties.Name="导航窗格"
@@ -388,9 +311,9 @@
                 </Grid>
 
         <!-- ========================================================= -->
-        <!-- 3. Fluent 经典底部状态栏                                    -->
+        <!-- 2. Fluent 底部状态栏                                        -->
         <!-- ========================================================= -->
-        <StatusBar Grid.Row="3" Background="{DynamicResource AeroStatusBarBrush}" Foreground="{DynamicResource AeroTextDarkBrush}"
+        <StatusBar Grid.Row="2" Background="{DynamicResource AeroStatusBarBrush}" Foreground="{DynamicResource AeroTextDarkBrush}"
                    Padding="6,2" BorderBrush="{DynamicResource AeroBorderEdgeBrush}" BorderThickness="0,1,0,0"
                    FontFamily="{DynamicResource AeroFontFamily}" FontSize="{DynamicResource AeroFontSizeSmall}"
                    Height="{DynamicResource AeroStatusBarHeight}"
