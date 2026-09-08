@@ -59,10 +59,15 @@ public class MainWindowChromeTests
         Assert.NotNull(mainPage.DiagnosticsPane);
         Assert.NotNull(mainPage.StatusBar);
         Assert.NotNull(mainPage.GetMdiWorkspace().Container);
-        Assert.NotNull(mainPage.TitleBar);
-        Assert.NotNull(mainPage.BtnWindowMinimize);
-        Assert.NotNull(mainPage.BtnWindowMaxRestore);
-        Assert.NotNull(mainPage.BtnWindowClose);
+
+        // Verify native window provider capabilities (native OS caption)
+        var winPattern = window.Patterns.Window.Pattern;
+        Assert.NotNull(winPattern);
+        Assert.True(winPattern.CanMinimize);
+        Assert.True(winPattern.CanMaximize);
+        Assert.False(string.IsNullOrWhiteSpace(window.Title));
+        Assert.NotNull(window.TitleBar);
+        Assert.True(window.TitleBar.BoundingRectangle.Height > 0, "Native OS title bar should have positive height");
     }
 
     [Fact]

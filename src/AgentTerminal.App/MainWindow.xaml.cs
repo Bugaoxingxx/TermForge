@@ -18,25 +18,12 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-
-        CommandBindings.Add(new CommandBinding(SystemCommands.CloseWindowCommand, (s, e) => SystemCommands.CloseWindow(this)));
-        CommandBindings.Add(new CommandBinding(SystemCommands.MaximizeWindowCommand, (s, e) => SystemCommands.MaximizeWindow(this)));
-        CommandBindings.Add(new CommandBinding(SystemCommands.MinimizeWindowCommand, (s, e) => SystemCommands.MinimizeWindow(this)));
-        CommandBindings.Add(new CommandBinding(SystemCommands.RestoreWindowCommand, (s, e) => SystemCommands.RestoreWindow(this)));
-        CommandBindings.Add(new CommandBinding(SystemCommands.ShowSystemMenuCommand, OnShowSystemMenu));
     }
 
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
         AgentTerminal.App.Infrastructure.WindowBackdropHelper.ApplyBackdrop(this);
-    }
-
-    private void OnShowSystemMenu(object sender, ExecutedRoutedEventArgs e)
-    {
-        double captionHeight = System.Windows.Shell.WindowChrome.GetWindowChrome(this)?.CaptionHeight ?? 30.0;
-        var point = PointToScreen(new Point(0, captionHeight));
-        SystemCommands.ShowSystemMenu(this, point);
     }
 
 
@@ -150,8 +137,8 @@ public partial class MainWindow : Window
     {
         MessageBox.Show(
             "TermForge - Windows Native Agent Terminal\n" +
-            "Windows 7 Aero MMC 风格 MDI 工作台与 PowerShell 会话\n" +
-            "Version 0.3 | 2026-09-05",
+            "Windows 11 Fluent MDI 终端工作台与 PowerShell 会话\n" +
+            "Version 0.4 | 2026-09-08",
             "关于 TermForge",
             MessageBoxButton.OK,
             MessageBoxImage.Information);

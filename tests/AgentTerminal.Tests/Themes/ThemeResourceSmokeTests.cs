@@ -248,20 +248,65 @@ public class ThemeResourceSmokeTests
                 _ = new Application();
             }
 
-            var dict = new ResourceDictionary
+            var lightDict = new ResourceDictionary
             {
                 Source = new Uri("pack://application:,,,/AgentTerminal.App;component/Themes/Colors.xaml", UriKind.Absolute)
             };
 
-            Assert.NotNull(dict["FluentAccentBrush"]);
-            Assert.NotNull(dict["FluentCardBackgroundBrush"]);
-            Assert.NotNull(dict["FluentTextPrimaryBrush"]);
-            Assert.NotNull(dict["FluentBorderBrush"]);
+            var darkDict = new ResourceDictionary
+            {
+                Source = new Uri("pack://application:,,,/AgentTerminal.App;component/Themes/DarkColors.xaml", UriKind.Absolute)
+            };
 
-            // Verify title glow effect is zeroed out for clean Fluent typography
-            var aeroGlow = dict["AeroTitleGlowEffect"] as System.Windows.Media.Effects.DropShadowEffect;
-            Assert.NotNull(aeroGlow);
-            Assert.Equal(0, aeroGlow.Opacity);
+            string[] semanticTokens =
+            [
+                "FluentAccentBrush",
+                "FluentWindowBackgroundBrush",
+                "FluentSubtleBrush",
+                "FluentCardBackgroundBrush",
+                "FluentTextPrimaryBrush",
+                "FluentTextSecondaryBrush",
+                "FluentBorderBrush",
+                "AeroStatusBarBrush",
+                "AeroPanelBackgroundBrush",
+                "AeroPropertiesBackgroundBrush",
+                "AeroDiagnosticsBackgroundBrush",
+                "AeroSplitterBrush",
+                "AeroTextDarkBrush",
+                "AeroTextNormalBrush",
+                "AeroTextMutedBrush",
+                "AeroTextSuccessBrush",
+                "AeroTextDangerBrush"
+            ];
+
+            foreach (var token in semanticTokens)
+            {
+                Assert.True(lightDict.Contains(token), $"Light dictionary missing semantic token '{token}'");
+                Assert.True(darkDict.Contains(token), $"Dark dictionary missing semantic token '{token}'");
+                Assert.NotNull(lightDict[token]);
+                Assert.NotNull(darkDict[token]);
+            }
+
+            // Verify Light vs Dark contrast semantics
+            var lightText = (System.Windows.Media.SolidColorBrush)lightDict["FluentTextPrimaryBrush"];
+            var darkText = (System.Windows.Media.SolidColorBrush)darkDict["FluentTextPrimaryBrush"];
+            double lightTextLum = 0.299 * lightText.Color.R + 0.587 * lightText.Color.G + 0.114 * lightText.Color.B;
+            double darkTextLum = 0.299 * darkText.Color.R + 0.587 * darkText.Color.G + 0.114 * darkText.Color.B;
+            Assert.True(lightTextLum < darkTextLum, "Text primary in light mode should be darker than in dark mode.");
+
+            var lightCard = (System.Windows.Media.SolidColorBrush)lightDict["FluentCardBackgroundBrush"];
+            var darkCard = (System.Windows.Media.SolidColorBrush)darkDict["FluentCardBackgroundBrush"];
+            double lightCardLum = 0.299 * lightCard.Color.R + 0.587 * lightCard.Color.G + 0.114 * lightCard.Color.B;
+            double darkCardLum = 0.299 * darkCard.Color.R + 0.587 * darkCard.Color.G + 0.114 * darkCard.Color.B;
+            Assert.True(lightCardLum > darkCardLum, "Card background in light mode should be brighter than in dark mode.");
+
+            // Verify title glow effect is zeroed out for clean Fluent typography in both
+            var lightGlow = lightDict["AeroTitleGlowEffect"] as System.Windows.Media.Effects.DropShadowEffect;
+            var darkGlow = darkDict["AeroTitleGlowEffect"] as System.Windows.Media.Effects.DropShadowEffect;
+            Assert.NotNull(lightGlow);
+            Assert.NotNull(darkGlow);
+            Assert.Equal(0, lightGlow.Opacity);
+            Assert.Equal(0, darkGlow.Opacity);
         });
     }
 }

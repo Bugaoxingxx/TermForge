@@ -1,4 +1,7 @@
+using System;
+using System.Runtime.InteropServices;
 using FlaUI.Core.AutomationElements;
+using FlaUI.Core.Exceptions;
 using AgentTerminal.UITests.Infrastructure;
 
 namespace AgentTerminal.UITests.Pages;
@@ -21,11 +24,16 @@ public class MainWindowPage
             var elem = _window.FindFirstDescendant(cf => cf.ByAutomationId(automationId));
             if (elem != null) return elem;
 
+            int pid = _window.Properties.ProcessId.Value;
             var desktop = _window.Automation.GetDesktop();
-            var freshWindow = desktop.FindFirstDescendant(cf => cf.ByAutomationId("MainWindow"));
-            return freshWindow?.FindFirstDescendant(cf => cf.ByAutomationId(automationId));
+            var appWindow = desktop.FindFirstDescendant(cf => cf.ByProcessId(pid).And(cf.ByAutomationId("MainWindow")));
+            return appWindow?.FindFirstDescendant(cf => cf.ByAutomationId(automationId));
         }
-        catch
+        catch (ElementNotAvailableException)
+        {
+            return null;
+        }
+        catch (COMException)
         {
             return null;
         }
@@ -50,11 +58,6 @@ public class MainWindowPage
     public AutomationElement? MainToolBar => Find("MainToolBar");
     public AutomationElement? StatusBar => Find("Workbench.StatusBar");
     public Button? BtnToggleDiagnostic => FindButton("Toolbar.BtnToggleDiagnostic");
-
-    public Button? BtnWindowMinimize => FindButton("MainWindow.BtnMinimize");
-    public Button? BtnWindowMaxRestore => FindButton("MainWindow.BtnMaxRestore");
-    public Button? BtnWindowClose => FindButton("MainWindow.BtnClose");
-    public AutomationElement? TitleBar => Find("MainWindow.TitleBar");
 
     public AutomationElement? NavigationPane => Find("Pane.Navigation");
     public AutomationElement? PropertiesPane => Find("Pane.Properties");
@@ -82,8 +85,9 @@ public class MainWindowPage
 
             try
             {
+                int pid = _window.Properties.ProcessId.Value;
                 var desktop = _window.Automation.GetDesktop();
-                var freshWindow = desktop.FindFirstDescendant(cf => cf.ByAutomationId("MainWindow"));
+                var freshWindow = desktop.FindFirstDescendant(cf => cf.ByProcessId(pid).And(cf.ByAutomationId("MainWindow")));
                 if (freshWindow != null)
                 {
                     return freshWindow.FindFirstDescendant(cf => cf.ByAutomationId("Workbench.MdiContainer"))

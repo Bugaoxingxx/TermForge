@@ -72,10 +72,10 @@
         </Grid.RowDefinitions>
 
         <!-- ========================================================= -->
-        <!-- 0. Explorer 经典菜单栏 (文件、视图、窗口、帮助)             -->
+        <!-- 0. Fluent 经典菜单栏 (文件、视图、窗口、帮助)               -->
         <!-- ========================================================= -->
-        <Menu Grid.Row="0" Background="{DynamicResource AeroMenuBarBrush}" Foreground="#1E395B"
-              Padding="6,2" BorderBrush="#CDD1D9" BorderThickness="0,0,0,1"
+        <Menu Grid.Row="0" Background="{DynamicResource AeroMenuBarBrush}" Foreground="{DynamicResource AeroTextNormalBrush}"
+              Padding="6,2" BorderBrush="{DynamicResource AeroBorderEdgeBrush}" BorderThickness="0,0,0,1"
               FontFamily="Segoe UI, Tahoma" FontSize="11"
               AutomationProperties.AutomationId="MainMenu">
                     <!-- 文件菜单 -->
@@ -311,11 +311,11 @@
                                         <TextBlock Text="运行诊断日志" FontWeight="Bold" Foreground="{DynamicResource AeroTextDarkBrush}" FontSize="{DynamicResource AeroFontSizeSmall}" FontFamily="{DynamicResource AeroFontFamily}" />
                                     </Border>
 
-                                    <TextBox Grid.Row="1" IsReadOnly="True" Background="#FFFFFF" Foreground="{DynamicResource AeroTextNormalBrush}" BorderThickness="0"
+                                    <TextBox Grid.Row="1" IsReadOnly="True" Background="{DynamicResource AeroDiagnosticsBackgroundBrush}" Foreground="{DynamicResource AeroTextNormalBrush}" BorderThickness="0"
                                              AutomationProperties.AutomationId="Pane.Diagnostics.Text"
                                              AutomationProperties.Name="诊断日志"
                                              FontFamily="{DynamicResource AeroCodeFontFamily}" FontSize="{DynamicResource AeroFontSizeSmall}" Padding="6" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
-                                             Text="[系统就绪] TermForge Windows 7 Aero MMC MDI 终端工作台已初始化完成。支持自由拖拽、层叠、平铺与 PowerShell 7 会话闭环。" />
+                                             Text="[系统就绪] TermForge Windows 11 Fluent MDI 终端工作台已初始化完成。支持自由拖拽、层叠、平铺与 PowerShell 7 会话闭环。" />
                                 </Grid>
                             </Border>
                         </dockingControls:WorkbenchPane>
@@ -344,7 +344,7 @@
                                               AutomationProperties.AutomationId="Pane.Properties.Scroll">
                                     <StackPanel Orientation="Vertical">
                                         <!-- 基本属性 -->
-                                        <Border Background="#FFFFFF" BorderBrush="{DynamicResource AeroSplitterBrush}" BorderThickness="1" Padding="7" Margin="0,0,0,7">
+                                        <Border Background="{DynamicResource FluentCardBackgroundBrush}" BorderBrush="{DynamicResource AeroSplitterBrush}" BorderThickness="1" Padding="7" Margin="0,0,0,7">
                                             <StackPanel>
                                                 <TextBlock Text="基本属性" FontWeight="Bold" Foreground="{DynamicResource AeroTextDarkBrush}" FontSize="{DynamicResource AeroFontSizeSmall}" Margin="0,0,0,5" />
 
@@ -352,7 +352,7 @@
                                                 <TextBlock Text="{Binding ActiveDocument.Title, TargetNullValue='(未选中文档)'}" Foreground="{DynamicResource AeroTextNormalBrush}" FontWeight="SemiBold" FontSize="{DynamicResource AeroFontSizeSmall}" Margin="0,2,0,6" />
 
                                                 <TextBlock Text="会话标识:" Foreground="{DynamicResource AeroTextMutedBrush}" FontSize="{DynamicResource AeroFontSizeSmall}" />
-                                                <TextBox Text="{Binding ActiveDocument.Id, Mode=OneWay, TargetNullValue='N/A'}" IsReadOnly="True" Background="#F7F9FC" Foreground="{DynamicResource AeroTextDarkBrush}" BorderBrush="{DynamicResource AeroSplitterBrush}" FontSize="{DynamicResource AeroFontSizeSmall}" Margin="0,2,0,6" />
+                                                <TextBox Text="{Binding ActiveDocument.Id, Mode=OneWay, TargetNullValue='N/A'}" IsReadOnly="True" Background="{DynamicResource FluentSubtleBrush}" Foreground="{DynamicResource AeroTextDarkBrush}" BorderBrush="{DynamicResource AeroSplitterBrush}" FontSize="{DynamicResource AeroFontSizeSmall}" Margin="0,2,0,6" />
 
                                                 <TextBlock Text="生命周期状态:" Foreground="{DynamicResource AeroTextMutedBrush}" FontSize="{DynamicResource AeroFontSizeSmall}" />
                                                 <TextBlock Text="{Binding ActiveDocument.State, TargetNullValue='N/A'}" Foreground="{DynamicResource AeroTextSuccessBrush}" FontWeight="Bold" FontSize="{DynamicResource AeroFontSizeSmall}" Margin="0,2,0,0" />
@@ -360,7 +360,7 @@
                                         </Border>
 
                                         <!-- 进程与环境 -->
-                                        <Border Background="#FFFFFF" BorderBrush="{DynamicResource AeroSplitterBrush}" BorderThickness="1" Padding="7">
+                                        <Border Background="{DynamicResource FluentCardBackgroundBrush}" BorderBrush="{DynamicResource AeroSplitterBrush}" BorderThickness="1" Padding="7">
                                             <StackPanel>
                                                 <TextBlock Text="进程与环境" FontWeight="Bold" Foreground="{DynamicResource AeroTextDarkBrush}" FontSize="{DynamicResource AeroFontSizeSmall}" Margin="0,0,0,5" />
 
@@ -379,10 +379,10 @@
                                                 </StackPanel>
 
                                                 <TextBlock Text="工作目录:" Foreground="{DynamicResource AeroTextMutedBrush}" FontSize="{DynamicResource AeroFontSizeSmall}" />
-                                                <TextBox Text="{Binding ActiveDocument.Profile.WorkingDirectory, Mode=OneWay, TargetNullValue='(当前工作目录)'}" IsReadOnly="True" Background="#F7F9FC" Foreground="{DynamicResource AeroTextDarkBrush}" BorderBrush="{DynamicResource AeroSplitterBrush}" FontSize="{DynamicResource AeroFontSizeSmall}" Margin="0,2,0,6" TextWrapping="Wrap" />
+                                                <TextBox Text="{Binding ActiveDocument.Profile.WorkingDirectory, Mode=OneWay, TargetNullValue='(当前工作目录)'}" IsReadOnly="True" Background="{DynamicResource FluentSubtleBrush}" Foreground="{DynamicResource AeroTextDarkBrush}" BorderBrush="{DynamicResource AeroSplitterBrush}" FontSize="{DynamicResource AeroFontSizeSmall}" Margin="0,2,0,6" TextWrapping="Wrap" />
 
                                                 <TextBlock Text="可执行程序:" Foreground="{DynamicResource AeroTextMutedBrush}" FontSize="{DynamicResource AeroFontSizeSmall}" />
-                                                <TextBox Text="{Binding ActiveDocument.Profile.ExecutablePath, Mode=OneWay, TargetNullValue='N/A'}" IsReadOnly="True" Background="#F7F9FC" Foreground="{DynamicResource AeroTextDarkBrush}" BorderBrush="{DynamicResource AeroSplitterBrush}" FontSize="{DynamicResource AeroFontSizeSmall}" Margin="0,2,0,0" TextWrapping="Wrap" />
+                                                <TextBox Text="{Binding ActiveDocument.Profile.ExecutablePath, Mode=OneWay, TargetNullValue='N/A'}" IsReadOnly="True" Background="{DynamicResource FluentSubtleBrush}" Foreground="{DynamicResource AeroTextDarkBrush}" BorderBrush="{DynamicResource AeroSplitterBrush}" FontSize="{DynamicResource AeroFontSizeSmall}" Margin="0,2,0,0" TextWrapping="Wrap" />
                                             </StackPanel>
                                         </Border>
                                     </StackPanel>
@@ -393,7 +393,7 @@
                 </Grid>
 
         <!-- ========================================================= -->
-        <!-- 3. Windows 7 经典底部状态栏 (银灰阶梯渐变 + 缩放把手)         -->
+        <!-- 3. Fluent 经典底部状态栏                                    -->
         <!-- ========================================================= -->
         <StatusBar Grid.Row="3" Background="{DynamicResource AeroStatusBarBrush}" Foreground="{DynamicResource AeroTextDarkBrush}"
                    Padding="6,2" BorderBrush="{DynamicResource AeroBorderEdgeBrush}" BorderThickness="0,1,0,0"

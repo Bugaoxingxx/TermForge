@@ -9,7 +9,8 @@ namespace AgentTerminal.App.Infrastructure;
 
 /// <summary>
 /// Windows 11 DWM 系统 Backdrop (Mica / Acrylic) 与深浅色沉浸式标题栏辅助类。
-/// 仅在 Windows 11 22621+ (22H2+) 启用原生 Mica 材质，低版本或调用失败时优雅回退纯色，杜绝黑边。
+/// 在 Windows 11 22000+ 启用系统圆角与沉浸式暗色，在 22621+ (22H2+) 启用原生 Mica 材质，
+/// 低版本或调用失败时优雅回退纯色，杜绝黑边与资源泄漏。
 /// </summary>
 public static class WindowBackdropHelper
 {
@@ -24,61 +25,87 @@ public static class WindowBackdropHelper
 
     private const int WM_SETTINGCHANGE = 0x001A;
     private const int WM_DWMCOLORIZATIONCOLORCHANGED = 0x0320;
-    private const int WM_GETMINMAXINFO = 0x0024;
-    private const uint MONITOR_DEFAULTTONEAREST = 0x00000002;
 
     [StructLayout(LayoutKind.Sequential)]
-    private struct POINT
+    public struct MARGINS(int left, int right, int top, int bottom)
     {
-        public int x;
-        public int y;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct MINMAXINFO
-    {
-        public POINT ptReserved;
-        public POINT ptMaxSize;
-        public POINT ptMaxPosition;
-        public POINT ptMinTrackSize;
-        public POINT ptMaxTrackSize;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct RECT
-    {
-        public int Left;
-        public int Top;
-        public int Right;
-        public int Bottom;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct MONITORINFO
-    {
-        public int cbSize;
-        public RECT rcMonitor;
-        public RECT rcWork;
-        public uint dwFlags;
+        public int cxLeftWidth = left;
+        public int cxRightWidth = right;
+        public int cyTopHeight = top;
+        public int cyBottomHeight = bottom;
     }
 
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int dwAttributeId, ref int pvAttribute, int cbAttribute);
 
-    [DllImport("user32.dll")]
-    private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmGetColorizationColor(out uint pcrColorization, out bool pfOpaqueBlend);
 
-    [DllImport("user32.dll")]
-    private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS pMarInset);
+
+    /// <summary>
+    /// 检测当前系统是否为 Windows 11 初始版本 (Build 22000) 或更高版本。
+    /// 此版本起支持 DWM 圆角与沉浸式暗色属性。
+    /// </summary>
+    public static bool IsWindows11OrNewer()
+    {
+        return Environment.OSVersion.Platform == PlatformID.Win32NT &&
+               Environment.OSVersion.Version.Major >= 10 &&
+               Environment.OSVersion.Version.Build >= 22000;
+    }
 
     /// <summary>
     /// 检测当前系统是否为 Windows 11 22621 (22H2) 或更高版本。
+    /// 此版本起正式支持 DWMWA_SYSTEMBACKDROP_TYPE 原生 Mica 材质 API。
     /// </summary>
     public static bool IsWindows11_22H2OrNewer()
     {
         return Environment.OSVersion.Platform == PlatformID.Win32NT &&
                Environment.OSVersion.Version.Major >= 10 &&
                Environment.OSVersion.Version.Build >= 22621;
+    }
+
+    /// <summary>
+    /// 获取当前 Windows 系统的强调色 (Accent Color)。
+    /// 优先从 DwmGetColorizationColor 获取，降级至注册表或系统高亮色，确保 NativeAOT 安全。
+    /// </summary>
+    public static Color GetAccentColor()
+    {
+        try
+        {
+            if (DwmGetColorizationColor(out uint colorization, out _) == 0)
+            {
+                byte r = (byte)((colorization >> 16) & 0xFF);
+                byte g = (byte)((colorization >> 8) & 0xFF);
+                byte b = (byte)(colorization & 0xFF);
+                return Color.FromRgb(r, g, b);
+            }
+        }
+        catch
+        {
+            // DWM 调用失败时走注册表降级
+        }
+
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM");
+            if (key?.GetValue("AccentColor") is int accent && accent != 0)
+            {
+                // 注册表 AccentColor 格式通常为 0xAABBGGRR
+                byte r = (byte)(accent & 0xFF);
+                byte g = (byte)((accent >> 8) & 0xFF);
+                byte b = (byte)((accent >> 16) & 0xFF);
+                return Color.FromRgb(r, g, b);
+            }
+        }
+        catch
+        {
+            // 注册表访问受限降级
+        }
+
+        // 默认 Fluent 蓝
+        return Color.FromRgb(0x00, 0x78, 0xD4);
     }
 
     /// <summary>
@@ -119,11 +146,18 @@ public static class WindowBackdropHelper
             return false;
         }
 
-        // 挂载 Win32 消息钩子以便实时响应系统模式与强调色变更
+        // 挂载 Win32 消息钩子以便实时响应系统模式与强调色变更；窗口关闭时自动卸载
         var source = HwndSource.FromHwnd(hwnd);
-        source?.AddHook(WndProc);
+        if (source != null)
+        {
+            source.RemoveHook(WndProc); // 防止重复挂载
+            source.AddHook(WndProc);
 
-        if (!IsWindows11_22H2OrNewer())
+            window.Closed -= OnWindowClosed;
+            window.Closed += OnWindowClosed;
+        }
+
+        if (!IsWindows11OrNewer())
         {
             ApplyFallbackSolidBackground(window);
             return false;
@@ -131,22 +165,28 @@ public static class WindowBackdropHelper
 
         try
         {
-            // 1. 设置圆角
+            // 1. 设置系统圆角 (Win11 22000+)
             int cornerPref = DWMWCP_ROUND;
             DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, ref cornerPref, sizeof(int));
 
-            // 2. 设置沉浸式暗色模式
+            // 2. 设置沉浸式暗色模式 (Win11 22000+)
             UpdateDarkModeAttribute(hwnd);
 
-            // 3. 应用系统 Mica 材质 (DWMSBT_MAINWINDOW = 2)
-            int backdropType = DWMSBT_MAINWINDOW;
-            int hr = DwmSetWindowAttribute(hwnd, DWMWA_SYSTEMBACKDROP_TYPE, ref backdropType, sizeof(int));
-
-            if (hr == 0)
+            // 3. 设置 Mica 材质 (Win11 22621+ 22H2+)
+            if (IsWindows11_22H2OrNewer())
             {
-                // Mica 生效：将窗口背景设为透明以令 DWM 材质透显
-                window.Background = Brushes.Transparent;
-                return true;
+                int backdropType = DWMSBT_MAINWINDOW;
+                int hr = DwmSetWindowAttribute(hwnd, DWMWA_SYSTEMBACKDROP_TYPE, ref backdropType, sizeof(int));
+
+                if (hr == 0)
+                {
+                    var margins = new MARGINS(-1, -1, -1, -1);
+                    _ = DwmExtendFrameIntoClientArea(hwnd, ref margins);
+
+                    // Mica 生效：将窗口背景设为透明以令 DWM 材质透显
+                    window.Background = Brushes.Transparent;
+                    return true;
+                }
             }
         }
         catch
@@ -158,12 +198,26 @@ public static class WindowBackdropHelper
         return false;
     }
 
+    private static void OnWindowClosed(object? sender, EventArgs e)
+    {
+        if (sender is Window window)
+        {
+            window.Closed -= OnWindowClosed;
+            var hwnd = new WindowInteropHelper(window).Handle;
+            if (hwnd != IntPtr.Zero)
+            {
+                var source = HwndSource.FromHwnd(hwnd);
+                source?.RemoveHook(WndProc);
+            }
+        }
+    }
+
     /// <summary>
     /// 更新窗口的沉浸式暗色模式属性
     /// </summary>
     public static void UpdateDarkModeAttribute(IntPtr hwnd)
     {
-        if (hwnd == IntPtr.Zero || !IsWindows11_22H2OrNewer())
+        if (hwnd == IntPtr.Zero || !IsWindows11OrNewer())
         {
             return;
         }
@@ -180,14 +234,22 @@ public static class WindowBackdropHelper
     }
 
     /// <summary>
+    /// 获取深色或浅色模式对应的纯色回退画刷。
+    /// </summary>
+    public static SolidColorBrush GetFallbackSolidBackgroundBrush(bool isDark)
+    {
+        return isDark
+            ? new SolidColorBrush(Color.FromRgb(0x20, 0x20, 0x20))
+            : new SolidColorBrush(Color.FromRgb(0xF3, 0xF3, 0xF3));
+    }
+
+    /// <summary>
     /// 当 Mica 材质不可用时，应用优雅的纯色回退背景，避免黑色黑边。
     /// </summary>
     public static void ApplyFallbackSolidBackground(Window window)
     {
         bool isDark = IsDarkModePreferred();
-        window.Background = isDark
-            ? new SolidColorBrush(Color.FromRgb(0x20, 0x20, 0x20))
-            : new SolidColorBrush(Color.FromRgb(0xF3, 0xF3, 0xF3));
+        window.Background = GetFallbackSolidBackgroundBrush(isDark);
     }
 
     private static IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -195,26 +257,6 @@ public static class WindowBackdropHelper
         if (msg == WM_SETTINGCHANGE || msg == WM_DWMCOLORIZATIONCOLORCHANGED)
         {
             UpdateDarkModeAttribute(hwnd);
-        }
-        else if (msg == WM_GETMINMAXINFO)
-        {
-            var mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
-            var hMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-            if (hMonitor != IntPtr.Zero)
-            {
-                var mi = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
-                if (GetMonitorInfo(hMonitor, ref mi))
-                {
-                    mmi.ptMaxPosition.x = Math.Abs(mi.rcWork.Left - mi.rcMonitor.Left);
-                    mmi.ptMaxPosition.y = Math.Abs(mi.rcWork.Top - mi.rcMonitor.Top);
-                    mmi.ptMaxSize.x = Math.Abs(mi.rcWork.Right - mi.rcWork.Left);
-                    mmi.ptMaxSize.y = Math.Abs(mi.rcWork.Bottom - mi.rcWork.Top);
-                    mmi.ptMaxTrackSize.x = mmi.ptMaxSize.x;
-                    mmi.ptMaxTrackSize.y = mmi.ptMaxSize.y;
-                    Marshal.StructureToPtr(mmi, lParam, true);
-                    handled = true;
-                }
-            }
         }
         return IntPtr.Zero;
     }

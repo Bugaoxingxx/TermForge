@@ -1,5 +1,7 @@
 using System;
 using System.Windows;
+using System.Windows.Media;
+using AgentTerminal.App.Infrastructure;
 using AgentTerminal.Infrastructure.Logging;
 using Microsoft.Win32;
 
@@ -11,16 +13,14 @@ namespace AgentTerminal.App;
 public partial class App : Application
 {
     private ResourceDictionary? _highContrastDictionary;
+    private ResourceDictionary? _darkThemeDictionary;
 
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-#pragma warning disable WPF0001
-        ThemeMode = ThemeMode.System;
-#pragma warning restore WPF0001
         LoggingService.Initialize();
 
-        ApplyHighContrastThemeIfNeeded();
+        ApplyTheme();
         SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
     }
 
@@ -33,13 +33,18 @@ public partial class App : Application
 
     private void OnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
     {
-        if (e.Category == UserPreferenceCategory.Accessibility || e.Category == UserPreferenceCategory.Color)
+        if (e.Category == UserPreferenceCategory.Accessibility ||
+            e.Category == UserPreferenceCategory.Color ||
+            e.Category == UserPreferenceCategory.General)
         {
-            Dispatcher.BeginInvoke(ApplyHighContrastThemeIfNeeded);
+            Dispatcher.BeginInvoke(ApplyTheme);
         }
     }
 
-    public void ApplyHighContrastThemeIfNeeded()
+    /// <summary>
+    /// 依据系统辅助功能与深浅色模式首选项统一应用主题字典。
+    /// </summary>
+    public void ApplyTheme()
     {
         if (SystemParameters.HighContrast)
         {
@@ -51,11 +56,45 @@ public partial class App : Application
                 };
                 Resources.MergedDictionaries.Add(_highContrastDictionary);
             }
+
+            if (_darkThemeDictionary != null)
+            {
+                Resources.MergedDictionaries.Remove(_darkThemeDictionary);
+                _darkThemeDictionary = null;
+            }
+            return;
         }
-        else if (_highContrastDictionary != null)
+
+        if (_highContrastDictionary != null)
         {
             Resources.MergedDictionaries.Remove(_highContrastDictionary);
             _highContrastDictionary = null;
         }
+
+        bool isDark = WindowBackdropHelper.IsDarkModePreferred();
+        if (isDark)
+        {
+            if (_darkThemeDictionary == null)
+            {
+                _darkThemeDictionary = new ResourceDictionary
+                {
+                    Source = new Uri("/AgentTerminal.App;component/Themes/DarkColors.xaml", UriKind.RelativeOrAbsolute)
+                };
+                Resources.MergedDictionaries.Add(_darkThemeDictionary);
+            }
+        }
+        else if (_darkThemeDictionary != null)
+        {
+            Resources.MergedDictionaries.Remove(_darkThemeDictionary);
+            _darkThemeDictionary = null;
+        }
+    }
+
+    /// <summary>
+    /// 兼容旧版调用入口
+    /// </summary>
+    public void ApplyHighContrastThemeIfNeeded()
+    {
+        ApplyTheme();
     }
 }

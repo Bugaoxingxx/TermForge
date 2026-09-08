@@ -7,7 +7,7 @@
     <!-- ================================================================= -->
 
     <!-- Fluent 原生与强调色画刷 -->
-    <SolidColorBrush x:Key="FluentAccentBrush" Color="{x:Static SystemColors.HighlightColor}" />
+    <SolidColorBrush x:Key="FluentAccentBrush" Color="#0078D4" />
     <SolidColorBrush x:Key="FluentWindowBackgroundBrush" Color="Transparent" />
     <SolidColorBrush x:Key="FluentSubtleBrush" Color="#08000000" />
     <SolidColorBrush x:Key="FluentCardBackgroundBrush" Color="#FBFBFB" />
@@ -60,7 +60,7 @@
     <SolidColorBrush x:Key="AeroCloseButtonPressedBrush" Color="#A82315" />
 
     <!-- 语义状态画刷 (绑定系统高亮/焦点) -->
-    <SolidColorBrush x:Key="AeroFocusBorderBrush" Color="{x:Static SystemColors.HighlightColor}" />
+    <SolidColorBrush x:Key="AeroFocusBorderBrush" Color="#0078D4" />
     <SolidColorBrush x:Key="AeroSelectionHighlightBrush" Color="#D9E7F6" />
     <SolidColorBrush x:Key="AeroSelectionTextBrush" Color="#0B2240" />
     <SolidColorBrush x:Key="AeroInactiveSelectionHighlightBrush" Color="#EDEDED" />
