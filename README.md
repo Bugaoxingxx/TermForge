@@ -168,4 +168,10 @@ dotnet test
 
 ---
 
+## License
+
+本项目采用 [MIT License](LICENSE) 授权。
+
+---
+
 **TermForge** – 让终端成为你的锻造台 🔨⚡
